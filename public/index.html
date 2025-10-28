@@ -45,6 +45,8 @@
         <div class="roadmap-content">
           <p>Explain the core premise of Dread Nights. You are not heroes. You are survivors in a world consumed by darkness, armed with grit and a sliver of hope. Your goal is to survive, protect what little you have, and maybe, just maybe, fight back.</p>
           <div class="roadmap-nav">
+            <!-- No Previous Button on Step 1 -->
+            <span></span> <!-- Empty span for flexbox alignment -->
             <button class="btn btn-next-step" data-next="2">Next Step <i class="fas fa-arrow-right"></i></button>
           </div>
         </div>
@@ -63,6 +65,7 @@
           </ul>
           <p>Explain what each one does and how to determine their starting scores.</p>
           <div class="roadmap-nav">
+            <button class="btn btn-secondary btn-prev-step" data-prev="1"><i class="fas fa-arrow-left"></i> Previous</button>
             <button class="btn btn-next-step" data-next="3">Next Step <i class="fas fa-arrow-right"></i></button>
           </div>
         </div>
@@ -80,6 +83,7 @@
             <li><strong>The Scholar:</strong> Knows forbidden lore.</li>
           </ul>
           <div class="roadmap-nav">
+            <button class="btn btn-secondary btn-prev-step" data-prev="2"><i class="fas fa-arrow-left"></i> Previous</button>
             <button class="btn btn-next-step" data-next="4">Next Step <i class="fas fa-arrow-right"></i></button>
           </div>
         </div>
@@ -96,6 +100,7 @@
           </ul>
           <p>Emphasize that both are resources to be protected, and both are hard to recover.</p>
           <div class="roadmap-nav">
+            <button class="btn btn-secondary btn-prev-step" data-prev="3"><i class="fas fa-arrow-left"></i> Previous</button>
             <button class="btn btn-next-step" data-next="5">Next Step <i class="fas fa-arrow-right"></i></button>
           </div>
         </div>
@@ -107,6 +112,7 @@
         <div class="roadmap-content">
           <p>Resources are scarce. Players get one signature item from their Past (e.g., The Scholar's 'Tattered Journal') and a "Survivor's Pack" containing bare essentials: a rusty knife, a weak flashlight, some matches, and a few scraps of food.</p>
           <div class="roadmap-nav">
+            <button class="btn btn-secondary btn-prev-step" data-prev="4"><i class="fas fa-arrow-left"></i> Previous</button>
             <button class="btn btn-next-step" data-next="6">Next Step <i class="fas fa-arrow-right"></i></button>
           </div>
         </div>
@@ -119,6 +125,7 @@
           <p>Ask players to choose a name, a brief description, and one thing their character is afraid of. This fear will be important.</p>
           <p>Finally, ask each player to introduce their character to the group.</p>
           <div class="roadmap-nav">
+            <button class="btn btn-secondary btn-prev-step" data-prev="5"><i class="fas fa-arrow-left"></i> Previous</button>
             <button id="reset-roadmap" class="btn btn-secondary">Reset Roadmap</button>
           </div>
         </div>

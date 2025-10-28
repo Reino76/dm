@@ -262,6 +262,13 @@ function setupSettings() {
   gameSelect.value = currentGame;
   gameTitle.textContent = currentGame;
   localStorage.setItem("gameSystem", currentGame); // Ensure it's saved
+
+  // Event listener is no longer needed as the dropdown is disabled
+  // gameSelect.addEventListener("change", () => {
+  //   const selectedGame = gameSelect.value;
+  //   gameTitle.textContent = selectedGame;
+  //   localStorage.setItem("gameSystem", selectedGame);
+  // });
 }
 
 // --- NEW: Prep Roadmap ---

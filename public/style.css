@@ -213,6 +213,13 @@ textarea {
   background: var(--bg-color);
   color: #fff;
 }
+/* Icon spacing for roadmap buttons */
+.btn .fa-arrow-right {
+  margin-left: 8px;
+}
+.btn .fa-arrow-left {
+  margin-right: 8px;
+}
 
 
 /* --- Status Text --- */
@@ -372,6 +379,7 @@ textarea {
   font-weight: 700;
   padding: 15px 20px;
   color: var(--text-color);
+  cursor: pointer; /* Allow clicking header to go back */
 }
 .roadmap-content {
   display: none; /* Hidden by default */
@@ -390,7 +398,8 @@ textarea {
 }
 .roadmap-nav {
   margin-top: 20px;
-  text-align: right;
+  display: flex; /* Changed for alignment */
+  justify-content: space-between; /* Changed for alignment */
   border-top: 1px solid var(--border-color);
   padding-top: 15px;
 }
@@ -398,7 +407,7 @@ textarea {
 /* Roadmap Active State */
 .roadmap-step.active {
   border-color: var(--primary-color);
-  box-shadow: 0 0 10px var(--primary-color-hover);
+  /* box-shadow: 0 0 10px var(--primary-color-hover); -- REMOVED */
 }
 .roadmap-step.active .roadmap-header {
   color: var(--primary-color);
@@ -416,6 +425,10 @@ textarea {
 .roadmap-step.completed .roadmap-header {
   color: var(--text-muted);
   font-weight: 600;
+}
+.roadmap-step.completed .roadmap-header:hover {
+  color: var(--text-color); /* Allow re-activating */
+  cursor: pointer;
 }
 .roadmap-step.completed .roadmap-content {
   display: none; /* Hide content */
