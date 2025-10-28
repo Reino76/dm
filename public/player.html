@@ -1,9 +1,111 @@
-
 <!DOCTYPE html>
 <html>
-<head><title>Player Screen</title></head>
+<head>
+  <title>Player Screen</title>
+  <!-- Google Fonts (Updated to sharp "Inter") -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Font Awesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  
+  <link rel="stylesheet" href="style.css">
+</head>
 <body>
-<h1>Initiative</h1>
-<div id="init-order"></div>
+  <div class="container">
+    <h1>Initiative</h1>
+    <!-- Added ID for player-specific styling -->
+    <ul id="player-init-list" class="tab-content active" style="border-top: 1px solid var(--border-color); border-radius: 4px;">
+      <!-- Player initiative list will go here -->
+    </ul>
+  </div>
+
+  <script>
+    let currentList = [];
+
+    function setupWebSocket() {
+      const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+      const ws = new WebSocket(`${wsProtocol}//${window.location.host}`);
+
+      ws.onopen = () => console.log("Player WebSocket connected.");
+      
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        if (data.type === "initiative-update") {
+          // Check if a new item was added
+          const isNewItem = data.payload.length > currentList.length;
+          currentList = data.payload;
+          renderInitiativeList(currentList, isNewItem);
+        }
+      };
+      
+      ws.onclose = () => {
+        console.log("Player WebSocket disconnected. Reconnecting...");
+        setTimeout(setupWebSocket, 3000);
+      };
+    }
+
+    function renderInitiativeList(list, animateNew) {
+      const listEl = document.getElementById("player-init-list");
+      listEl.innerHTML = ""; // Clear existing list
+
+      if (list.length === 0) {
+        listEl.innerHTML = "<p>Waiting for initiative...</p>";
+        return;
+      }
+
+      list.forEach((item, index) => {
+        const li = document.createElement("li");
+        
+        // --- Icon-only display ---
+        const iconContainer = document.createElement("div");
+        iconContainer.className = "player-icon-container";
+
+        const icon = document.createElement("i");
+        icon.className = item.iconClass; // e.g., "fas fa-gavel"
+        iconContainer.appendChild(icon);
+        
+        li.appendChild(iconContainer);
+        // --- End of new container ---
+
+        const rollSpan = document.createElement("span");
+        rollSpan.className = "init-roll";
+        rollSpan.textContent = item.roll;
+        li.appendChild(rollSpan);
+
+        // --- UPDATED ANIMATION ---
+        if (animateNew && index === list.length - 1) {
+          // 1. The card pop-in animation
+          li.classList.add("new-item-pop");
+          setTimeout(() => li.classList.remove("new-item-pop"), 600);
+          
+          // 2. The new "Sparkle Burst" animation
+          const sparkleContainer = document.createElement("div");
+          sparkleContainer.className = "sparkle-container";
+          
+          for (let i = 0; i < 5; i++) {
+            const spark = document.createElement("span");
+            spark.className = "spark";
+            spark.style.transform = `rotate(${i * 72}deg)`;
+            sparkleContainer.appendChild(spark);
+          }
+          
+          // Add container to the icon
+          iconContainer.appendChild(sparkleContainer);
+
+          // Remove the sparkle container after animation
+          setTimeout(() => {
+            sparkleContainer.remove();
+          }, 1000);
+        }
+
+        listEl.appendChild(li);
+      });
+    }
+
+    setupWebSocket();
+  </script>
 </body>
 </html>
+

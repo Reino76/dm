@@ -1,41 +1,190 @@
-
 <!DOCTYPE html>
 <html>
 <head>
 <title>DM Screen</title>
+<!-- Google Fonts (Updated to sharp "Inter") -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+<!-- Font Awesome CDN -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
 <link rel="stylesheet" href="style.css">
-<script defer src="main.js"></script>
+<script src="main.js"></script>
 </head>
 <body>
-<h1>DM Screen</h1>
-<div class="tabs">
-  <button class="tab-button" data-tab="tab-prep">Prep</button>
-  <button class="tab-button" data-tab="tab-active">Active Screen</button>
-  <button class="tab-button" data-tab="tab-link">Player Link</button>
+
+<div class="container">
+  <div class="header">
+    <h1 id="app-title">DM Screen</h1>
+    <button id="show-player-link-btn" class="btn btn-secondary">
+      <i class="fas fa-link"></i> Show Player Link
+    </button>
+    <div id="game-title-container">
+      <span id="game-title">Dread Nights</span>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-button" data-tab="tab-prep">Prep</button>
+    <button class="tab-button" data-tab="tab-active">Active Screen</button>
+    <button class="tab-button" data-tab="tab-settings">Settings</button>
+  </div>
+
+  <!-- Prep Tab -->
+  <div id="tab-prep" class="tab-content">
+    <h2>Dread Nights: Character Prep</h2>
+    
+    <!-- NEW: Roadmap Container -->
+    <div id="roadmap-container">
+      
+      <!-- Step 1 (Active by default) -->
+      <div class="roadmap-step active" data-step="1">
+        <h3 class="roadmap-header">Step 1: The Concept</h3>
+        <div class="roadmap-content">
+          <p>Explain the core premise of Dread Nights. You are not heroes. You are survivors in a world consumed by darkness, armed with grit and a sliver of hope. Your goal is to survive, protect what little you have, and maybe, just maybe, fight back.</p>
+          <div class="roadmap-nav">
+            <button class="btn btn-next-step" data-next="2">Next Step <i class="fas fa-arrow-right"></i></button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Step 2 -->
+      <div class="roadmap-step" data-step="2">
+        <h3 class="roadmap-header">Step 2: Core Attributes</h3>
+        <div class="roadmap-content">
+          <p>Have players assign their core attributes. In Dread Nights, these might be:</p>
+          <ul>
+            <li><strong>Grit (GRI):</strong> Your physical and mental fortitude.</li>
+            <li><strong>Instinct (INS):</strong> Your perception and cunning.</li>
+            <li><strong>Resolve (RES):</strong> Your willpower and resistance to terror.</li>
+            <li><strong>Flux (FLX):</strong> Your connection to the strange, unstable energies of the world.</li>
+          </ul>
+          <p>Explain what each one does and how to determine their starting scores.</p>
+          <div class="roadmap-nav">
+            <button class="btn btn-next-step" data-next="3">Next Step <i class="fas fa-arrow-right"></i></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="roadmap-step" data-step="3">
+        <h3 class="roadmap-header">Step 3: Define Your Past</h3>
+        <div class="roadmap-content">
+          <p>Instead of a "class," characters have a "Past." This determines their starting skills and a unique ability. Examples:</p>
+          <ul>
+            <li><strong>The Scrounger:</strong> Expert at finding resources.</li>
+            <li><strong>The Watcher:</strong> Can sense supernatural presences.</li>
+            <li><strong>The Brawler:</strong> Never backs down from a fight.</li>
+            <li><strong>The Scholar:</strong> Knows forbidden lore.</li>
+          </ul>
+          <div class="roadmap-nav">
+            <button class="btn btn-next-step" data-next="4">Next Step <i class="fas fa-arrow-right"></i></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4 -->
+      <div class="roadmap-step" data-step="4">
+        <h3 class="roadmap-header">Step 4: Mark Vitals</h3>
+        <div class="roadmap-content">
+          <p>Explain and have players mark their Vitals:</p>
+          <ul>
+            <li><strong>Health:</strong> Derived from <strong>Grit</strong>. This is your physical well-being.</li>
+            <li><strong>Sanity:</strong> Derived from <strong>Resolve</strong>. This is your mental well-being.</li>
+          </ul>
+          <p>Emphasize that both are resources to be protected, and both are hard to recover.</p>
+          <div class="roadmap-nav">
+            <button class="btn btn-next-step" data-next="5">Next Step <i class="fas fa-arrow-right"></i></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 5 -->
+      <div class="roadmap-step" data-step="5">
+        <h3 class="roadmap-header">Step 5: Starting Gear</h3>
+        <div class="roadmap-content">
+          <p>Resources are scarce. Players get one signature item from their Past (e.g., The Scholar's 'Tattered Journal') and a "Survivor's Pack" containing bare essentials: a rusty knife, a weak flashlight, some matches, and a few scraps of food.</p>
+          <div class="roadmap-nav">
+            <button class="btn btn-next-step" data-next="6">Next Step <i class="fas fa-arrow-right"></i></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 6 -->
+      <div class="roadmap-step" data-step="6">
+        <h3 class="roadmap-header">Step 6: Final Touches</h3>
+        <div class="roadmap-content">
+          <p>Ask players to choose a name, a brief description, and one thing their character is afraid of. This fear will be important.</p>
+          <p>Finally, ask each player to introduce their character to the group.</p>
+          <div class="roadmap-nav">
+            <button id="reset-roadmap" class="btn btn-secondary">Reset Roadmap</button>
+          </div>
+        </div>
+      </div>
+
+    </div> <!-- /roadmap-container -->
+  </div>
+
+  <!-- Active Screen Tab -->
+  <div id="tab-active" class="tab-content">
+    <h2>Initiative Tracker</h2>
+    <div id="initiative-form">
+      <input id="init-name" type="text" placeholder="Character Name" />
+      
+      <!-- Class Icon Selector -->
+      <select id="init-class">
+        <option value="fas fa-question-circle">Unknown</option>
+        <option value="fas fa-gavel">Fighter</option>
+        <option value="fas fa-hand-sparkles">Wizard</option>
+        <option value="fas fa-mask">Rogue</option>
+        <option value="fas fa-cross">Cleric</option>
+        <option value="fas fa-leaf">Druid</option>
+        <option value="fas fa-fist-raised">Monk</option>
+        <option value="fas fa-shield-alt">Paladin</option>
+        <option value="fas fa-bow-arrow">Ranger</option>
+        <option value="fas fa-magic">Sorcerer</option>
+        <option value="fas fa-book-dead">Warlock</option>
+        <option value="fas fa-music">Bard</option>
+        <option value="fas fa-axe">Barbarian</option>
+        <option value="fas fa-flask">Artificer</option>
+        <option value="fas fa-dragon">Monster</option>
+      </select>
+      
+      <input id="init-roll" type="number" placeholder="Roll" />
+      <button id="add-to-init" class="btn">Add</button>
+    </div>
+    
+    <ul id="initiative-list">
+      <!-- Initiative list items -->
+    </ul>
+    <button id="sort-init" class="btn btn-secondary">Sort</button>
+    <button id="clear-init" class="btn btn-secondary">Clear</button>
+  </div>
+
+  <!-- Settings Tab -->
+  <div id="tab-settings" class="tab-content">
+    <h2>Settings</h2>
+    <label for="game-select">Current Game System:</label>
+    <select id="game-select" disabled>
+      <option value="Dread Nights">Dread Nights</option>
+    </select>
+  </div>
+
+</div> <!-- /container -->
+
+<!-- NEW: Player Link Modal -->
+<div id="player-link-modal" class="modal-overlay">
+  <div class="modal-content">
+    <button id="close-modal-btn" class="modal-close-btn">&times;</button>
+    <h2>Share with Players</h2>
+    <input id="playerLink" type="text" readonly />
+    <button id="copy-link-btn" class="btn">Copy Link</button>
+    <p id="ipStatus">Detecting network...</p>
+  </div>
 </div>
 
-<div id="tab-prep" class="tab-content">Oneshot preparation tools TBD</div>
-
-<div id="tab-active" class="tab-content">
-  <h2>Initiative Order</h2>
-  <ul id="initiative-list"></ul>
-</div>
-
-<div id="tab-link" class="tab-content">
-  <h2>Share with Players</h2>
-  <input id="playerLink" type="text" readonly style="width: 80%;" />
-  <button onclick="copyPlayerLink()">Copy Link</button>
-  <p id="ipStatus"></p>
-</div>
-
-<script>
-  const tabs = document.querySelectorAll(".tab-button");
-  const contents = document.querySelectorAll(".tab-content");
-  tabs.forEach(btn => btn.addEventListener("click", () => {
-    contents.forEach(c => c.style.display = "none");
-    document.getElementById(btn.dataset.tab).style.display = "block";
-  }));
-  document.getElementById("tab-prep").style.display = "block";
-</script>
 </body>
 </html>
+
