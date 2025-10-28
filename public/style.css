@@ -1,0 +1,5 @@
+
+body { background: #111; color: #eee; font-family: Arial; }
+.tabs { margin-bottom: 10px; }
+.tab-button { margin-right: 5px; background: #900; color: #fff; border: none; padding: 8px; cursor: pointer; }
+.tab-content { display: none; background: #222; padding: 15px; border: 1px solid #900; }

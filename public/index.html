@@ -1,0 +1,41 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>DM Screen</title>
+<link rel="stylesheet" href="style.css">
+<script defer src="main.js"></script>
+</head>
+<body>
+<h1>DM Screen</h1>
+<div class="tabs">
+  <button class="tab-button" data-tab="tab-prep">Prep</button>
+  <button class="tab-button" data-tab="tab-active">Active Screen</button>
+  <button class="tab-button" data-tab="tab-link">Player Link</button>
+</div>
+
+<div id="tab-prep" class="tab-content">Oneshot preparation tools TBD</div>
+
+<div id="tab-active" class="tab-content">
+  <h2>Initiative Order</h2>
+  <ul id="initiative-list"></ul>
+</div>
+
+<div id="tab-link" class="tab-content">
+  <h2>Share with Players</h2>
+  <input id="playerLink" type="text" readonly style="width: 80%;" />
+  <button onclick="copyPlayerLink()">Copy Link</button>
+  <p id="ipStatus"></p>
+</div>
+
+<script>
+  const tabs = document.querySelectorAll(".tab-button");
+  const contents = document.querySelectorAll(".tab-content");
+  tabs.forEach(btn => btn.addEventListener("click", () => {
+    contents.forEach(c => c.style.display = "none");
+    document.getElementById(btn.dataset.tab).style.display = "block";
+  }));
+  document.getElementById("tab-prep").style.display = "block";
+</script>
+</body>
+</html>
