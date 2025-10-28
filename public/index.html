@@ -5,7 +5,7 @@
 <!-- Google Fonts (Updated to sharp "Inter") -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display.swap" rel="stylesheet">
 
 <!-- Font Awesome CDN -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -21,22 +21,26 @@
     <button id="show-player-link-btn" class="btn btn-secondary">
       <i class="fas fa-link"></i> Show Player Link
     </button>
+    
+    <!-- UPDATED: Game Select moved to header -->
     <div id="game-title-container">
-      <span id="game-title">Dread Nights</span>
+      <select id="game-select">
+        <option value="Dread Nights">Dread Nights</option>
+        <option value="D&D 5e">D&D 5e</option>
+      </select>
     </div>
   </div>
 
   <div class="tabs">
     <button class="tab-button" data-tab="tab-prep">Prep</button>
     <button class="tab-button" data-tab="tab-active">Active Screen</button>
-    <button class="tab-button" data-tab="tab-settings">Settings</button>
+    <!-- REMOVED: Settings Tab -->
   </div>
 
   <!-- Prep Tab -->
   <div id="tab-prep" class="tab-content">
     <h2>Dread Nights: Character Prep</h2>
     
-    <!-- NEW: Roadmap Container -->
     <div id="roadmap-container">
       
       <!-- Step 1 (Active by default) -->
@@ -136,52 +140,56 @@
 
   <!-- Active Screen Tab -->
   <div id="tab-active" class="tab-content">
-    <h2>Initiative Tracker</h2>
-    <div id="initiative-form">
-      <input id="init-name" type="text" placeholder="Character Name" />
-      
-      <!-- Class Icon Selector -->
-      <select id="init-class">
-        <option value="fas fa-question-circle">Unknown</option>
-        <option value="fas fa-gavel">Fighter</option>
-        <option value="fas fa-hand-sparkles">Wizard</option>
-        <option value="fas fa-mask">Rogue</option>
-        <option value="fas fa-cross">Cleric</option>
-        <option value="fas fa-leaf">Druid</option>
-        <option value="fas fa-fist-raised">Monk</option>
-        <option value="fas fa-shield-alt">Paladin</option>
-        <option value="fas fa-bow-arrow">Ranger</option>
-        <option value="fas fa-magic">Sorcerer</option>
-        <option value="fas fa-book-dead">Warlock</option>
-        <option value="fas fa-music">Bard</option>
-        <option value="fas fa-axe">Barbarian</option>
-        <option value="fas fa-flask">Artificer</option>
-        <option value="fas fa-dragon">Monster</option>
-      </select>
-      
-      <input id="init-roll" type="number" placeholder="Roll" />
-      <button id="add-to-init" class="btn">Add</button>
-    </div>
     
-    <ul id="initiative-list">
-      <!-- Initiative list items -->
-    </ul>
-    <button id="sort-init" class="btn btn-secondary">Sort</button>
-    <button id="clear-init" class="btn btn-secondary">Clear</button>
+    <!-- NEW: D&D Initiative Tracker (Conditional) -->
+    <div id="dnd-initiative-tracker">
+      <h2>Initiative Tracker</h2>
+      <div id="initiative-form">
+        <input id="init-name" type="text" placeholder="Character Name" />
+        
+        <!-- Class Icon Selector -->
+        <select id="init-class">
+          <option value="fas fa-question-circle">Unknown</option>
+          <option value="fas fa-gavel">Fighter</option>
+          <option value="fas fa-hand-sparkles">Wizard</option>
+          <option value="fas fa-mask">Rogue</option>
+          <option value="fas fa-cross">Cleric</option>
+          <option value="fas fa-leaf">Druid</option>
+          <option value="fas fa-fist-raised">Monk</option>
+          <option value="fas fa-shield-alt">Paladin</option>
+          <option value="fas fa-bow-arrow">Ranger</option>
+          <option value="fas fa-magic">Sorcerer</option>
+          <option value="fas fa-book-dead">Warlock</option>
+          <option value="fas fa-music">Bard</option>
+          <option value="fas fa-axe">Barbarian</option>
+          <option value="fas fa-flask">Artificer</option>
+          <option value="fas fa-dragon">Monster</option>
+        </select>
+        
+        <input id="init-roll" type="number" placeholder="Roll" />
+        <button id="add-to-init" class="btn">Add</button>
+      </div>
+      
+      <ul id="initiative-list">
+        <!-- Initiative list items -->
+      </ul>
+      <button id="sort-init" class="btn btn-secondary">Sort</button>
+      <button id="clear-init" class="btn btn-secondary">Clear</button>
+    </div>
+
+    <!-- NEW: Dread Nights Active Screen (Conditional) -->
+    <div id="dread-nights-active-screen">
+      <h2>Dread Nights Dashboard</h2>
+      <p>This is where active tools for Dread Nights would go, such as a terror tracker or random event generator.</p>
+    </div>
+
   </div>
 
-  <!-- Settings Tab -->
-  <div id="tab-settings" class="tab-content">
-    <h2>Settings</h2>
-    <label for="game-select">Current Game System:</label>
-    <select id="game-select" disabled>
-      <option value="Dread Nights">Dread Nights</option>
-    </select>
-  </div>
+  <!-- REMOVED: Settings Tab -->
 
 </div> <!-- /container -->
 
-<!-- NEW: Player Link Modal -->
+<!-- Player Link Modal -->
 <div id="player-link-modal" class="modal-overlay">
   <div class="modal-content">
     <button id="close-modal-btn" class="modal-close-btn">&times;</button>

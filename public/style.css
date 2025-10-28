@@ -25,6 +25,10 @@
   margin: 0;
   padding: 0;
 }
+/* NEW: Add smooth scrolling for roadmap */
+html {
+  scroll-behavior: smooth;
+}
 
 body {
   background: var(--bg-color);
@@ -51,14 +55,12 @@ body {
   margin-bottom: 20px;
 }
 
-h1 { /* Changed from #app-title to h1 for simplicity */
+h1 { 
   font-size: 2.5rem; 
-  font-weight: 800; /* Bold Inter */
+  font-weight: 800; 
   color: var(--primary-color);
-  /* Removed other h1 properties as they are not needed for app-title */
 }
 
-/* NEW: Style for the link button */
 #show-player-link-btn {
   padding: 8px 12px;
   font-size: 0.9rem;
@@ -69,28 +71,48 @@ h1 { /* Changed from #app-title to h1 for simplicity */
 #show-player-link-btn:hover {
   background: #444;
   color: #fff;
-  transform: translateY(-2px); /* Keep consistent hover */
+  transform: translateY(-2px); 
 }
 #show-player-link-btn i {
   margin-right: 5px;
 }
 
+/* UPDATED: Game Select Styling */
 #game-title-container {
   text-align: right;
 }
 
-#game-title {
-  font-size: 0.9rem;
-  font-weight: 600;
+#game-select {
+  /* Make it look like text, not a form */
+  background: transparent;
+  border: none;
   color: var(--text-muted);
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 1.1rem; /* Slightly larger */
+  cursor: pointer;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  padding: 5px;
+  border-radius: var(--radius-sharp);
+  transition: all 0.2s ease-in-out;
+}
+#game-select:hover {
+  color: var(--text-color);
+  background: var(--surface-color);
+}
+#game-select:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--primary-color-hover);
 }
 
-#game-select,
+
 #init-class {
   background: var(--surface-color);
   color: var(--text-color);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-sharp); /* Sharp */
+  border-radius: var(--radius-sharp); 
   padding: 10px;
   font-family: 'Inter', sans-serif;
   font-weight: 600;
@@ -135,7 +157,7 @@ h1 { /* Changed from #app-title to h1 for simplicity */
   padding: 25px;
   border: 1px solid var(--border-color);
   border-top: none;
-  border-radius: 0 0 var(--radius-sharp) var(--radius-sharp); /* Sharp */
+  border-radius: 0 0 var(--radius-sharp) var(--radius-sharp); 
   transition: opacity 0.4s ease-out;
 }
 
@@ -143,6 +165,13 @@ h1 { /* Changed from #app-title to h1 for simplicity */
   display: block;
   opacity: 1;
 }
+
+/* NEW: Hide conditional screens by default */
+#dnd-initiative-tracker,
+#dread-nights-active-screen {
+  display: none;
+}
+
 
 /* --- Styled Forms & Buttons --- */
 input[type="text"],
@@ -153,7 +182,7 @@ textarea {
   border: 1px solid var(--border-color);
   color: var(--text-color);
   padding: 12px;
-  border-radius: var(--radius-sharp); /* Sharp */
+  border-radius: var(--radius-sharp); 
   font-family: 'Inter', sans-serif;
   font-size: 1rem;
   font-weight: 400;
@@ -177,7 +206,7 @@ textarea {
   color: #fff;
   border: none;
   padding: 12px 18px;
-  border-radius: var(--radius-sharp); /* Sharp */
+  border-radius: var(--radius-sharp); 
   cursor: pointer;
   font-weight: 700; 
   font-size: 1rem; 
@@ -264,8 +293,8 @@ textarea {
   padding: 15px;
   background: var(--bg-color);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-sharp); /* Sharp */
-  margin-bottom: 8px; /* Tighter list */
+  border-radius: var(--radius-sharp); 
+  margin-bottom: 8px; 
   position: relative; 
 }
 
@@ -463,7 +492,7 @@ textarea {
   border: 1px solid var(--border-color);
   box-shadow: 0 5px 20px rgba(0,0,0,0.5);
   width: 90%;
-  max-w: 500px;
+  max-width: 500px;
   position: relative;
   /* Add a pop-in effect */
   transform: scale(0.9);

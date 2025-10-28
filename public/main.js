@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
   setupSettings();
   
   // Prep Roadmap Logic
-  setupRoadmap(); // <!-- NEW
+  setupRoadmap();
 });
 
 // --- WebSockets ---
@@ -29,7 +29,12 @@ function setupWebSocket() {
   const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
   ws = new WebSocket(`${wsProtocol}//${window.location.host}`);
 
-  ws.onopen = () => console.log("WebSocket connected.");
+  ws.onopen = () => {
+    console.log("WebSocket connected.");
+    // When we connect, tell the server our game state
+    // This ensures new player connections get the right UI
+    broadcastGameChange(localStorage.getItem("gameSystem") || "Dread Nights");
+  };
   ws.onmessage = (event) => {
     // We only expect initiative lists
     const data = JSON.parse(event.data);
@@ -48,10 +53,24 @@ function setupWebSocket() {
 }
 
 function broadcastInitiativeList() {
+  // Only broadcast if we are actually playing D&D
+  const currentGame = localStorage.getItem("gameSystem") || "Dread Nights";
+  if (currentGame !== "D&D 5e") return;
+
   if (ws && ws.readyState === WebSocket.OPEN) {
     ws.send(JSON.stringify({
       type: "initiative-update",
       payload: initiativeList
+    }));
+  }
+}
+
+// NEW: Broadcasts the game change to all players
+function broadcastGameChange(gameName) {
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({
+      type: "game-change",
+      payload: gameName
     }));
   }
 }
@@ -253,29 +272,76 @@ function copyPlayerLink() {
 }
 
 // --- Settings ---
+// UPDATED: Manages game selection from the header
 function setupSettings() {
   const gameSelect = document.getElementById("game-select");
-  const gameTitle = document.getElementById("game-title");
   
-  // Set the game to "Dread Nights" as it's the only option
-  const currentGame = "Dread Nights";
+  // Load saved game from localStorage or default
+  const currentGame = localStorage.getItem("gameSystem") || "Dread Nights";
   gameSelect.value = currentGame;
-  gameTitle.textContent = currentGame;
-  localStorage.setItem("gameSystem", currentGame); // Ensure it's saved
+  updateActiveScreen(currentGame); // Update UI on load
 
-  // Event listener is no longer needed as the dropdown is disabled
-  // gameSelect.addEventListener("change", () => {
-  //   const selectedGame = gameSelect.value;
-  //   gameTitle.textContent = selectedGame;
-  //   localStorage.setItem("gameSystem", selectedGame);
-  // });
+  // RE-ENABLED: Event listener for game changes
+  gameSelect.addEventListener("change", () => {
+    const selectedGame = gameSelect.value;
+    localStorage.setItem("gameSystem", selectedGame);
+    updateActiveScreen(selectedGame);
+    
+    // Tell players about the game change
+    broadcastGameChange(selectedGame);
+
+    // If we switch away from D&D, clear the initiative list
+    if (selectedGame !== "D&D 5e") {
+      clearInitiative(); // This will broadcast an empty list
+    }
+  });
 }
+
+// NEW: This function toggles the UI based on the selected game
+function updateActiveScreen(gameName) {
+  const dndTracker = document.getElementById("dnd-initiative-tracker");
+  const dreadNightsScreen = document.getElementById("dread-nights-active-screen");
+
+  if (gameName === "D&D 5e") {
+    dndTracker.style.display = "block";
+    dreadNightsScreen.style.display = "none";
+  } else { // 'Dread Nights'
+    dndTracker.style.display = "none";
+    dreadNightsScreen.style.display = "block";
+  }
+}
+
 
 // --- NEW: Prep Roadmap ---
 function setupRoadmap() {
   const nextButtons = document.querySelectorAll(".btn-next-step");
+  const prevButtons = document.querySelectorAll(".btn-prev-step"); // ADDED
+  const allHeaders = document.querySelectorAll(".roadmap-header"); // ADDED
   const resetButton = document.getElementById("reset-roadmap");
   
+  const allSteps = document.querySelectorAll('.roadmap-step');
+
+  // Function to activate a specific step
+  function activateStep(stepId) {
+    let targetStep = null;
+    allSteps.forEach(step => {
+      const isTarget = step.dataset.step === stepId;
+      step.classList.toggle('active', isTarget);
+      
+      // Don't mark future steps as completed if we go back
+      if (isTarget) {
+        step.classList.remove('completed');
+        targetStep = step;
+      }
+    });
+
+    // Auto-scroll to the new active step
+    if (targetStep) {
+      targetStep.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }
+
+  // Next Buttons
   nextButtons.forEach(button => {
     button.addEventListener("click", (e) => {
       const currentStep = e.target.closest('.roadmap-step');
@@ -285,27 +351,38 @@ function setupRoadmap() {
         currentStep.classList.remove('active');
         currentStep.classList.add('completed');
       }
-      
       if (nextStepId) {
-        const nextStep = document.querySelector(`.roadmap-step[data-step="${nextStepId}"]`);
-        if (nextStep) {
-          nextStep.classList.add('active');
-        }
+        activateStep(nextStepId);
       }
     });
   });
 
+  // PREVIOUS Buttons (NEW)
+  prevButtons.forEach(button => {
+    button.addEventListener("click", (e) => {
+      const prevStepId = e.target.dataset.prev;
+      if (prevStepId) {
+        activateStep(prevStepId);
+      }
+    });
+  });
+
+  // Click headers to jump to steps (NEW)
+  allHeaders.forEach(header => {
+    header.addEventListener("click", (e) => {
+      const stepId = e.target.closest('.roadmap-step').dataset.step;
+      activateStep(stepId);
+    });
+  });
+
+  // Reset Button
   if (resetButton) {
     resetButton.addEventListener("click", () => {
-      const allSteps = document.querySelectorAll('.roadmap-step');
       allSteps.forEach(step => {
         step.classList.remove('active', 'completed');
       });
       // Activate the first step
-      const firstStep = document.querySelector('.roadmap-step[data-step="1"]');
-      if (firstStep) {
-        firstStep.classList.add('active');
-      }
+      activateStep("1");
     });
   }
 }
