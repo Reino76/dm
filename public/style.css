@@ -1022,3 +1022,13 @@ textarea {
 .name-table-wrapper tr:nth-child(even) {
   background: var(--surface-color);
 }
+
+.input-with-button {
+  display: flex;
+  gap: 10px;
+}
+
+.input-with-button input {
+  flex-grow: 1;
+  margin-bottom: 0;
+}

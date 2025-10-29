@@ -2,20 +2,25 @@
 <html>
 <head>
   <title>Player Screen</title>
-  <!-- Google Fonts (Updated to sharp "Inter") -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-  
-  <!-- Font Awesome CDN -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display.swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  
-  <!-- UPDATED: Wrapper for conditional view -->
-  <div id="initiative-view" class="container">
+
+  <div class="header">
+    <h1 id="app-title">Player View</h1>
+    <div id="game-title-container">
+      <select id="mode-select">
+        <option value="initiative">Initiative</option>
+        <option value="background">Background</option>
+      </select>
+    </div>
+  </div>
+
+  <div id="initiative-mode-content" class="container">
     <h1>Initiative</h1>
     <div id="player-init-list-container" class="tab-content active" style="border-top: 1px solid var(--border-color); border-radius: var(--radius-sharp);">
       <ul id="player-init-list">
@@ -25,10 +30,33 @@
     </div>
   </div>
 
-  <!-- NEW: WebSocket Logic for Player -->
+  <div id="background-mode-content" class="container" style="display: none;">
+    <h1>Background</h1>
+    <p>This is the background mode. Placeholder text.</p>
+  </div>
+
   <script>
     let initiativeList = [];
-    
+
+    function setupModeSelection() {
+      const modeSelect = document.getElementById("mode-select");
+      const initiativeContent = document.getElementById("initiative-mode-content");
+      const backgroundContent = document.getElementById("background-mode-content");
+
+      if (!modeSelect || !initiativeContent || !backgroundContent) return;
+
+      modeSelect.addEventListener("change", (e) => {
+        const selectedMode = e.target.value;
+        if (selectedMode === "initiative") {
+          initiativeContent.style.display = "block";
+          backgroundContent.style.display = "none";
+        } else {
+          initiativeContent.style.display = "none";
+          backgroundContent.style.display = "block";
+        }
+      });
+    }
+
     function setupWebSocket() {
       const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
       const ws = new WebSocket(`${wsProtocol}//${window.location.host}`);
@@ -38,17 +66,13 @@
       ws.onmessage = (event) => {
         const data = JSON.parse(event.data);
         
-        // Handle game change
+        const initView = document.getElementById("initiative-mode-content");
+
         if (data.type === "game-change") {
-          const initView = document.getElementById("initiative-view");
-          if (data.payload === "D&D 5e") {
-            initView.style.display = "block";
-          } else {
-            initView.style.display = "none";
-          }
+            // The logic to hide/show based on game type is now implicitly handled by the DM's screen
+            // and the player's own mode selection. We just receive updates.
         }
 
-        // Handle initiative update
         if (data.type === "initiative-update") {
           const isNewItem = data.payload.length > initiativeList.length;
           initiativeList = data.payload;
@@ -65,7 +89,7 @@
     function renderInitiativeList(animateNew) {
       const listEl = document.getElementById("player-init-list");
       const waitingMsg = document.getElementById("waiting-msg");
-      listEl.innerHTML = ""; // Clear list
+      listEl.innerHTML = ""; 
 
       if (initiativeList.length === 0) {
         waitingMsg.style.display = "block";
@@ -75,52 +99,38 @@
 
       initiativeList.forEach((item, index) => {
         const li = document.createElement("li");
-
-        // --- Icon Container ---
         const iconContainer = document.createElement("div");
         iconContainer.className = "player-icon-container";
-        
         const icon = document.createElement("i");
         icon.className = item.iconClass;
         iconContainer.appendChild(icon);
-
         li.appendChild(iconContainer);
-        // --- End of container ---
-
         const rollSpan = document.createElement("span");
         rollSpan.className = "init-roll";
         rollSpan.textContent = item.roll;
         li.appendChild(rollSpan);
 
-        // --- Animation Logic ---
         if (animateNew && index === initiativeList.length - 1) {
           li.classList.add("new-item-pop");
           setTimeout(() => li.classList.remove("new-item-pop"), 600);
-          
           const sparkleContainer = document.createElement("div");
           sparkleContainer.className = "sparkle-container";
-          
           for (let i = 0; i < 5; i++) {
             const spark = document.createElement("span");
             spark.className = "spark";
             spark.style.transform = `rotate(${i * 72}deg)`; 
             sparkleContainer.appendChild(spark);
           }
-          
           iconContainer.appendChild(sparkleContainer);
-
-          setTimeout(() => {
-            sparkleContainer.remove();
-          }, 1000);
+          setTimeout(() => sparkleContainer.remove(), 1000);
         }
-
         listEl.appendChild(li);
       });
     }
 
-    // Start the connection
+    // Initialize
+    setupModeSelection();
     setupWebSocket();
   </script>
 </body>
 </html>
-

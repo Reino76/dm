@@ -34,6 +34,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Guild Name Generator
   setupGuildNameGenerator();
+
+  // Character Name Generator
+  setupCharacterNameGenerator();
+
+  // Occupation Generator
+  setupOccupationGenerator();
 });
 
 // --- WebSockets ---
@@ -179,7 +185,14 @@ function setupPlayerLinkModal() {
 
   if (!modal || !showBtn || !closeBtn) return;
 
-  showBtn.addEventListener("click", () => modal.classList.add("active"));
+  showBtn.addEventListener("click", () => {
+    const linkEl = document.getElementById("playerLink");
+    modal.classList.add("active");
+    if (linkEl && linkEl.value && linkEl.value.startsWith("http")) {
+      window.open(linkEl.value, "_blank");
+    }
+  });
+
   closeBtn.addEventListener("click", () => modal.classList.remove("active"));
   modal.addEventListener("click", (e) => {
     if (e.target === modal) modal.classList.remove("active");
@@ -341,6 +354,166 @@ function setupGuildSelection() {
     });
   });
 }
+
+// --- Character Name Generator ---
+const characterNames = [
+  "Robert", "Louis", "Stevenson", "Spike", "Straker", "Carroll", "Hellsing", "Wells", "Mary", "Cushing",
+  "Ned", "Shelly", "Shreck", "Jonathan", "Corinthian", "Morris", "Modroon", "Bree", "Harker", "Meater",
+  "Lucy", "Clerval", "Drumschlik", "Lavenza", "Victor", "Ahab", "Ruthven", "Tithar", "Ada", "Forte",
+  "Faust", "Gray", "Oscar", "Todd", "Basker", "Dicken", "Dodger", "Victor", "Vlad", "George",
+  "William", "Alice", "Rowlveress", "Louis", "Rice", "Federico", "Douglas", "Madge", "Schmek", "Ordinary",
+  "Lee", "Sater", "Dedlock", "Dolly", "Mason", "Tallywag", "Ceridwen", "Pipes", "Twist", "Griffin",
+  "Kemp", "Prendick", "Dolly", "Gregson", "Lestrade", "Kessler", "Gilgamesh", "Aino", "Lovelace", "Talbot",
+  "Lipwig", "Wolfgang", "Fryderi", "Lugosi", "Holmwood", "Vanko", "Villarias", "Carradine", "D'Arcy", "Naschy",
+  "O'Keeffe", "Oldman", "Warren", "McTavish", "Babbage", "Carpenter", "Sam", "Coraline", "Numiner", "Dante",
+  "Montgomery", "Marley", "Grendel", "Barker", "Summerson", "Riou", "Dorothy", "Gray", "Hyde", "Moriarty"
+];
+
+function setupCharacterNameGenerator() {
+    const input = document.getElementById("d100-char-name-input");
+    const resultEl = document.getElementById("char-name-result");
+    const modal = document.getElementById("char-name-table-modal");
+    const showModalBtn = document.getElementById("toggle-char-name-table-modal");
+    const closeModalBtn = document.getElementById("close-char-name-table-modal");
+    const tablesContainer = document.getElementById("char-name-table-content-modal");
+
+    if (!input || !resultEl || !modal || !showModalBtn || !closeModalBtn || !tablesContainer) return;
+
+    // Populate the modal with the character name table
+    const tableHtml = createTableHtml(characterNames, "Hahmon Nimet");
+    tablesContainer.innerHTML = `<div class="name-table-wrapper">${tableHtml}</div>`;
+
+    function generateName() {
+        const roll = parseInt(input.textContent, 10);
+
+        if (roll >= 1 && roll <= 100) {
+            const name = characterNames[roll - 1];
+            resultEl.innerHTML = `<span>${name}</span>`;
+        } else {
+            resultEl.innerHTML = "<span>-</span>";
+        }
+    }
+
+    input.addEventListener("input", generateName);
+
+    showModalBtn.addEventListener("click", () => modal.classList.add("active"));
+    closeModalBtn.addEventListener("click", () => modal.classList.remove("active"));
+    modal.addEventListener("click", (e) => {
+        if (e.target === modal) modal.classList.remove("active");
+    });
+}
+
+// --- Occupation Generator ---
+const occupations = [
+  { occupation: "Teurastaja", benefit: "+1 STR" }, { occupation: "Leipuri", benefit: "+1 PRC" },
+  { occupation: "Kynttiläntekijä", benefit: "Kantaa aina kynttilää" }, { occupation: "Rotanpyydystäjä", benefit: "+1 TGH" },
+  { occupation: "Konstaapeli", benefit: "Pamppu" }, { occupation: "Kulkuri", benefit: "1 Satunainen Esine" },
+  { occupation: "Vartija", benefit: "+1 PRC" }, { occupation: "Rahakas", benefit: "5 Shillinkiä" },
+  { occupation: "Akateemikko", benefit: "+1 PRC" }, { occupation: "Apteekkari", benefit: "+1 TGH" },
+  { occupation: "Savimaakari", benefit: "+1 AGT" }, { occupation: "Panimomies", benefit: "Viski" },
+  { occupation: "Kirurki", benefit: "1 Tohtorin laukku" }, { occupation: "Leikkaaja", benefit: "1 Veitsi" },
+  { occupation: "Haudankaivaja", benefit: "1 Lapio" }, { occupation: "Valelääkäri", benefit: "1 Ihmeparannusaine" },
+  { occupation: "Lalvamies", benefit: "1 Kalastusverkko" }, { occupation: "Patomies", benefit: "1 Kivivasara" },
+  { occupation: "Teloittaja", benefit: "1 Kirves" }, { occupation: "Tohtori", benefit: "1 Tohtorin laukku" },
+  { occupation: "Kalastaja", benefit: "1 Kala" }, { occupation: "Lasipuhaltaja", benefit: "1 Oil Lamp" },
+  { occupation: "Asoseppä", benefit: "1 Pistooli" }, { occupation: "Vaatturi", benefit: "5 Shillinkiä" },
+  { occupation: "Rottiensyöjä", benefit: "1 Satunainen esine" }, { occupation: "Käsityöläinen", benefit: "1 Varras" },
+  { occupation: "Tanssija", benefit: "+1 AGT" }, { occupation: "Asekeräiljä", benefit: "1 Satunainen Ase" },
+  { occupation: "Viemärityöläinen", benefit: "1 Lapio" }, { occupation: "Sahaaja", benefit: "1 Saha" },
+  { occupation: "Mylläri", benefit: "1 Suolapussi" }, { occupation: "Varastoija", benefit: "1 Valkosipuli" },
+  { occupation: "Trokari", benefit: "1 Ihmeparannusaine" }, { occupation: "Neuloja", benefit: "1 Hat Pin" },
+  { occupation: "Hautavaras", benefit: "1 Lapio" }, { occupation: "Varas", benefit: "1 Tiirikka" },
+  { occupation: "Historioitsija", benefit: "1 Satunainen artifakti" }, { occupation: "Pastori", benefit: "+1 PRC" },
+  { occupation: "Seilori", benefit: "1 Vahattu takki" }, { occupation: "Ihmissusien Kauhu", benefit: "1 Silver Bullet" },
+  { occupation: "Valkosipulifarmare", benefit: "1 Valkosipuli" }, { occupation: "Nuorallakävelijä", benefit: "+1 AGT" },
+  { occupation: "Ruumilnavaaja", benefit: "+1 TGH" }, { occupation: "Peruukklentekijä", benefit: "1 Peruukki" },
+  { occupation: "Nuohooja", benefit: "1 Viski" }, { occupation: "Outo akateemikko", benefit: "1 Satunainen Pimeä Manuskripti" },
+  { occupation: "Portinvartija", benefit: "1 Satunainen Esine" }, { occupation: "Metallityöläinen", benefit: "1 Satunainen Ase" },
+  { occupation: "Dilleri", benefit: "Oopium!" }, { occupation: "Kaksoisvuoro", benefit: "Pyöritä kahdesti, ota molemmat." }
+];
+
+function createOccupationTableHtml(data) {
+  let rows = data.map((item, index) => `<tr><td>${index + 1}</td><td>${item.occupation}</td><td>${item.benefit}</td></tr>`).join("");
+  return `
+    <table>
+      <caption>Työnkuvat</caption>
+      <thead>
+        <tr>
+          <th>d50</th>
+          <th>Ammetti</th>
+          <th>Hyöty</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows}
+      </tbody>
+    </table>
+  `;
+}
+
+function setupOccupationGenerator() {
+    const mainInput = document.getElementById("d100-occupation-input");
+    const resultDisplay = document.getElementById("occupation-result-display");
+    const rerollSection = document.getElementById("occupation-reroll-section");
+    const rerollInput1 = document.getElementById("d100-reroll-input-1");
+    const rerollInput2 = document.getElementById("d100-reroll-input-2");
+    const rerollResult1 = document.getElementById("reroll-result-display-1");
+    const rerollResult2 = document.getElementById("reroll-result-display-2");
+
+    const modal = document.getElementById("occupation-table-modal");
+    const showModalBtn = document.getElementById("toggle-occupation-table-modal");
+    const closeModalBtn = document.getElementById("close-occupation-table-modal");
+    const tablesContainer = document.getElementById("occupation-table-content-modal");
+
+    if (!mainInput || !resultDisplay || !rerollSection || !rerollInput1 || !rerollInput2 || !rerollResult1 || !rerollResult2 || !modal || !showModalBtn || !closeModalBtn || !tablesContainer) return;
+
+    tablesContainer.innerHTML = createOccupationTableHtml(occupations);
+
+    function getOccupationCardHtml(roll) {
+        const occupationRoll = Math.ceil(roll / 2);
+        if (occupationRoll >= 1 && occupationRoll <= 50) {
+            const item = occupations[occupationRoll - 1];
+            return `<div class="occupation-result-card"><h3>${item.occupation}</h3><p>${item.benefit}</p></div>`;
+        }
+        return "";
+    }
+
+    mainInput.addEventListener("input", () => {
+        const d100roll = parseInt(mainInput.textContent, 10);
+        const occupationRoll = Math.ceil(d100roll / 2);
+
+        if (d100roll >= 1 && d100roll <= 100) {
+            const item = occupations[occupationRoll - 1];
+            resultDisplay.innerHTML = `<div class="occupation-result-card"><h3>${item.occupation}</h3><p>${item.benefit}</p></div>`;
+            
+            if (occupationRoll === 50) {
+                rerollSection.style.display = "block";
+            } else {
+                rerollSection.style.display = "none";
+            }
+        } else {
+            resultDisplay.innerHTML = "";
+            rerollSection.style.display = "none";
+        }
+    });
+
+    rerollInput1.addEventListener("input", () => {
+        const d100roll = parseInt(rerollInput1.textContent, 10);
+        rerollResult1.innerHTML = getOccupationCardHtml(d100roll);
+    });
+
+    rerollInput2.addEventListener("input", () => {
+        const d100roll = parseInt(rerollInput2.textContent, 10);
+        rerollResult2.innerHTML = getOccupationCardHtml(d100roll);
+    });
+
+    showModalBtn.addEventListener("click", () => modal.classList.add("active"));
+    closeModalBtn.addEventListener("click", () => modal.classList.remove("active"));
+    modal.addEventListener("click", (e) => {
+        if (e.target === modal) modal.classList.remove("active");
+    });
+}
+
 
 // --- Guild Name Generator ---
 const guildNamePart1 = [
