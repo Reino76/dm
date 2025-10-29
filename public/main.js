@@ -1,236 +1,262 @@
-let initiativeList = [];
-let ws;
+/**
+ * main.js
+ *
+ * Core logic for the DM Screen application.
+ * This file is structured to be modular, efficient, and maintainable.
+ *
+ * 1. Waits for DOM to load.
+ * 2. Caches all DOM elements into a single 'DOM' object.
+ * 3. Initializes all application modules (Tabs, WebSockets, Generators, etc.).
+ * 4. Uses a 'state' object to manage application state (initiativeList, ws).
+ */
 
+// Wait for the DOM to be fully loaded before running any script
 document.addEventListener("DOMContentLoaded", () => {
-  setupWebSocket();
-  setupTabs();
-  setupInitiativeTracker();
-  setupSettings();
-  setupRoadmap();
-  setupCollapsibleCards();
-  setupOmenRoller();
-  setupGuildSelection();
-  setupGuildNameGenerator();
-  setupCharacterNameGenerator();
-  setupOccupationGenerator();
-  setupVirtueGenerator();
-  setupViceGenerator();
-  setupMerchantMode();
+  
+  // Application state container
+  const state = {
+    initiativeList: [],
+    ws: null,
+    merchantMode: localStorage.getItem("merchantModeActive") === "true",
+  };
+
+  // Centralized DOM element references
+  const DOM = cacheDOMElements();
+
+  // Initialize all application components
+  initApp(DOM, state);
 });
 
-function setupWebSocket() {
+/**
+ * Caches all required DOM elements for the application.
+ * This prevents repeated, inefficient DOM queries.
+ * @returns {object} An object containing all cached DOM elements.
+ */
+function cacheDOMElements() {
+  return {
+    // Global
+    gameSelect: document.getElementById("game-select"),
+    openPlayerBtn: document.getElementById("open-player-window-btn"),
+    merchant: {
+      indicator: document.getElementById("merchant-mode-indicator"),
+      enableBtn: document.getElementById("enable-merchant-mode-btn"),
+      disableBtn: document.getElementById("disable-merchant-mode"),
+    },
+    // Tabs
+    tabsContainer: document.querySelector(".tabs"),
+    tabContents: document.querySelectorAll(".tab-content"),
+    // DM Screen
+    dndTracker: document.getElementById("dnd-initiative-tracker"),
+    dreadNightsScreen: document.getElementById("dread-nights-active-screen"),
+    // Initiative
+    init: {
+      form: document.getElementById("initiative-form"),
+      name: document.getElementById("init-name"),
+      roll: document.getElementById("init-roll"),
+      class: document.getElementById("init-class"),
+      list: document.getElementById("initiative-list"),
+      sortBtn: document.getElementById("sort-init"),
+      clearBtn: document.getElementById("clear-init"),
+    },
+    // Prep Roadmap
+    prep: {
+      container: document.querySelector(".prep-layout"),
+      roadmapSteps: document.querySelectorAll(".prep-roadmap-step"),
+      contentSteps: document.querySelectorAll(".prep-content-step"),
+      guildCards: document.querySelectorAll(".guild-card"),
+      merchantCard: document.querySelector("[data-guild='Merchant']"),
+    },
+    // Generators
+    generators: {
+      guildName: {
+        input1: document.getElementById("guild-name-input-1"),
+        input2: document.getElementById("guild-name-input-2"),
+        result: document.getElementById("guild-name-result"),
+      },
+      charName: {
+        input: document.getElementById("char-name-input"),
+        result: document.getElementById("char-name-result"),
+      },
+      occupation: {
+        input: document.getElementById("occupation-input"),
+        result: document.getElementById("occupation-result-display"),
+        rerollSection: document.getElementById("occupation-reroll-section"),
+        reroll1: document.getElementById("occupation-reroll-1"),
+        reroll2: document.getElementById("occupation-reroll-2"),
+        rerollResult1: document.getElementById("reroll-result-display-1"),
+        rerollResult2: document.getElementById("reroll-result-display-2"),
+      },
+      virtue: {
+        input: document.getElementById("virtue-input"),
+        result: document.getElementById("virtue-result-display"),
+      },
+      vice: {
+        input: document.getElementById("vice-input"),
+        result: document.getElementById("vice-result-display"),
+      },
+    },
+    // Omen
+    omen: {
+      rollBtn: document.getElementById("roll-omen"),
+      resultEl: document.querySelector("#omen-result span"),
+    },
+    // Modals
+    modals: {
+      guildName: {
+        trigger: document.getElementById("toggle-name-tables-modal"),
+        modal: document.getElementById("name-tables-modal"),
+        close: document.getElementById("close-name-tables-modal"),
+        content: document.getElementById("name-tables-content-modal"),
+      },
+      charName: {
+        trigger: document.getElementById("toggle-char-name-table-modal"),
+        modal: document.getElementById("char-name-table-modal"),
+        close: document.getElementById("close-char-name-table-modal"),
+        content: document.getElementById("char-name-table-content-modal"),
+      },
+      occupation: {
+        trigger: document.getElementById("toggle-occupation-table-modal"),
+        modal: document.getElementById("occupation-table-modal"),
+        close: document.getElementById("close-occupation-table-modal"),
+        content: document.getElementById("occupation-table-content-modal"),
+      },
+    }
+  };
+}
+
+/**
+ * Initializes all application functionality.
+ * @param {object} DOM - The cached DOM elements object.
+ * @param {object} state - The application state object.
+ */
+function initApp(DOM, state) {
+  // Networking
+  state.ws = setupWebSocket(state, DOM);
+  
+  // Core UI
+  setupTabs(DOM);
+  setupSettings(DOM, state);
+  setupCollapsibleCards(DOM);
+  setupMerchantMode(DOM, state);
+  DOM.openPlayerBtn.addEventListener("click", () => window.open('player.html', '_blank'));
+
+  // Prep Roadmap
+  setupRoadmap(DOM);
+  setupGuildSelection(DOM, state);
+  
+  // Generators
+  setupGuildNameGenerator(DOM.generators.guildName);
+  setupOccupationGenerator(DOM.generators.occupation);
+  setupOmenRoller(DOM.omen);
+
+  // Reusable generator setups
+  const cardRenderer = (item) => `<div class="occupation-result-card"><h3>${item.virtue || item.vice}</h3><p>${item.description}</p></div>`;
+  setupSimpleGenerator(DOM.generators.charName.input, DOM.generators.charName.result, characterNames, item => `<span>${item}</span>`);
+  setupSimpleGenerator(DOM.generators.virtue.input, DOM.generators.virtue.result, virtues, cardRenderer);
+  setupSimpleGenerator(DOM.generators.vice.input, DOM.generators.vice.result, vices, cardRenderer);
+
+  // Modals
+  setupModal(DOM.modals.guildName.trigger, DOM.modals.guildName.modal, DOM.modals.guildName.close);
+  setupModal(DOM.modals.charName.trigger, DOM.modals.charName.modal, DOM.modals.charName.close);
+  setupModal(DOM.modals.occupation.trigger, DOM.modals.occupation.modal, DOM.modals.occupation.close);
+
+  // DM Screen
+  setupInitiativeTracker(DOM, state);
+
+  // Populate dynamic content
+  populateGeneratorTables(DOM.modals);
+}
+
+// --- NETWORK FUNCTIONS ---
+
+function setupWebSocket(state, DOM) {
   const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-  ws = new WebSocket(`${wsProtocol}//${window.location.host}`);
+  const ws = new WebSocket(`${wsProtocol}//${window.location.host}`);
 
   ws.onopen = () => {
     console.log("WebSocket connected.");
-    broadcastGameChange(localStorage.getItem("gameSystem") || "Dread Nights");
+    broadcastGameChange(ws, localStorage.getItem("gameSystem") || "Dread Nights");
   };
   ws.onmessage = (event) => {
     const data = JSON.parse(event.data);
     if (data.type === "initiative-update") {
-      const isNewItem = data.payload.length > initiativeList.length;
-      initiativeList = data.payload;
-      renderInitiativeList(isNewItem); 
+      const isNewItem = data.payload.length > state.initiativeList.length;
+      state.initiativeList = data.payload;
+      renderInitiativeList(state.initiativeList, DOM.init.list, isNewItem); 
     }
   };
   ws.onclose = () => {
     console.log("WebSocket disconnected. Attempting to reconnect...");
-    setTimeout(setupWebSocket, 3000);
+    setTimeout(() => setupWebSocket(state, DOM), 3000);
   };
+  return ws;
 }
 
-function broadcastInitiativeList() {
+function broadcastInitiativeList(state) {
   const currentGame = localStorage.getItem("gameSystem") || "Dread Nights";
   if (currentGame !== "D&D 5e") return;
-  if (ws && ws.readyState === WebSocket.OPEN) {
-    ws.send(JSON.stringify({ type: "initiative-update", payload: initiativeList }));
+  if (state.ws && state.ws.readyState === WebSocket.OPEN) {
+    state.ws.send(JSON.stringify({ type: "initiative-update", payload: state.initiativeList }));
   }
 }
 
-function broadcastGameChange(gameName) {
+function broadcastGameChange(ws, gameName) {
   if (ws && ws.readyState === WebSocket.OPEN) {
     ws.send(JSON.stringify({ type: "game-change", payload: gameName }));
   }
 }
 
-function setupTabs() {
-  const tabs = document.querySelectorAll(".tab-button");
-  const contents = document.querySelectorAll(".tab-content");
+// --- CORE UI FUNCTIONS ---
 
-  function showTab(tabId) {
-    contents.forEach(c => c.classList.remove('active'));
-    tabs.forEach(b => b.classList.remove('active'));
-    const content = document.getElementById(tabId);
-    const tab = document.querySelector(`[data-tab="${tabId}"]`);
-    if (content) content.classList.add('active');
-    if (tab) tab.classList.add('active');
-  }
+function setupTabs(DOM) {
+  DOM.tabsContainer.addEventListener("click", (e) => {
+    const clickedTab = e.target.closest(".tab-button");
+    if (!clickedTab) return;
 
-  tabs.forEach(btn => btn.addEventListener("click", () => showTab(btn.dataset.tab)));
-  showTab("tab-prep");
-}
+    const tabId = clickedTab.dataset.tab;
+    
+    // Update tab buttons
+    DOM.tabsContainer.querySelectorAll(".tab-button").forEach(btn => {
+      btn.classList.toggle("active", btn === clickedTab);
+    });
 
-function setupInitiativeTracker() {
-  const addBtn = document.getElementById("add-to-init");
-  const sortBtn = document.getElementById("sort-init");
-  const clearBtn = document.getElementById("clear-init");
-  
-  if(addBtn) addBtn.addEventListener("click", addToInitiative);
-  if(sortBtn) sortBtn.addEventListener("click", sortInitiative);
-  if(clearBtn) clearBtn.addEventListener("click", clearInitiative);
-}
-
-function addToInitiative() {
-  const nameEl = document.getElementById("init-name");
-  const rollEl = document.getElementById("init-roll");
-  const classEl = document.getElementById("init-class");
-  const name = nameEl.value.trim();
-  const roll = parseInt(rollEl.value, 10);
-  const iconClass = classEl.value;
-
-  if (name && !isNaN(roll)) {
-    initiativeList.push({ name, roll, iconClass });
-    nameEl.value = "";
-    rollEl.value = "";
-    renderInitiativeList(true);
-    broadcastInitiativeList();
-  }
-}
-
-function sortInitiative() {
-  initiativeList.sort((a, b) => b.roll - a.roll);
-  renderInitiativeList(false);
-  broadcastInitiativeList();
-}
-
-function clearInitiative() {
-  initiativeList = [];
-  renderInitiativeList(false);
-  broadcastInitiativeList();
-}
-
-function renderInitiativeList(animateNew) {
-  const listEl = document.getElementById("initiative-list");
-  if(!listEl) return;
-  listEl.innerHTML = "";
-
-  initiativeList.forEach((item, index) => {
-    const li = document.createElement("li");
-    const infoDiv = document.createElement("div");
-    infoDiv.className = "init-info";
-    const icon = document.createElement("i");
-    icon.className = item.iconClass;
-    infoDiv.appendChild(icon);
-    const nameSpan = document.createElement("span");
-    nameSpan.className = "init-name";
-    nameSpan.textContent = item.name;
-    infoDiv.appendChild(nameSpan);
-    li.appendChild(infoDiv);
-    const rollSpan = document.createElement("span");
-    rollSpan.className = "init-roll";
-    rollSpan.textContent = item.roll;
-    li.appendChild(rollSpan);
-
-    if (animateNew && index === initiativeList.length - 1) {
-      li.classList.add("new-item-pop");
-      setTimeout(() => li.classList.remove("new-item-pop"), 600);
-      const sparkleContainer = document.createElement("div");
-      sparkleContainer.className = "sparkle-container";
-      for (let i = 0; i < 5; i++) {
-        const spark = document.createElement("span");
-        spark.className = "spark";
-        spark.style.transform = `rotate(${i * 72}deg)`; 
-        sparkleContainer.appendChild(spark);
-      }
-      infoDiv.appendChild(sparkleContainer);
-      setTimeout(() => sparkleContainer.remove(), 1000);
-    }
-    listEl.appendChild(li);
+    // Update tab content
+    DOM.tabContents.forEach(content => {
+      content.classList.toggle("active", content.id === tabId);
+    });
   });
 }
 
-function setupSettings() {
-  const gameSelect = document.getElementById("game-select");
-  if(!gameSelect) return;
+function setupSettings(DOM, state) {
+  if (!DOM.gameSelect) return;
 
   const currentGame = localStorage.getItem("gameSystem") || "Dread Nights";
-  gameSelect.value = currentGame;
-  updateDmScreen(currentGame);
+  DOM.gameSelect.value = currentGame;
+  updateDmScreen(DOM, currentGame);
 
-  gameSelect.addEventListener("change", () => {
-    const selectedGame = gameSelect.value;
+  DOM.gameSelect.addEventListener("change", () => {
+    const selectedGame = DOM.gameSelect.value;
     localStorage.setItem("gameSystem", selectedGame);
-    updateDmScreen(selectedGame);
-    broadcastGameChange(selectedGame);
+    updateDmScreen(DOM, selectedGame);
+    broadcastGameChange(state.ws, selectedGame);
     if (selectedGame !== "D&D 5e") {
-      clearInitiative();
+      clearInitiative(state, DOM);
     }
   });
 }
 
-function updateDmScreen(gameName) {
-  const dndTracker = document.getElementById("dnd-initiative-tracker");
-  const dreadNightsScreen = document.getElementById("dread-nights-active-screen");
-
-  if(!dndTracker || !dreadNightsScreen) return;
-
-  if (gameName === "D&D 5e") {
-    dndTracker.style.display = "block";
-    dreadNightsScreen.style.display = "none";
-  } else {
-    dndTracker.style.display = "none";
-    dreadNightsScreen.style.display = "block";
-  }
+function updateDmScreen(DOM, gameName) {
+  if (!DOM.dndTracker || !DOM.dreadNightsScreen) return;
+  
+  const isDnd = (gameName === "D&D 5e");
+  DOM.dndTracker.classList.toggle("hidden", !isDnd);
+  DOM.dreadNightsScreen.classList.toggle("hidden", isDnd);
 }
 
-function setupRoadmap() {
-    const roadmapSteps = document.querySelectorAll(".prep-roadmap-step");
-    const contentSteps = document.querySelectorAll(".prep-content-step");
-    const nextButtons = document.querySelectorAll(".prep-nav .btn-next-step");
-    const prevButtons = document.querySelectorAll(".prep-nav .btn-prev-step");
-    const resetButton = document.getElementById("reset-roadmap-new");
-
-    function activateStep(stepId) {
-        const id = parseInt(stepId, 10);
-
-        roadmapSteps.forEach(step => {
-            const currentStepId = parseInt(step.dataset.step, 10);
-            step.classList.toggle('active', currentStepId === id);
-            step.classList.toggle('completed', currentStepId < id);
-        });
-
-        contentSteps.forEach(content => {
-            content.classList.toggle('active', content.dataset.stepContent === stepId);
-        });
-    }
-
-    roadmapSteps.forEach(step => {
-        step.addEventListener("click", () => {
-            activateStep(step.dataset.step);
-        });
-    });
-
-    nextButtons.forEach(button => {
-        button.addEventListener("click", () => {
-            activateStep(button.dataset.next);
-        });
-    });
-
-    prevButtons.forEach(button => {
-        button.addEventListener("click", () => {
-            activateStep(button.dataset.prev);
-        });
-    });
-    
-    if(resetButton){
-        resetButton.addEventListener("click", () => activateStep("1"));
-    }
-
-    activateStep("1");
-}
-
-function setupCollapsibleCards() {
+function setupCollapsibleCards(DOM) {
+  // Use event delegation on a common ancestor if possible, e.g., document
+  // For simplicity, we'll attach to all headers if they are dynamic.
+  // Assuming they are static as per the HTML:
   const cardHeaders = document.querySelectorAll(".card-header");
   cardHeaders.forEach(header => {
     header.addEventListener("click", () => {
@@ -240,77 +266,206 @@ function setupCollapsibleCards() {
   });
 }
 
-function setupOmenRoller() {
-  const rollBtn = document.getElementById("roll-omen");
-  const resultEl = document.querySelector("#omen-result span");
-
-  if (!rollBtn || !resultEl) return;
-
-  rollBtn.addEventListener("click", () => {
-    rollBtn.classList.add("rolling");
-    setTimeout(() => rollBtn.classList.remove("rolling"), 500);
-    const result = Math.floor(Math.random() * 2) + 1;
-    setTimeout(() => {
-        resultEl.textContent = result;
-        resultEl.parentElement.classList.add('tada');
-        setTimeout(() => resultEl.parentElement.classList.remove('tada'), 700);
-    }, 250);
+/**
+ * Sets up a generic modal toggle.
+ * @param {HTMLElement} trigger - The button that opens the modal.
+ * @param {HTMLElement} modal - The modal overlay element.
+ * @param {HTMLElement} close - The button that closes the modal.
+ */
+function setupModal(trigger, modal, close) {
+  if (!trigger || !modal || !close) return;
+  
+  trigger.addEventListener("click", () => modal.classList.add("active"));
+  close.addEventListener("click", () => modal.classList.remove("active"));
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) {
+      modal.classList.remove("active");
+    }
   });
 }
 
-function setupGuildSelection() {
-  const guildCards = document.querySelectorAll(".guild-card");
-  if (guildCards.length === 0) return;
+// --- INITIATIVE TRACKER FUNCTIONS ---
 
-  guildCards.forEach(card => {
-    if (card.dataset.guild !== "Merchant") {
-        card.addEventListener("click", () => {
-            guildCards.forEach(c => c.classList.remove("selected"));
-            card.classList.add("selected");
-            localStorage.setItem("merchantModeActive", "false");
-            document.getElementById("merchant-mode-indicator").style.display = "none";
-            applyDiscounts(false);
-        });
+function setupInitiativeTracker(DOM, state) {
+  if (!DOM.init.form) return;
+
+  DOM.init.form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    addToInitiative(state, DOM);
+  });
+  
+  DOM.init.sortBtn.addEventListener("click", () => sortInitiative(state, DOM));
+  DOM.init.clearBtn.addEventListener("click", () => clearInitiative(state, DOM));
+}
+
+function addToInitiative(state, DOM) {
+  const name = DOM.init.name.value.trim();
+  const roll = parseInt(DOM.init.roll.value, 10);
+  const iconClass = DOM.init.class.value;
+
+  if (name && !isNaN(roll)) {
+    state.initiativeList.push({ name, roll, iconClass });
+    DOM.init.name.value = "";
+    DOM.init.roll.value = "";
+    renderInitiativeList(state.initiativeList, DOM.init.list, true);
+    broadcastInitiativeList(state);
+  }
+}
+
+function sortInitiative(state, DOM) {
+  state.initiativeList.sort((a, b) => b.roll - a.roll);
+  renderInitiativeList(state.initiativeList, DOM.init.list, false);
+  broadcastInitiativeList(state);
+}
+
+function clearInitiative(state, DOM) {
+  state.initiativeList = [];
+  renderInitiativeList(state.initiativeList, DOM.init.list, false);
+  broadcastInitiativeList(state);
+}
+
+function renderInitiativeList(initiativeList, listEl, animateNew) {
+  if (!listEl) return;
+  listEl.innerHTML = "";
+
+  initiativeList.forEach((item, index) => {
+    const li = document.createElement("li");
+    
+    const infoDiv = document.createElement("div");
+    infoDiv.className = "init-info";
+    const icon = document.createElement("i");
+    icon.className = item.iconClass;
+    const nameSpan = document.createElement("span");
+    nameSpan.className = "init-name";
+    nameSpan.textContent = item.name;
+    infoDiv.append(icon, nameSpan);
+    
+    const rollSpan = document.createElement("span");
+    rollSpan.className = "init-roll";
+    rollSpan.textContent = item.roll;
+    
+    li.append(infoDiv, rollSpan);
+
+    if (animateNew && index === initiativeList.length - 1) {
+      li.classList.add("new-item-pop");
+      const sparkleContainer = document.createElement("div");
+      sparkleContainer.className = "sparkle-container";
+      for (let i = 0; i < 5; i++) {
+        const spark = document.createElement("span");
+        spark.className = "spark";
+        spark.style.transform = `rotate(${i * 72}deg)`;
+        sparkleContainer.appendChild(spark);
+      }
+      infoDiv.appendChild(sparkleContainer);
+      setTimeout(() => sparkleContainer.remove(), 1000);
+      setTimeout(() => li.classList.remove("new-item-pop"), 600);
+    }
+    listEl.appendChild(li);
+  });
+}
+
+// --- PREP ROADMAP FUNCTIONS ---
+
+function setupRoadmap(DOM) {
+  if (!DOM.prep.container) return;
+
+  const activateStep = (stepId) => {
+    const id = parseInt(stepId, 10);
+
+    DOM.prep.roadmapSteps.forEach(step => {
+      const currentStepId = parseInt(step.dataset.step, 10);
+      step.classList.toggle('active', currentStepId === id);
+      step.classList.toggle('completed', currentStepId < id);
+    });
+
+    DOM.prep.contentSteps.forEach(content => {
+      content.classList.toggle('active', content.dataset.stepContent === stepId);
+    });
+  };
+
+  // Use event delegation
+  DOM.prep.container.addEventListener("click", (e) => {
+    const nextBtn = e.target.closest(".btn-next-step");
+    if (nextBtn) {
+      activateStep(nextBtn.dataset.next);
+      return;
+    }
+
+    const prevBtn = e.target.closest(".btn-prev-step");
+    if (prevBtn) {
+      activateStep(prevBtn.dataset.prev);
+      return;
+    }
+
+    const roadmapStep = e.target.closest(".prep-roadmap-step");
+    if (roadmapStep) {
+      activateStep(roadmapStep.dataset.step);
+      return;
+    }
+
+    const resetBtn = e.target.closest("#reset-roadmap-new");
+    if (resetBtn) {
+      activateStep("1");
+      return;
     }
   });
 
-  const merchantButton = document.getElementById("enable-merchant-mode-btn");
-  if (merchantButton) {
-      merchantButton.addEventListener("click", () => {
-        const merchantCard = document.querySelector("[data-guild='Merchant']");
-        guildCards.forEach(c => c.classList.remove("selected"));
-        if(merchantCard) merchantCard.classList.add("selected");
-        localStorage.setItem("merchantModeActive", "true");
-        document.getElementById("merchant-mode-indicator").style.display = "block";
-        applyDiscounts(true);
-      });
-  }
+  // Initial setup
+  activateStep("1");
 }
 
-function setupMerchantMode() {
-  const merchantMode = localStorage.getItem("merchantModeActive");
-  if (merchantMode === "true") {
-    document.getElementById("merchant-mode-indicator").style.display = "block";
-    const merchantCard = document.querySelector("[data-guild='Merchant']");
-    if(merchantCard) merchantCard.classList.add("selected");
-    applyDiscounts(true);
-  }
+function setupGuildSelection(DOM, state) {
+  if (DOM.prep.guildCards.length === 0) return;
 
-  const disableButton = document.getElementById("disable-merchant-mode");
-  if(disableButton) {
-    disableButton.addEventListener("click", () => {
-      localStorage.setItem("merchantModeActive", "false");
-      document.getElementById("merchant-mode-indicator").style.display = "none";
-      const merchantCard = document.querySelector("[data-guild='Merchant']");
-      if(merchantCard) merchantCard.classList.remove("selected");
-      applyDiscounts(false);
+  DOM.prep.guildCards.forEach(card => {
+    // Non-merchant cards
+    if (card.dataset.guild !== "Merchant") {
+      card.addEventListener("click", () => {
+        DOM.prep.guildCards.forEach(c => c.classList.remove("selected"));
+        card.classList.add("selected");
+        setMerchantMode(DOM, state, false);
+      });
+    }
+  });
+
+  // Merchant card button
+  if (DOM.merchant.enableBtn) {
+    DOM.merchant.enableBtn.addEventListener("click", (e) => {
+      e.stopPropagation(); // Prevent card click from firing
+      DOM.prep.guildCards.forEach(c => c.classList.remove("selected"));
+      if (DOM.prep.merchantCard) DOM.prep.merchantCard.classList.add("selected");
+      setMerchantMode(DOM, state, true);
     });
   }
 }
 
+function setupMerchantMode(DOM, state) {
+  // Set initial state from localStorage
+  if (state.merchantMode) {
+    DOM.merchant.indicator.classList.remove("hidden");
+    if (DOM.prep.merchantCard) DOM.prep.merchantCard.classList.add("selected");
+    applyDiscounts(true);
+  }
+
+  // Disable button
+  if (DOM.merchant.disableBtn) {
+    DOM.merchant.disableBtn.addEventListener("click", () => {
+      setMerchantMode(DOM, state, false);
+      if (DOM.prep.merchantCard) DOM.prep.merchantCard.classList.remove("selected");
+    });
+  }
+}
+
+function setMerchantMode(DOM, state, isActive) {
+  state.merchantMode = isActive;
+  localStorage.setItem("merchantModeActive", isActive ? "true" : "false");
+  DOM.merchant.indicator.classList.toggle("hidden", !isActive);
+  applyDiscounts(isActive);
+}
+
 function applyDiscounts(active) {
   // This is a placeholder function. 
-  // When the shop is implemented, this function should be updated to apply/remove the 25% discount.
+  // When the shop is implemented, this function should be updated.
   if (active) {
     console.log("Merchant mode activated. Applying 25% discount.");
   } else {
@@ -318,80 +473,155 @@ function applyDiscounts(active) {
   }
 }
 
-const characterNames = [
-  "Robert", "Louis", "Stevenson", "Spike", "Straker", "Carroll", "Hellsing", "Wells", "Mary", "Cushing",
-  "Ned", "Shelly", "Shreck", "Jonathan", "Corinthian", "Morris", "Modroon", "Bree", "Harker", "Meater",
-  "Lucy", "Clerval", "Drumschlik", "Lavenza", "Victor", "Ahab", "Ruthven", "Tithar", "Ada", "Forte",
-  "Faust", "Gray", "Oscar", "Todd", "Basker", "Dicken", "Dodger", "Victor", "Vlad", "George",
-  "William", "Alice", "Rowlveress", "Louis", "Rice", "Federico", "Douglas", "Madge", "Schmek", "Ordinary",
-  "Lee", "Sater", "Dedlock", "Dolly", "Mason", "Tallywag", "Ceridwen", "Pipes", "Twist", "Griffin",
-  "Kemp", "Prendick", "Dolly", "Gregson", "Lestrade", "Kessler", "Gilgamesh", "Aino", "Lovelace", "Talbot",
-  "Lipwig", "Wolfgang", "Fryderi", "Lugosi", "Holmwood", "Vanko", "Villarias", "Carradine", "D'Arcy", "Naschy",
-  "O'Keeffe", "Oldman", "Warren", "McTavish", "Babbage", "Carpenter", "Sam", "Coraline", "Numiner", "Dante",
-  "Montgomery", "Marley", "Grendel", "Barker", "Summerson", "Riou", "Dorothy", "Gray", "Hyde", "Moriarty"
-];
+// --- GENERATOR FUNCTIONS ---
 
-function setupCharacterNameGenerator() {
-    const input = document.getElementById("d100-char-name-input");
-    const resultEl = document.getElementById("char-name-result");
-    const modal = document.getElementById("char-name-table-modal");
-    const showModalBtn = document.getElementById("toggle-char-name-table-modal");
-    const closeModalBtn = document.getElementById("close-char-name-table-modal");
-    const tablesContainer = document.getElementById("char-name-table-content-modal");
-
-    if (!input || !resultEl || !modal || !showModalBtn || !closeModalBtn || !tablesContainer) return;
-
-    const tableHtml = createTableHtml(characterNames, "Hahmon Nimet");
-    tablesContainer.innerHTML = `<div class="name-table-wrapper">${tableHtml}</div>`;
-
-    function generateName() {
-        const roll = parseInt(input.textContent, 10);
-
-        if (roll >= 1 && roll <= 100) {
-            const name = characterNames[roll - 1];
-            resultEl.innerHTML = `<span>${name}</span>`;
-        } else {
-            resultEl.innerHTML = "<span>-</span>";
-        }
-    }
-
-    input.addEventListener("input", generateName);
-
-    showModalBtn.addEventListener("click", () => modal.classList.add("active"));
-    closeModalBtn.addEventListener("click", () => modal.classList.remove("active"));
-    modal.addEventListener("click", (e) => {
-        if (e.target === modal) modal.classList.remove("active");
-    });
+/**
+ * Populates all generator tables in their modals.
+ * @param {object} modalDOM - The modal part of the DOM cache.
+ */
+function populateGeneratorTables(modalDOM) {
+  if (modalDOM.guildName.content) {
+    const table1 = createSimpleNameTable(guildNamePart1, "Table 1");
+    const table2 = createSimpleNameTable(guildNamePart2, "Table 2 (Red)");
+    modalDOM.guildName.content.innerHTML = `
+      <div class="name-table-wrapper">${table1}</div>
+      <div class="name-table-wrapper">${table2}</div>
+    `;
+  }
+  if (modalDOM.charName.content) {
+    modalDOM.charName.content.innerHTML = `<div class="name-table-wrapper">${createSimpleNameTable(characterNames, "Hahmon Nimet")}</div>`;
+  }
+  if (modalDOM.occupation.content) {
+    modalDOM.occupation.content.innerHTML = createOccupationTableHtml(occupations);
+  }
 }
 
-const occupations = [
-  { occupation: "Teurastaja", benefit: "+1 STR" }, { occupation: "Leipuri", benefit: "+1 PRC" },
-  { occupation: "Kynttiläntekijä", benefit: "Kantaa aina kynttilää" }, { occupation: "Rotanpyydystäjä", benefit: "+1 TGH" },
-  { occupation: "Konstaapeli", benefit: "Pamppu" }, { occupation: "Kulkuri", benefit: "1 Satunainen Esine" },
-  { occupation: "Vartija", benefit: "+1 PRC" }, { occupation: "Rahakas", benefit: "5 Shillinkiä" },
-  { occupation: "Akateemikko", benefit: "+1 PRC" }, { occupation: "Apteekkari", benefit: "+1 TGH" },
-  { occupation: "Savimaakari", benefit: "+1 AGT" }, { occupation: "Panimomies", benefit: "Viski" },
-  { occupation: "Kirurki", benefit: "1 Tohtorin laukku" }, { occupation: "Leikkaaja", benefit: "1 Veitsi" },
-  { occupation: "Haudankaivaja", benefit: "1 Lapio" }, { occupation: "Valelääkäri", benefit: "1 Ihmeparannusaine" },
-  { occupation: "Lalvamies", benefit: "1 Kalastusverkko" }, { occupation: "Patomies", benefit: "1 Kivivasara" },
-  { occupation: "Teloittaja", benefit: "1 Kirves" }, { occupation: "Tohtori", benefit: "1 Tohtorin laukku" },
-  { occupation: "Kalastaja", benefit: "1 Kala" }, { occupation: "Lasipuhaltaja", benefit: "1 Oil Lamp" },
-  { occupation: "Asoseppä", benefit: "1 Pistooli" }, { occupation: "Vaatturi", benefit: "5 Shillinkiä" },
-  { occupation: "Rottiensyöjä", benefit: "1 Satunainen esine" }, { occupation: "Käsityöläinen", benefit: "1 Varras" },
-  { occupation: "Tanssija", benefit: "+1 AGT" }, { occupation: "Asekeräiljä", benefit: "1 Satunainen Ase" },
-  { occupation: "Viemärityöläinen", benefit: "1 Lapio" }, { occupation: "Sahaaja", benefit: "1 Saha" },
-  { occupation: "Mylläri", benefit: "1 Suolapussi" }, { occupation: "Varastoija", benefit: "1 Valkosipuli" },
-  { occupation: "Trokari", benefit: "1 Ihmeparannusaine" }, { occupation: "Neuloja", benefit: "1 Hat Pin" },
-  { occupation: "Hautavaras", benefit: "1 Lapio" }, { occupation: "Varas", benefit: "1 Tiirikka" },
-  { occupation: "Historioitsija", benefit: "1 Satunainen artifakti" }, { occupation: "Pastori", benefit: "+1 PRC" },
-  { occupation: "Seilori", benefit: "1 Vahattu takki" }, { occupation: "Ihmissusien Kauhu", benefit: "1 Silver Bullet" },
-  { occupation: "Valkosipulifarmare", benefit: "1 Valkosipuli" }, { occupation: "Nuorallakävelijä", benefit: "+1 AGT" },
-  { occupation: "Ruumilnavaaja", benefit: "+1 TGH" }, { occupation: "Peruukklentekijä", benefit: "1 Peruukki" },
-  { occupation: "Nuohooja", benefit: "1 Viski" }, { occupation: "Outo akateemikko", benefit: "1 Satunainen Pimeä Manuskripti" },
-  { occupation: "Portinvartija", benefit: "1 Satunainen Esine" }, { occupation: "Metallityöläinen", benefit: "1 Satunainen Ase" },
-  { occupation: "Dilleri", benefit: "Oopium!" }, { occupation: "Kaksoisvuoro", benefit: "Pyöritä kahdesti, ota molemmat." }
-];
+/**
+ * Sets up a simple generator with one input, one result, and a data array.
+ * @param {HTMLElement} inputEl - The <input> element.
+ * @param {HTMLElement} resultEl - The element to display the result in.
+ * @param {Array<string|object>} dataArray - The source data array.
+ * @param {Function} renderFn - A function that takes a data item and returns HTML.
+ */
+function setupSimpleGenerator(inputEl, resultEl, dataArray, renderFn) {
+  if (!inputEl || !resultEl) return;
 
+  inputEl.addEventListener("input", () => {
+    const roll = parseInt(inputEl.value, 10);
+    if (roll >= 1 && roll <= dataArray.length) {
+      const item = dataArray[roll - 1];
+      resultEl.innerHTML = renderFn(item);
+    } else {
+      resultEl.innerHTML = "";
+    }
+  });
+}
+
+function setupGuildNameGenerator(dom) {
+  if (!dom.input1 || !dom.input2 || !dom.result) return;
+
+  const generateName = () => {
+    const roll1 = parseInt(dom.input1.value, 10);
+    const roll2 = parseInt(dom.input2.value, 10);
+
+    if (roll1 >= 1 && roll1 <= 100 && roll2 >= 1 && roll2 <= 100) {
+      const name1 = guildNamePart1[roll1 - 1];
+      const name2 = guildNamePart2[roll2 - 1];
+      dom.result.innerHTML = `<span>${name1} ${name2}</span>`;
+    } else {
+      dom.result.innerHTML = "<span>-</span>";
+    }
+  };
+
+  dom.input1.addEventListener("input", generateName);
+  dom.input2.addEventListener("input", generateName);
+}
+
+function setupOccupationGenerator(dom) {
+  if (!dom.input || !dom.result || !dom.rerollSection) return;
+
+  const getOccupationCardHtml = (roll) => {
+    const occupationRoll = Math.ceil(roll / 2);
+    if (occupationRoll >= 1 && occupationRoll <= 50) {
+      const item = occupations[occupationRoll - 1];
+      return `<div class="occupation-result-card"><h3>${item.occupation}</h3><p>${item.benefit}</p></div>`;
+    }
+    return "";
+  };
+
+  dom.input.addEventListener("input", () => {
+    const d100roll = parseInt(dom.input.value, 10);
+    const occupationRoll = Math.ceil(d100roll / 2);
+
+    if (d100roll >= 1 && d100roll <= 100) {
+      const item = occupations[occupationRoll - 1];
+      dom.result.innerHTML = `<div class="occupation-result-card"><h3>${item.occupation}</h3><p>${item.benefit}</p></div>`;
+      dom.rerollSection.classList.toggle("hidden", occupationRoll !== 50);
+    } else {
+      dom.result.innerHTML = "";
+      dom.rerollSection.classList.add("hidden");
+    }
+  });
+
+  dom.reroll1.addEventListener("input", () => {
+    const d100roll = parseInt(dom.reroll1.value, 10);
+    dom.rerollResult1.innerHTML = getOccupationCardHtml(d100roll);
+  });
+
+  dom.reroll2.addEventListener("input", () => {
+    const d100roll = parseInt(dom.reroll2.value, 10);
+    dom.rerollResult2.innerHTML = getOccupationCardHtml(d100roll);
+  });
+}
+
+function setupOmenRoller(dom) {
+  if (!dom.rollBtn || !dom.resultEl) return;
+
+  dom.rollBtn.addEventListener("click", () => {
+    dom.rollBtn.classList.add("rolling");
+    setTimeout(() => dom.rollBtn.classList.remove("rolling"), 500);
+    
+    const result = Math.floor(Math.random() * 2) + 1;
+    
+    setTimeout(() => {
+      dom.resultEl.textContent = result;
+      dom.resultEl.parentElement.classList.add('tada');
+      setTimeout(() => dom.resultEl.parentElement.classList.remove('tada'), 700);
+    }, 250);
+  });
+}
+
+// --- UTILITY FUNCTIONS ---
+
+/**
+ * Creates an HTML table for a simple 1-column name list.
+ * @param {Array<string>} data - The array of names.
+ * @param {string} caption - The table caption.
+ * @returns {string} The HTML string for the table.
+ */
+function createSimpleNameTable(data, caption) {
+  let rows = data.map((name, index) => `<tr><td>${index + 1}</td><td>${name}</td></tr>`).join("");
+  return `
+    <table>
+      <caption>${caption}</caption>
+      <thead>
+        <tr>
+          <th>d${data.length}</th>
+          <th>Name</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows}
+      </tbody>
+    </table>
+  `;
+}
+
+/**
+ * Creates a specific HTML table for the occupations data.
+ * @param {Array<object>} data - The occupations array.
+ * @returns {string} The HTML string for the table.
+ */
 function createOccupationTableHtml(data) {
   let rows = data.map((item, index) => `<tr><td>${index + 1}</td><td>${item.occupation}</td><td>${item.benefit}</td></tr>`).join("");
   return `
@@ -409,238 +639,4 @@ function createOccupationTableHtml(data) {
       </tbody>
     </table>
   `;
-}
-
-function setupOccupationGenerator() {
-    const mainInput = document.getElementById("d100-occupation-input");
-    const resultDisplay = document.getElementById("occupation-result-display");
-    const rerollSection = document.getElementById("occupation-reroll-section");
-    const rerollInput1 = document.getElementById("d100-reroll-input-1");
-    const rerollInput2 = document.getElementById("d100-reroll-input-2");
-    const rerollResult1 = document.getElementById("reroll-result-display-1");
-    const rerollResult2 = document.getElementById("reroll-result-display-2");
-
-    const modal = document.getElementById("occupation-table-modal");
-    const showModalBtn = document.getElementById("toggle-occupation-table-modal");
-    const closeModalBtn = document.getElementById("close-occupation-table-modal");
-    const tablesContainer = document.getElementById("occupation-table-content-modal");
-
-    if (!mainInput || !resultDisplay || !rerollSection || !rerollInput1 || !rerollInput2 || !rerollResult1 || !rerollResult2 || !modal || !showModalBtn || !closeModalBtn || !tablesContainer) return;
-
-    tablesContainer.innerHTML = createOccupationTableHtml(occupations);
-
-    function getOccupationCardHtml(roll) {
-        const occupationRoll = Math.ceil(roll / 2);
-        if (occupationRoll >= 1 && occupationRoll <= 50) {
-            const item = occupations[occupationRoll - 1];
-            return `<div class="occupation-result-card"><h3>${item.occupation}</h3><p>${item.benefit}</p></div>`;
-        }
-        return "";
-    }
-
-    mainInput.addEventListener("input", () => {
-        const d100roll = parseInt(mainInput.textContent, 10);
-        const occupationRoll = Math.ceil(d100roll / 2);
-
-        if (d100roll >= 1 && d100roll <= 100) {
-            const item = occupations[occupationRoll - 1];
-            resultDisplay.innerHTML = `<div class="occupation-result-card"><h3>${item.occupation}</h3><p>${item.benefit}</p></div>`;
-            
-            if (occupationRoll === 50) {
-                rerollSection.style.display = "block";
-            } else {
-                rerollSection.style.display = "none";
-            }
-        } else {
-            resultDisplay.innerHTML = "";
-            rerollSection.style.display = "none";
-        }
-    });
-
-    rerollInput1.addEventListener("input", () => {
-        const d100roll = parseInt(rerollInput1.textContent, 10);
-        rerollResult1.innerHTML = getOccupationCardHtml(d100roll);
-    });
-
-    rerollInput2.addEventListener("input", () => {
-        const d100roll = parseInt(rerollInput2.textContent, 10);
-        rerollResult2.innerHTML = getOccupationCardHtml(d100roll);
-    });
-
-    showModalBtn.addEventListener("click", () => modal.classList.add("active"));
-    closeModalBtn.addEventListener("click", () => modal.classList.remove("active"));
-    modal.addEventListener("click", (e) => {
-        if (e.target === modal) modal.classList.remove("active");
-    });
-}
-
-const guildNamePart1 = [
-  "The Bow", "The Legged", "The Dusty", "The Cossack", "The Crypt", "The Beast", "The Wet", "The Small", "The Tidy", "The Left",
-  "The Right", "The Lockwith", "The Bay", "The Angels", "The Red", "The Blue", "The Green", "The Immature", "The Poor", "The Wise",
-  "The Dead", "The Dense", "The Wednesday", "The Diabolical", "The Heavy", "The Panda", "The Penny", "The Dog", "The Cat", "The Dodo",
-  "The Police", "The Faith", "The Hidden", "The Silly", "The Hog", "The Dice", "The Terrible", "The Awful", "The Beautiful", "The Appalling",
-  "The Fearful", "The Grim", "The Silent", "The Long", "The Shocking", "The Harrowing", "The Shocking", "The Bloodless", "The Unspeakable", "The Stern",
-  "The Cynical", "The Ghastly", "The Bright", "The Dark", "The Cruel", "The Kind", "The Dingy", "The Bleak", "The Raven", "The Poe",
-  "The Dismal", "The Vicious", "The Savage", "The Broken", "The Fatalistic", "The Comedy", "The Neutral", "The Nameless", "The Sexy", "The Macabre",
-  "The Concerning", "The Worried", "The Morbid", "The Happy", "The Swell", "The Down", "The Up", "The Savage", "The Brutal", "The Pig",
-  "The Hatter", "The Mirthless", "The Mirthful", "The Harsh", "The Slack", "The Dutch", "The Unseen", "The Fresh", "The Breaded", "The Baked",
-  "The Crusty", "The Grumpy", "The Austere", "The Barbarous", "The Surely", "The Scowling", "The Sulky", "The Sour", "The Cold", "The Grave"
-];
-
-const guildNamePart2 = [
-  "Gang", "Crew", "Team", "Company", "Rooster", "Posse", "Corps", "Squad", "Crowd", "Collective",
-  "Force", "Herd", "Pack", "Tables", "Party", "Band", "Horde", "Throng", "Mob", "Detachment",
-  "Troop", "Faction", "Division", "Society", "Club", "League", "Circle", "Union", "Squares", "Box",
-  "Association", "Inc.", "Ring", "Set", "Coterie", "Section", "Partnership", "Cooperative", "Consortium", "Pub",
-  "Clique", "Batch", "Classification", "Class", "Category", "Guild", "Caucus", "Bloc", "Cabal", "Confederacy",
-  "Junta", "Cell", "Sect", "Clan", "Fellowship", "Fraternity", "Sorority", "Community", "Syndicate", "Nucleus",
-  "Commerce", "Society", "Lodge", "Affiliation", "Alliance", "Order", "Nation", "Federation", "Body", "College",
-  "School", "Relation", "Family", "Connection", "Link", "Amalgamation", "Trust", "Charity", "Business", "Private Entity",
-  "Cooperative", "Organization", "Structure", "Warband", "Administration", "Government", "Method", "System", "Operation", "Criminals",
-  "Prison", "Firm", "Film", "Fast", "Zoo", "Click", "Balance", "Streets", "Ghosts", "Demons"
-];
-
-function setupGuildNameGenerator() {
-    const input1 = document.getElementById("d100-input-1");
-    const input2 = document.getElementById("d100-input-2");
-    const resultEl = document.getElementById("guild-name-result"); // Corrected selector
-    const modal = document.getElementById("name-tables-modal");
-    const showModalBtn = document.getElementById("toggle-name-tables-modal");
-    const closeModalBtn = document.getElementById("close-name-tables-modal");
-    const tablesContainer = document.getElementById("name-tables-content-modal");
-
-    if (!input1 || !input2 || !resultEl || !modal || !showModalBtn || !closeModalBtn || !tablesContainer) return;
-
-    populateNameTables(tablesContainer);
-    
-    function generateName() {
-        const roll1 = parseInt(input1.textContent, 10);
-        const roll2 = parseInt(input2.textContent, 10);
-
-        if (roll1 >= 1 && roll1 <= 100 && roll2 >= 1 && roll2 <= 100) {
-            const name1 = guildNamePart1[roll1 - 1];
-            const name2 = guildNamePart2[roll2 - 1];
-            resultEl.innerHTML = `<span>${name1} ${name2}</span>`; // Use innerHTML
-        } else {
-            resultEl.innerHTML = "<span>-</span>"; // Use innerHTML
-        }
-    }
-
-    input1.addEventListener("input", generateName);
-    input2.addEventListener("input", generateName);
-
-    showModalBtn.addEventListener("click", () => modal.classList.add("active"));
-    closeModalBtn.addEventListener("click", () => modal.classList.remove("active"));
-    modal.addEventListener("click", (e) => {
-        if (e.target === modal) modal.classList.remove("active");
-    });
-}
-
-function populateNameTables(container) {
-  const table1 = createTableHtml(guildNamePart1, "Table 1");
-  const table2 = createTableHtml(guildNamePart2, "Table 2 (Red)");
-  container.innerHTML = `
-    <div class="name-table-wrapper">${table1}</div>
-    <div class="name-table-wrapper">${table2}</div>
-  `;
-}
-
-function createTableHtml(data, caption) {
-  let rows = data.map((name, index) => `<tr><td>${index + 1}</td><td>${name}</td></tr>`).join("");
-  return `
-    <table>
-      <caption>${caption}</caption>
-      <thead>
-        <tr>
-          <th>d100</th>
-          <th>Name</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${rows}
-      </tbody>
-    </table>
-  `;
-}
-
-const virtues = [
-    { virtue: "Aloittelija", description: "Ei hyvettä" },
-    { virtue: "Metsästäjä", description: "Kaatuneen vampyyrin lähellä voit käyttää varrasta ilmaiseksi." },
-    { virtue: "Toinen mahdollisuus", description: "Kuolonpelastuksen voi heittää uudelleen." },
-    { virtue: "Takoja", description: "Kaikki aseesi ovat aina hopeoituja." },
-    { virtue: "Epäuskoinen", description: "Pro testit joita pedot laittavat tekemään läpäistään aina." },
-    { virtue: "Verivala", description: "Immuuni infektioille." },
-    { virtue: "Kissansilmät", description: "Pimeys ei haittaa." },
-    { virtue: "Ei mitään", description: "Heitä uudelleen." },
-    { virtue: "Mighty Blow", description: "When using a Stone Hammer always deal 1 damage." },
-    { virtue: "Nopeat kädet", description: "Lataa ilmaisena tekona." },
-    { virtue: "Organisoitu", description: "Tilaa kolmelle lisätavaralle." },
-    { virtue: "Yhteyksissa", description: "Jos kaadut, saat kuolonpelastuksen automaattisesti ja uuden aseen." },
-    { virtue: "Puutyötaitoinen", description: "Vaarnat eivät vie tilaa ja omaa aina yhden." },
-    { virtue: "Tohtori", description: "Aloittaa aina ilmaisella tohtorin salkulla." },
-    { virtue: "Valkosipulifarmari", description: "Haisee niin pahalta että vampyyrit saavat -3 hyökkäyksiinsä häneen." },
-    { virtue: "Ylimistö", description: "Jos elää skenaarion lopussa, joukko saa 5 lisäshillinkiä." },
-    { virtue: "Ei mitään", description: "Heitä uudelleen" },
-    { virtue: "Kirottu", description: "Ei voi kuolla, mutta ei voi parantaa HPta." },
-    { virtue: "Likainen tappelija", description: "Nyrkit tekevät D4 vahinkoa ja saavat julma lisäosan." },
-    { virtue: "Koulutettu", description: "Valitse hyveesi itse!" },
-];
-
-function setupVirtueGenerator() {
-    const input = document.getElementById("d20-virtue-input");
-    const resultDisplay = document.getElementById("virtue-result-display");
-
-    if (!input || !resultDisplay) return;
-
-    input.addEventListener("input", () => {
-        const roll = parseInt(input.textContent, 10);
-
-        if (roll >= 1 && roll <= 20) {
-            const virtue = virtues[roll - 1];
-            resultDisplay.innerHTML = `<div class="occupation-result-card"><h3>${virtue.virtue}</h3><p>${virtue.description}</p></div>`;
-        } else {
-            resultDisplay.innerHTML = "";
-        }
-    });
-}
-
-const vices = [
-    { vice: "Sadekuuro", description: "Pyöritä kahdesti uudestaan. Molemmat." },
-    { vice: "Tupakanpolttaja", description: "Tgh -1 Agt -1" },
-    { vice: "Epäonnekas", description: "Pyöritä aina 20 uudestaan." },
-    { vice: "Kauhujen kangistama", description: "-3 etäiskuihin." },
-    { vice: "Lukutaidoton", description: "Ei voi lukea manuskripteja." },
-    { vice: "Anaphylaxis", description: "Ei voi kantaa valkosipulia." },
-    { vice: "Pelokas", description: "-3 Moraalitesteihin." },
-    { vice: "Selenophobia", description: "-3 kaikkeon täysikuun aikaan." },
-    { vice: "Heikkomieli", description: "Et läpäise infektiotestejä." },
-    { vice: "Epäkuolleiden pelko", description: "-3 kun taistelet epäkuolleita." },
-    { vice: "Kipeänä", description: "-1 Agt -1 Tgh" },
-    { vice: "Varastelija", description: "Varastaa 5 shillinkiä satunnaiselta jäseneltä." },
-    { vice: "Pimeän pelko", description: "Pitää aina olla valon lähellä." },
-    { vice: "Oppimaton", description: "Ei voi parantaa XP:llä." },
-    { vice: "Uninen", description: "-2 Pre." },
-    { vice: "Tautinen", description: "Joka skenaario alussa D4. +3 on sairas." },
-    { vice: "Vampyyripeko", description: "Jos vampyyreja on läsnä. Moraalitesti jatkuvasti." },
-    { vice: "Allergikko", description: "-1 jos vihollinen on eläimellinen." },
-    { vice: "Ylityö", description: "-1 Str" },
-    { vice: "Onnekas", description: "Ei pahetta." },
-];
-
-function setupViceGenerator() {
-    const input = document.getElementById("d20-vice-input");
-    const resultDisplay = document.getElementById("vice-result-display");
-
-    if (!input || !resultDisplay) return;
-
-    input.addEventListener("input", () => {
-        const roll = parseInt(input.textContent, 10);
-
-        if (roll >= 1 && roll <= 20) {
-            const vice = vices[roll - 1];
-            resultDisplay.innerHTML = `<div class="occupation-result-card"><h3>${vice.vice}</h3><p>${vice.description}</p></div>`;
-        } else {
-            resultDisplay.innerHTML = "";
-        }
-    });
 }

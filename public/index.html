@@ -2,46 +2,43 @@
 <html>
 <head>
 <title>DM Screen</title>
-<!-- Google Fonts (Updated to sharp "Inter") -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display.swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 
-<!-- Font Awesome CDN -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
 <link rel="stylesheet" href="style.css">
-<script src="main.js"></script>
+<script src="data.js" defer></script>
+<script src="main.js" defer></script>
 </head>
 <body>
 
 <div class="container">
   <div class="header">
-    <button id="show-player-window-btn" class="btn btn-secondary" onclick="window.open('player.html', '_blank');">
+    <button id="open-player-window-btn" class="btn btn-secondary">
       <i class="fas fa-window-restore"></i> Avaa pelaajan näyttö
     </button>
     
-    <!-- UPDATED: Game Select moved to header -->
     <div id="game-title-container">
       <select id="game-select">
         <option value="Dread Nights">Kauhun yöt</option>
         <option value="D&D 5e">D&D 5e</option>
       </select>
     </div>
-    <div id="merchant-mode-indicator" class="merchant-mode-indicator" style="display: none;">
+    <div id="merchant-mode-indicator" class="merchant-mode-indicator hidden">
       <span>Merchant Mode Active</span>
       <button id="disable-merchant-mode" class="btn btn-sm btn-danger">Disable</button>
     </div>
   </div>
 
   <div class="tabs">
-    <button class="tab-button" data-tab="tab-prep">Valmistelu</button>
-    <!-- REMOVED: Settings Tab -->
+    <button class="tab-button active" data-tab="tab-prep">Valmistelu</button>
+    <button class="tab-button" data-tab="tab-dm-screen">DM Screen</button>
   </div>
 
-  <div id="tab-prep" class="tab-content">
+  <div id="tab-prep" class="tab-content active">
     <div class="prep-layout">
-      <!-- Left Column: Roadmap -->
       <div class="prep-roadmap">
         <div class="prep-roadmap-step active" data-step="1">
           <span class="step-number">1</span>
@@ -77,9 +74,7 @@
         </div>
       </div>
 
-      <!-- Right Column: Content -->
       <div class="prep-content">
-        <!-- Step 1 Content -->
         <div class="prep-content-step active" data-step-content="1">
           <div class="guild-selection-container">
             <div class="guild-card" data-guild="Streetfolk">
@@ -135,13 +130,12 @@
           </div>
         </div>
 
-        <!-- Step 2 Content -->
         <div class="prep-content-step" data-step-content="2">
           <div class="name-generator-container">
             <div class="dice-indicator">d100</div>
             <div class="name-generator-inputs">
-              <div class="d100-input-square" contenteditable="true" id="d100-input-1"></div>
-              <div class="d100-input-square" contenteditable="true" id="d100-input-2"></div>
+              <input type="number" class="d-input-square" id="guild-name-input-1" min="1" max="100">
+              <input type="number" class="d-input-square" id="guild-name-input-2" min="1" max="100">
             </div>
             <h3 id="guild-name-result"><span>-</span></h3>
           </div>
@@ -152,12 +146,11 @@
           </div>
         </div>
 
-        <!-- Step 3 Content -->
         <div class="prep-content-step" data-step-content="3">
           <div class="name-generator-container">
             <div class="dice-indicator">d100</div>
             <div class="name-generator-inputs">
-              <div class="d100-input-square" contenteditable="true" id="d100-char-name-input"></div>
+              <input type="number" class="d-input-square" id="char-name-input" min="1" max="100">
             </div>
             <h3 id="char-name-result"><span>-</span></h3>
           </div>
@@ -168,26 +161,23 @@
           </div>
         </div>
 
-        <!-- Step 4 Content -->
         <div class="prep-content-step" data-step-content="4">
           <div class="name-generator-container">
             <div class="dice-indicator">d100</div>
             <div class="name-generator-inputs">
-              <div class="d100-input-square" contenteditable="true" id="d100-occupation-input"></div>
+              <input type="number" class="d-input-square" id="occupation-input" min="1" max="100">
             </div>
             <div id="occupation-result-display">
-              <!-- Result will be injected here -->
-            </div>
+              </div>
           </div>
 
-          <!-- Reroll section for roll 50 -->
-          <div id="occupation-reroll-section" style="display: none;">
+          <div id="occupation-reroll-section" class="hidden">
             <h4>Kaksoisvuoro! Syötä kaksi uutta d100-heittoa:</h4>
             <div class="name-generator-container">
               <div class="dice-indicator">d100</div>
               <div class="name-generator-inputs">
-                <div class="d100-input-square" contenteditable="true" id="d100-reroll-input-1"></div>
-                <div class="d100-input-square" contenteditable="true" id="d100-reroll-input-2"></div>
+                <input type="number" class="d-input-square" id="occupation-reroll-1" min="1" max="100">
+                <input type="number" class="d-input-square" id="occupation-reroll-2" min="1" max="100">
               </div>
               <div id="reroll-result-display-1" class="occupation-result-card"></div>
               <div id="reroll-result-display-2" class="occupation-result-card"></div>
@@ -202,24 +192,23 @@
           </div>
         </div>
 
-        <!-- Step 5 Content -->
         <div class="prep-content-step" data-step-content="5">
+          <h2>Vaihe 5: Stats</h2>
+          <p>Tähän tulee hahmon stat-blockien generointi tai syöttö.</p>
           <div class="prep-nav">
             <button class="btn btn-secondary btn-prev-step" data-prev="4"><i class="fas fa-arrow-left"></i> Edellinen</button>
             <button class="btn btn-next-step" data-next="6">Seuraava <i class="fas fa-arrow-right"></i></button>
           </div>
         </div>
 
-        <!-- Step 6 Content -->
         <div class="prep-content-step" data-step-content="6">
           <div class="name-generator-container">
             <div class="dice-indicator">d20</div>
             <div class="name-generator-inputs">
-              <div class="d100-input-square" contenteditable="true" id="d20-virtue-input"></div>
+              <input type="number" class="d-input-square" id="virtue-input" min="1" max="20">
             </div>
             <div id="virtue-result-display">
-              <!-- Result will be injected here -->
-            </div>
+              </div>
           </div>
           <div class="prep-nav">
             <button class="btn btn-secondary btn-prev-step" data-prev="5"><i class="fas fa-arrow-left"></i> Edellinen</button>
@@ -227,16 +216,14 @@
           </div>
         </div>
 
-        <!-- Step 7 Content -->
         <div class="prep-content-step" data-step-content="7">
           <div class="name-generator-container">
             <div class="dice-indicator">d20</div>
             <div class="name-generator-inputs">
-              <div class="d100-input-square" contenteditable="true" id="d20-vice-input"></div>
+              <input type="number" class="d-input-square" id="vice-input" min="1" max="20">
             </div>
             <div id="vice-result-display">
-              <!-- Result will be injected here -->
-            </div>
+              </div>
           </div>
           <div class="prep-nav">
             <button class="btn btn-secondary btn-prev-step" data-prev="6"><i class="fas fa-arrow-left"></i> Edellinen</button>
@@ -244,10 +231,13 @@
           </div>
         </div>
 
-        <!-- Step 8 Content -->
         <div class="prep-content-step" data-step-content="8">
           <h2>Vaihe 8: Omens</h2>
           <p>Heitä D2 jokaiselle pelaajalle määrittääksesi heidän Omen-numeronsa.</p>
+          <div class="omen-roller">
+            <button id="roll-omen" class="btn">Heitä Omen (d2)</button>
+            <div id="omen-result">Omen: <span>-</span></div>
+          </div>
           <div class="omen-options">
             <p><strong>1: Omen Effect 1 (Placeholder):</strong> Kuvaus Omen-efektille 1.</p>
             <p><strong>2: Omen Effect 2 (Placeholder):</strong> Kuvaus Omen-efektille 2.</p>
@@ -257,46 +247,85 @@
             <button id="reset-roadmap-new" class="btn btn-secondary">Aloita alusta</button>
           </div>
         </div>
+      </div> </div> </div> <div id="tab-dm-screen" class="tab-content">
+    
+    <div id="dnd-initiative-tracker" class="hidden">
+      <h3>Initiative Tracker (D&D 5e)</h3>
+      <form id="initiative-form">
+        <input type="text" id="init-name" placeholder="Character Name" required>
+        <select id="init-class">
+            <option value="fas fa-user-shield">Fighter</option>
+            <option value="fas fa-wand-magic-sparkles">Wizard</option>
+            <option value="fas fa-praying-hands">Cleric</option>
+            <option value="fas fa-mask">Rogue</option>
+            <option value="fas fa-paw">Druid</option>
+            <option value="fas fa-music">Bard</option>
+            <option value="fas fa-hammer">Paladin</option>
+            <option value="fas fa-bow-arrow">Ranger</option>
+            <option value="fas fa-dragon">Monster</option>
+            <option value="fas fa-user">NPC</option>
+        </select>
+        <input type="number" id="init-roll" placeholder="Roll" required>
+        <button type="submit" id="add-to-init" class="btn">Add</button>
+      </form>
+      <div class="init-controls" style="margin-top: 15px; display: flex; gap: 10px;">
+        <button id="sort-init" class="btn btn-secondary">Sort</button>
+        <button id="clear-init" class="btn btn-danger">Clear All</button>
+      </div>
+      <ul id="initiative-list" style="margin-top: 20px;"></ul>
+    </div>
+    
+    <div id="dread-nights-active-screen" class="hidden">
+      <h3>Dread Nights Screen</h3>
+      <p>Tähän voi lisätä Dread Nights -pelin hallintatyökaluja.</p>
+      <div class="card-grid">
+        <div class="card">
+          <div class="card-header">
+            <h3><i class="fas fa-book-skull"></i> Quick Rules</h3>
+            <button class="btn-collapse"><i class="fas fa-chevron-down"></i></button>
+          </div>
+          <div class="card-content">
+            <p><strong>Morale Check:</strong> Roll d20. On 1-3, flee. On 4-6, freeze.</p>
+            <p><strong>Infection:</strong> Roll d20 after being hit by undead...</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h3><i class="fas fa-map-signs"></i> Locations</h3>
+            <button class="btn-collapse"><i class="fas fa-chevron-down"></i></button>
+          </div>
+          <div class="card-content">
+            <p>The Old Church</p>
+            <p>The Foggy Docks</p>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-
-
-
-  <!-- REMOVED: Settings Tab -->
-
-</div> <!-- /container -->
-
-<!-- Guild Name Tables Modal -->
-<div id="name-tables-modal" class="modal-overlay">
+    
+  </div> </div> <div id="name-tables-modal" class="modal-overlay">
   <div class="modal-content modal-wide">
     <button id="close-name-tables-modal" class="modal-close-btn">&times;</button>
     <h2>Killan Nimen Taulukot</h2>
     <div id="name-tables-content-modal" class="name-tables-container">
-      <!-- Tables will be populated by JavaScript -->
-    </div>
+      </div>
   </div>
 </div>
 
-<!-- Char Name Table Modal -->
 <div id="char-name-table-modal" class="modal-overlay">
   <div class="modal-content modal-wide">
     <button id="close-char-name-table-modal" class="modal-close-btn">&times;</button>
     <h2>Hahmon Nimen Taulukko</h2>
     <div id="char-name-table-content-modal" class="name-tables-container">
-      <!-- Table will be populated by JavaScript -->
-    </div>
+      </div>
   </div>
 </div>
 
-<!-- Occupation Table Modal -->
 <div id="occupation-table-modal" class="modal-overlay">
   <div class="modal-content modal-wide">
     <button id="close-occupation-table-modal" class="modal-close-btn">&times;</button>
     <h2>Työnkuvien Taulukko</h2>
     <div id="occupation-table-content-modal" class="name-tables-container">
-      <!-- Table will be populated by JavaScript -->
-    </div>
+      </div>
   </div>
 </div>
 
