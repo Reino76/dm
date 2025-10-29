@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>DM Screen</title>
+<title>Pelinjohtajan näyttö</title>
 <!-- Google Fonts (Updated to sharp "Inter") -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,170 +17,280 @@
 
 <div class="container">
   <div class="header">
-    <h1 id="app-title">DM Screen</h1>
+    <h1 id="app-title">Pelinjohtajan näyttö</h1>
     <button id="show-player-link-btn" class="btn btn-secondary">
-      <i class="fas fa-link"></i> Show Player Link
+      <i class="fas fa-link"></i> Näytä pelaajan linkki
     </button>
     
     <!-- UPDATED: Game Select moved to header -->
     <div id="game-title-container">
       <select id="game-select">
-        <option value="Dread Nights">Dread Nights</option>
+        <option value="Dread Nights">Kauhun yöt</option>
         <option value="D&D 5e">D&D 5e</option>
       </select>
     </div>
   </div>
 
   <div class="tabs">
-    <button class="tab-button" data-tab="tab-prep">Prep</button>
-    <button class="tab-button" data-tab="tab-active">Active Screen</button>
+    <button class="tab-button" data-tab="tab-prep">Valmistelu</button>
+    <button class="tab-button" data-tab="tab-dm">Pelinjohtajan näyttö</button>
     <!-- REMOVED: Settings Tab -->
   </div>
 
-  <!-- Prep Tab -->
   <div id="tab-prep" class="tab-content">
-    <h2>Dread Nights: Character Prep</h2>
-    
-    <div id="roadmap-container">
-      
-      <!-- Step 1 (Active by default) -->
-      <div class="roadmap-step active" data-step="1">
-        <h3 class="roadmap-header">Step 1: The Concept</h3>
-        <div class="roadmap-content">
-          <p>Explain the core premise of Dread Nights. You are not heroes. You are survivors in a world consumed by darkness, armed with grit and a sliver of hope. Your goal is to survive, protect what little you have, and maybe, just maybe, fight back.</p>
-          <div class="roadmap-nav">
-            <!-- No Previous Button on Step 1 -->
-            <span></span> <!-- Empty span for flexbox alignment -->
-            <button class="btn btn-next-step" data-next="2">Next Step <i class="fas fa-arrow-right"></i></button>
-          </div>
+    <div class="prep-layout">
+      <!-- Left Column: Roadmap -->
+      <div class="prep-roadmap">
+        <div class="prep-roadmap-step active" data-step="1">
+          <span class="step-number">1</span>
+          <span class="step-title">Killat</span>
         </div>
-      </div>
-      
-      <!-- Step 2 -->
-      <div class="roadmap-step" data-step="2">
-        <h3 class="roadmap-header">Step 2: Core Attributes</h3>
-        <div class="roadmap-content">
-          <p>Have players assign their core attributes. In Dread Nights, these might be:</p>
-          <ul>
-            <li><strong>Grit (GRI):</strong> Your physical and mental fortitude.</li>
-            <li><strong>Instinct (INS):</strong> Your perception and cunning.</li>
-            <li><strong>Resolve (RES):</strong> Your willpower and resistance to terror.</li>
-            <li><strong>Flux (FLX):</strong> Your connection to the strange, unstable energies of the world.</li>
-          </ul>
-          <p>Explain what each one does and how to determine their starting scores.</p>
-          <div class="roadmap-nav">
-            <button class="btn btn-secondary btn-prev-step" data-prev="1"><i class="fas fa-arrow-left"></i> Previous</button>
-            <button class="btn btn-next-step" data-next="3">Next Step <i class="fas fa-arrow-right"></i></button>
-          </div>
+        <div class="prep-roadmap-step" data-step="2">
+          <span class="step-number">2</span>
+          <span class="step-title">Killan nimi</span>
+        </div>
+        <div class="prep-roadmap-step" data-step="3">
+          <span class="step-number">3</span>
+          <span class="step-title">Hahmon Perusteet</span>
+        </div>
+        <div class="prep-roadmap-step" data-step="4">
+          <span class="step-number">4</span>
+          <span class="step-title">Ominaisuuspisteet</span>
+        </div>
+        <div class="prep-roadmap-step" data-step="5">
+          <span class="step-number">5</span>
+          <span class="step-title">Luonteenpiirteet</span>
+        </div>
+        <div class="prep-roadmap-step" data-step="6">
+          <span class="step-number">6</span>
+          <span class="step-title">Enne</span>
         </div>
       </div>
 
-      <!-- Step 3 -->
-      <div class="roadmap-step" data-step="3">
-        <h3 class="roadmap-header">Step 3: Define Your Past</h3>
-        <div class="roadmap-content">
-          <p>Instead of a "class," characters have a "Past." This determines their starting skills and a unique ability. Examples:</p>
-          <ul>
-            <li><strong>The Scrounger:</strong> Expert at finding resources.</li>
-            <li><strong>The Watcher:</strong> Can sense supernatural presences.</li>
-            <li><strong>The Brawler:</strong> Never backs down from a fight.</li>
-            <li><strong>The Scholar:</strong> Knows forbidden lore.</li>
-          </ul>
-          <div class="roadmap-nav">
-            <button class="btn btn-secondary btn-prev-step" data-prev="2"><i class="fas fa-arrow-left"></i> Previous</button>
-            <button class="btn btn-next-step" data-next="4">Next Step <i class="fas fa-arrow-right"></i></button>
+      <!-- Right Column: Content -->
+      <div class="prep-content">
+        <!-- Step 1 Content -->
+        <div class="prep-content-step active" data-step-content="1">
+          <h2>Peli Alkaa!</h2>
+          <p>Valitse pelaajien kilta. Jokaisella killalla on omat ainutlaatuiset etunsa.</p>
+          <div class="guild-selection-container">
+            <div class="guild-card" data-guild="Streetfolk">
+              <h4>Streetfolk</h4>
+              <ul>
+                <li><strong>Hyve:</strong> Kissansilmät</li>
+                <li>1x Satunnainen Tavara</li>
+              </ul>
+              <div class="guild-reward">
+                <strong>Palkkio:</strong> 10 Shillinkiä
+              </div>
+            </div>
+            <div class="guild-card" data-guild="Faithless">
+              <h4>Faithless</h4>
+              <ul>
+                <li><strong>Hyve:</strong> Epäusko</li>
+                <li>Voi ohittaa 1x MORAALI-tarkistuksen</li>
+              </ul>
+              <div class="guild-reward">
+                <strong>Palkkio:</strong> 15 Shillinkiä
+              </div>
+            </div>
+            <div class="guild-card" data-guild="Merchant">
+              <h4>Merchant</h4>
+              <ul>
+                <li>Aletta 25% kaikesta</li>
+              </ul>
+              <div class="guild-reward">
+                <strong>Palkkio:</strong> 20 Shillinkiä
+              </div>
+            </div>
+            <div class="guild-card" data-guild="Fallen">
+              <h4>Fallen</h4>
+              <div class="guild-reward">
+                <strong>Palkkio:</strong> 10 Shillinkiä
+              </div>
+              <table>
+                <thead>
+                  <tr><th>D4</th><th>Bonus</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>1</td><td>Parannettu vampyyri</td></tr>
+                  <tr><td>2</td><td>Parannettu ihmissusi</td></tr>
+                  <tr><td>3</td><td><strong>Hyve:</strong> Kaikki aseet hopeisia</td></tr>
+                  <tr><td>4</td><td><strong>Hyve:</strong> Kostonhimoinen (+3)</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="prep-nav">
+            <button class="btn btn-next-step" data-next="2">Seuraava <i class="fas fa-arrow-right"></i></button>
+          </div>
+        </div>
+
+        <!-- Step 2 Content -->
+        <div class="prep-content-step" data-step-content="2">
+          <h2>Vaihe 2: Killan nimi</h2>
+          <p>Syötä kaksi d100-heiton tulosta luodaksesi killan nimen, tai keksi omasi.</p>
+          <div class="name-generator-container">
+            <div class="name-generator-inputs">
+              <div class="d100-input-square" contenteditable="true" id="d100-input-1"></div>
+              <div class="d100-input-square" contenteditable="true" id="d100-input-2"></div>
+            </div>
+            <h3 id="guild-name-result"><span>-</span></h3>
+          </div>
+          <button id="toggle-name-tables-modal" class="btn btn-secondary">Näytä Taulukot</button>
+          <div class="prep-nav">
+            <button class="btn btn-secondary btn-prev-step" data-prev="1"><i class="fas fa-arrow-left"></i> Edellinen</button>
+            <button class="btn btn-next-step" data-next="3">Seuraava <i class="fas fa-arrow-right"></i></button>
+          </div>
+        </div>
+
+        <!-- Step 3 Content -->
+        <div class="prep-content-step" data-step-content="3">
+          <h2>Vaihe 3: Hahmon Perusteet</h2>
+          <p>Syötä pelaajan hahmon nimi ja valitse hänen ammattinsa.</p>
+          <div class="form-group">
+            <label for="char-name">Hahmon Nimi:</label>
+            <input type="text" id="char-name" placeholder="Esim. Elara">
+          </div>
+          <div class="form-group">
+            <label for="char-profession">Ammatti:</label>
+            <select id="char-profession">
+              <option>Keräilijä</option>
+              <option>Vartija</option>
+              <option>Tappelija</option>
+              <option>Oppinut</option>
+              <option>Kulkuri</option>
+            </select>
+          </div>
+          <div class="prep-nav">
+            <button class="btn btn-secondary btn-prev-step" data-prev="2"><i class="fas fa-arrow-left"></i> Edellinen</button>
+            <button class="btn btn-next-step" data-next="4">Seuraava <i class="fas fa-arrow-right"></i></button>
+          </div>
+        </div>
+
+        <!-- Step 4 Content -->
+        <div class="prep-content-step" data-step-content="4">
+          <h2>Vaihe 4: Ominaisuuspisteet</h2>
+          <p>Jaa pisteet hahmon ydinominaisuuksiin.</p>
+          <div class="form-grid">
+            <div class="form-group"><label for="stat-grit">Sisu (GRI):</label><input type="number" id="stat-grit" value="10"></div>
+            <div class="form-group"><label for="stat-instinct">Vaisto (INS):</label><input type="number" id="stat-instinct" value="10"></div>
+            <div class="form-group"><label for="stat-resolve">Päättäväisyys (RES):</label><input type="number" id="stat-resolve" value="10"></div>
+            <div class="form-group"><label for="stat-flux">Virta (FLX):</label><input type="number" id="stat-flux" value="10"></div>
+          </div>
+          <div class="prep-nav">
+            <button class="btn btn-secondary btn-prev-step" data-prev="3"><i class="fas fa-arrow-left"></i> Edellinen</button>
+            <button class="btn btn-next-step" data-next="5">Seuraava <i class="fas fa-arrow-right"></i></button>
+          </div>
+        </div>
+
+        <!-- Step 5 Content -->
+        <div class="prep-content-step" data-step-content="5">
+          <h2>Vaihe 5: Luonteenpiirteet</h2>
+          <p>Valitse hahmolle yksi hyve (vahvuus) ja yksi pahe (heikkous).</p>
+          <div class="form-group"><label for="char-virtue">Hyve:</label><input type="text" id="char-virtue" placeholder="Esim. Uskollinen"></div>
+          <div class="form-group"><label for="char-vice">Pahe:</label><input type="text" id="char-vice" placeholder="Esim. Ahne"></div>
+          <div class="prep-nav">
+            <button class="btn btn-secondary btn-prev-step" data-prev="4"><i class="fas fa-arrow-left"></i> Edellinen</button>
+            <button class="btn btn-next-step" data-next="6">Seuraava <i class="fas fa-arrow-right"></i></button>
+          </div>
+        </div>
+
+        <!-- Step 6 Content -->
+        <div class="prep-content-step" data-step-content="6">
+          <h2>Vaihe 6: Enne</h2>
+          <p>Jokaisella hahmolla on enne. Heitä D2-noppaa (kolikkoa) tai valitse toinen.</p>
+          <div class="omen-roller">
+            <button id="roll-omen" class="btn">Heitä D2</button>
+            <p id="omen-result">Tulos: <span>-</span></p>
+          </div>
+          <div class="omen-options">
+            <p><strong>1: Toivon kipinä:</strong> Hahmo onnistuu automaattisesti yhdessä kriittisessä hetkessä.</p>
+            <p><strong>2: Synkkä varjo:</strong> Pelinjohtaja voi asettaa hahmolle yhden automaattisen epäonnistumisen.</p>
+          </div>
+          <div class="prep-nav">
+            <button class="btn btn-secondary btn-prev-step" data-prev="5"><i class="fas fa-arrow-left"></i> Edellinen</button>
+            <button id="reset-roadmap-new" class="btn btn-secondary">Aloita alusta</button>
           </div>
         </div>
       </div>
-
-      <!-- Step 4 -->
-      <div class="roadmap-step" data-step="4">
-        <h3 class="roadmap-header">Step 4: Mark Vitals</h3>
-        <div class="roadmap-content">
-          <p>Explain and have players mark their Vitals:</p>
-          <ul>
-            <li><strong>Health:</strong> Derived from <strong>Grit</strong>. This is your physical well-being.</li>
-            <li><strong>Sanity:</strong> Derived from <strong>Resolve</strong>. This is your mental well-being.</li>
-          </ul>
-          <p>Emphasize that both are resources to be protected, and both are hard to recover.</p>
-          <div class="roadmap-nav">
-            <button class="btn btn-secondary btn-prev-step" data-prev="3"><i class="fas fa-arrow-left"></i> Previous</button>
-            <button class="btn btn-next-step" data-next="5">Next Step <i class="fas fa-arrow-right"></i></button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Step 5 -->
-      <div class="roadmap-step" data-step="5">
-        <h3 class="roadmap-header">Step 5: Starting Gear</h3>
-        <div class="roadmap-content">
-          <p>Resources are scarce. Players get one signature item from their Past (e.g., The Scholar's 'Tattered Journal') and a "Survivor's Pack" containing bare essentials: a rusty knife, a weak flashlight, some matches, and a few scraps of food.</p>
-          <div class="roadmap-nav">
-            <button class="btn btn-secondary btn-prev-step" data-prev="4"><i class="fas fa-arrow-left"></i> Previous</button>
-            <button class="btn btn-next-step" data-next="6">Next Step <i class="fas fa-arrow-right"></i></button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Step 6 -->
-      <div class="roadmap-step" data-step="6">
-        <h3 class="roadmap-header">Step 6: Final Touches</h3>
-        <div class="roadmap-content">
-          <p>Ask players to choose a name, a brief description, and one thing their character is afraid of. This fear will be important.</p>
-          <p>Finally, ask each player to introduce their character to the group.</p>
-          <div class="roadmap-nav">
-            <button class="btn btn-secondary btn-prev-step" data-prev="5"><i class="fas fa-arrow-left"></i> Previous</button>
-            <button id="reset-roadmap" class="btn btn-secondary">Reset Roadmap</button>
-          </div>
-        </div>
-      </div>
-
-    </div> <!-- /roadmap-container -->
+    </div>
   </div>
 
-  <!-- Active Screen Tab -->
-  <div id="tab-active" class="tab-content">
+  <!-- DM Screen Tab -->
+  <div id="tab-dm" class="tab-content">
     
-    <!-- NEW: D&D Initiative Tracker (Conditional) -->
+    <!-- Card Grid -->
+    <div class="card-grid">
+
+      <!-- Card 1: Core Rules -->
+      <div class="card">
+        <div class="card-header">
+          <h3><i class="fas fa-book"></i> Perussäännöt</h3>
+          <button class="btn-collapse"><i class="fas fa-chevron-up"></i></button>
+        </div>
+        <div class="card-content">
+          <p><strong>Taitotestit:</strong> Heitä d20 + ominaisuusmodifikaattori. Tavoite on yleensä 10 (Helppo), 15 (Keskivaikea) tai 20 (Vaikea).</p>
+          <p><strong>Taistelu:</strong> Aloite määrää vuorojärjestyksen. Vuorollasi voit liikkua ja tehdä yhden toiminnon.</p>
+        </div>
+      </div>
+
+      <!-- Card 2: Conditions -->
+      <div class="card">
+        <div class="card-header">
+          <h3><i class="fas fa-skull-crossbones"></i> Tilat</h3>
+          <button class="btn-collapse"><i class="fas fa-chevron-up"></i></button>
+        </div>
+        <div class="card-content">
+          <ul>
+            <li><strong>Sokeutunut:</strong> Haitta hyökkäyksissä. Hyökkääjillä on etu sinua vastaan.</li>
+            <li><strong>Pelästynyt:</strong> Haitta taitotarkistuksissa ja hyökkäysheitoissa, kun pelon lähde on näkyvissä.</li>
+            <li><strong>Makaa maassa:</strong> Haitta hyökkäyksissä. 5 jalan säteellä olevilla hyökkääjillä on etu.</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- D&D Initiative Tracker (Conditional) -->
     <div id="dnd-initiative-tracker">
-      <h2>Initiative Tracker</h2>
+      <h2>Aloitteenseuranta</h2>
       <div id="initiative-form">
-        <input id="init-name" type="text" placeholder="Character Name" />
+        <input id="init-name" type="text" placeholder="Hahmon nimi" />
         
-        <!-- Class Icon Selector -->
         <select id="init-class">
-          <option value="fas fa-question-circle">Unknown</option>
-          <option value="fas fa-gavel">Fighter</option>
-          <option value="fas fa-hand-sparkles">Wizard</option>
-          <option value="fas fa-mask">Rogue</option>
-          <option value="fas fa-cross">Cleric</option>
-          <option value="fas fa-leaf">Druid</option>
-          <option value="fas fa-fist-raised">Monk</option>
-          <option value="fas fa-shield-alt">Paladin</option>
-          <option value="fas fa-bow-arrow">Ranger</option>
-          <option value="fas fa-magic">Sorcerer</option>
-          <option value="fas fa-book-dead">Warlock</option>
-          <option value="fas fa-music">Bard</option>
-          <option value="fas fa-axe">Barbarian</option>
-          <option value="fas fa-flask">Artificer</option>
-          <option value="fas fa-dragon">Monster</option>
+          <option value="fas fa-question-circle">Tuntematon</option>
+          <option value="fas fa-gavel">Taistelija</option>
+          <option value="fas fa-hand-sparkles">Velho</option>
+          <option value="fas fa-mask">Konna</option>
+          <option value="fas fa-cross">Pappi</option>
+          <option value="fas fa-leaf">Druidi</option>
+          <option value="fas fa-fist-raised">Munkki</option>
+          <option value="fas fa-shield-alt">Paladiini</option>
+          <option value="fas fa-bow-arrow">Samoilija</option>
+          <option value="fas fa-magic">Noiduri</option>
+          <option value="fas fa-book-dead">Manajaa</option>
+          <option value="fas fa-music">Bardi</option>
+          <option value="fas fa-axe">Barbaari</option>
+          <option value="fas fa-flask">Artifiseri</option>
+          <option value="fas fa-dragon">Hirviö</option>
         </select>
         
-        <input id="init-roll" type="number" placeholder="Roll" />
-        <button id="add-to-init" class="btn">Add</button>
+        <input id="init-roll" type="number" placeholder="Heitto" />
+        <button id="add-to-init" class="btn">Lisää</button>geo
       </div>
       
       <ul id="initiative-list">
         <!-- Initiative list items -->
       </ul>
-      <button id="sort-init" class="btn btn-secondary">Sort</button>
-      <button id="clear-init" class="btn btn-secondary">Clear</button>
+      <button id="sort-init" class="btn btn-secondary">Järjestä</button>
+      <button id="clear-init" class="btn btn-secondary">Tyhjennä</button>
     </div>
 
-    <!-- NEW: Dread Nights Active Screen (Conditional) -->
+    <!-- Dread Nights Active Screen (Conditional) -->
     <div id="dread-nights-active-screen">
-      <h2>Dread Nights Dashboard</h2>
-      <p>This is where active tools for Dread Nights would go, such as a terror tracker or random event generator.</p>
+      <h2>Kauhun öiden kojelauta</h2>
+      <p>Tähän tulisivat Kauhun öiden aktiiviset työkalut, kuten kauhunseuranta tai satunnaistapahtumageneraattori.</p>
     </div>
 
   </div>
@@ -193,13 +303,12 @@
 <div id="player-link-modal" class="modal-overlay">
   <div class="modal-content">
     <button id="close-modal-btn" class="modal-close-btn">&times;</button>
-    <h2>Share with Players</h2>
+    <h2>Jaa pelaajien kanssa</h2>
     <input id="playerLink" type="text" readonly />
-    <button id="copy-link-btn" class="btn">Copy Link</button>
-    <p id="ipStatus">Detecting network...</p>
+    <button id="copy-link-btn" class="btn">Kopioi linkki</button>
+    <p id="ipStatus">Verkkoa etsitään...</p>
   </div>
 </div>
 
 </body>
 </html>
-

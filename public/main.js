@@ -22,6 +22,18 @@ document.addEventListener("DOMContentLoaded", () => {
   
   // Prep Roadmap Logic
   setupRoadmap();
+
+  // Collapsible Cards
+  setupCollapsibleCards();
+
+  // Omen Roller
+  setupOmenRoller();
+
+  // Guild Selection
+  setupGuildSelection();
+
+  // Guild Name Generator
+  setupGuildNameGenerator();
 });
 
 // --- WebSockets ---
@@ -31,47 +43,33 @@ function setupWebSocket() {
 
   ws.onopen = () => {
     console.log("WebSocket connected.");
-    // When we connect, tell the server our game state
-    // This ensures new player connections get the right UI
     broadcastGameChange(localStorage.getItem("gameSystem") || "Dread Nights");
   };
   ws.onmessage = (event) => {
-    // We only expect initiative lists
     const data = JSON.parse(event.data);
     if (data.type === "initiative-update") {
-      // Check if a new item was added
       const isNewItem = data.payload.length > initiativeList.length;
       initiativeList = data.payload;
-      // Pass the animation flag to the renderer
       renderInitiativeList(isNewItem); 
     }
   };
   ws.onclose = () => {
     console.log("WebSocket disconnected. Attempting to reconnect...");
-    setTimeout(setupWebSocket, 3000); // Reconnect every 3 seconds
+    setTimeout(setupWebSocket, 3000);
   };
 }
 
 function broadcastInitiativeList() {
-  // Only broadcast if we are actually playing D&D
   const currentGame = localStorage.getItem("gameSystem") || "Dread Nights";
   if (currentGame !== "D&D 5e") return;
-
   if (ws && ws.readyState === WebSocket.OPEN) {
-    ws.send(JSON.stringify({
-      type: "initiative-update",
-      payload: initiativeList
-    }));
+    ws.send(JSON.stringify({ type: "initiative-update", payload: initiativeList }));
   }
 }
 
-// NEW: Broadcasts the game change to all players
 function broadcastGameChange(gameName) {
   if (ws && ws.readyState === WebSocket.OPEN) {
-    ws.send(JSON.stringify({
-      type: "game-change",
-      payload: gameName
-    }));
+    ws.send(JSON.stringify({ type: "game-change", payload: gameName }));
   }
 }
 
@@ -83,19 +81,13 @@ function setupTabs() {
   function showTab(tabId) {
     contents.forEach(c => c.classList.remove('active'));
     tabs.forEach(b => b.classList.remove('active'));
-
     const content = document.getElementById(tabId);
     const tab = document.querySelector(`[data-tab="${tabId}"]`);
-    
     if (content) content.classList.add('active');
     if (tab) tab.classList.add('active');
   }
 
-  tabs.forEach(btn => btn.addEventListener("click", () => {
-    showTab(btn.dataset.tab);
-  }));
-
-  // Show the first tab by default
+  tabs.forEach(btn => btn.addEventListener("click", () => showTab(btn.dataset.tab)));
   showTab("tab-prep");
 }
 
@@ -105,28 +97,24 @@ function setupInitiativeTracker() {
   const sortBtn = document.getElementById("sort-init");
   const clearBtn = document.getElementById("clear-init");
   
-  addBtn.addEventListener("click", addToInitiative);
-  sortBtn.addEventListener("click", sortInitiative);
-  clearBtn.addEventListener("click", clearInitiative);
+  if(addBtn) addBtn.addEventListener("click", addToInitiative);
+  if(sortBtn) sortBtn.addEventListener("click", sortInitiative);
+  if(clearBtn) clearBtn.addEventListener("click", clearInitiative);
 }
 
 function addToInitiative() {
   const nameEl = document.getElementById("init-name");
   const rollEl = document.getElementById("init-roll");
-  // Get the new class icon dropdown
   const classEl = document.getElementById("init-class");
-
   const name = nameEl.value.trim();
   const roll = parseInt(rollEl.value, 10);
-  // Get the selected icon class name (e.g., "fas fa-gavel")
   const iconClass = classEl.value;
 
   if (name && !isNaN(roll)) {
-    // Add the iconClass to our state object
     initiativeList.push({ name, roll, iconClass });
     nameEl.value = "";
     rollEl.value = "";
-    renderInitiativeList(true); // Animate the new item
+    renderInitiativeList(true);
     broadcastInitiativeList();
   }
 }
@@ -145,62 +133,40 @@ function clearInitiative() {
 
 function renderInitiativeList(animateNew) {
   const listEl = document.getElementById("initiative-list");
-  listEl.innerHTML = ""; // Clear existing list
+  if(!listEl) return;
+  listEl.innerHTML = "";
 
   initiativeList.forEach((item, index) => {
     const li = document.createElement("li");
-
-    // --- NEW: Icon + Name Container ---
     const infoDiv = document.createElement("div");
     infoDiv.className = "init-info";
-
-    // Create the icon
     const icon = document.createElement("i");
-    icon.className = item.iconClass; // e.g., "fas fa-gavel"
+    icon.className = item.iconClass;
     infoDiv.appendChild(icon);
-
-    // Create the name
     const nameSpan = document.createElement("span");
     nameSpan.className = "init-name";
     nameSpan.textContent = item.name;
     infoDiv.appendChild(nameSpan);
-
     li.appendChild(infoDiv);
-    // --- End of new container ---
-
     const rollSpan = document.createElement("span");
     rollSpan.className = "init-roll";
     rollSpan.textContent = item.roll;
     li.appendChild(rollSpan);
 
-    // --- UPDATED ANIMATION ---
     if (animateNew && index === initiativeList.length - 1) {
-      // 1. The card pop-in animation
       li.classList.add("new-item-pop");
       setTimeout(() => li.classList.remove("new-item-pop"), 600);
-      
-      // 2. The new "Sparkle Burst" animation
       const sparkleContainer = document.createElement("div");
       sparkleContainer.className = "sparkle-container";
-      
-      // Create 5 sparks
       for (let i = 0; i < 5; i++) {
         const spark = document.createElement("span");
         spark.className = "spark";
-        // Each spark is rotated to fly in a different direction
         spark.style.transform = `rotate(${i * 72}deg)`; 
         sparkleContainer.appendChild(spark);
       }
-      
-      // Add container to the icon
       infoDiv.appendChild(sparkleContainer);
-
-      // Remove the sparkle container after animation
-      setTimeout(() => {
-        sparkleContainer.remove();
-      }, 1000);
+      setTimeout(() => sparkleContainer.remove(), 1000);
     }
-
     listEl.appendChild(li);
   });
 }
@@ -213,19 +179,10 @@ function setupPlayerLinkModal() {
 
   if (!modal || !showBtn || !closeBtn) return;
 
-  showBtn.addEventListener("click", () => {
-    modal.classList.add("active");
-  });
-
-  closeBtn.addEventListener("click", () => {
-    modal.classList.remove("active");
-  });
-
-  // Close modal if user clicks on the overlay
+  showBtn.addEventListener("click", () => modal.classList.add("active"));
+  closeBtn.addEventListener("click", () => modal.classList.remove("active"));
   modal.addEventListener("click", (e) => {
-    if (e.target === modal) {
-      modal.classList.remove("active");
-    }
+    if (e.target === modal) modal.classList.remove("active");
   });
 }
 
@@ -235,6 +192,8 @@ async function setupPlayerLink() {
   const statusEl = document.getElementById("ipStatus");
   const linkEl = document.getElementById("playerLink");
 
+  if(!copyBtn || !statusEl || !linkEl) return;
+
   copyBtn.addEventListener("click", copyPlayerLink);
 
   try {
@@ -242,14 +201,8 @@ async function setupPlayerLink() {
     const data = await res.json();
     const link = `http://${data.ip}:8080/player`;
     linkEl.value = link;
-    
-    if (data.ip === "localhost") {
-      statusEl.innerText = "⚠ Wi-Fi not detected — players must join via browser";
-      statusEl.className = "status-warn";
-    } else {
-      statusEl.innerText = `✅ Network Active: ${data.ip}`;
-      statusEl.className = "status-ok";
-    }
+    statusEl.innerText = data.ip === "localhost" ? "⚠ Wi-Fi not detected — players must join via browser" : `✅ Network Active: ${data.ip}`;
+    statusEl.className = data.ip === "localhost" ? "status-warn" : "status-ok";
   } catch {
     statusEl.innerText = "❌ Cannot detect network";
     statusEl.className = "status-error";
@@ -258,132 +211,223 @@ async function setupPlayerLink() {
 
 function copyPlayerLink() {
   const input = document.getElementById("playerLink");
-  // Use modern clipboard API
   navigator.clipboard.writeText(input.value).then(() => {
     const copyBtn = document.getElementById("copy-link-btn");
     const originalText = copyBtn.textContent;
     copyBtn.textContent = "Copied!";
-    setTimeout(() => {
-      copyBtn.textContent = originalText;
-    }, 1500);
-  }).catch(err => {
-    console.error("Failed to copy link: ", err);
-  });
+    setTimeout(() => { copyBtn.textContent = originalText; }, 1500);
+  }).catch(err => console.error("Failed to copy link: ", err));
 }
 
 // --- Settings ---
-// UPDATED: Manages game selection from the header
 function setupSettings() {
   const gameSelect = document.getElementById("game-select");
-  
-  // Load saved game from localStorage or default
+  if(!gameSelect) return;
+
   const currentGame = localStorage.getItem("gameSystem") || "Dread Nights";
   gameSelect.value = currentGame;
-  updateActiveScreen(currentGame); // Update UI on load
+  updateDmScreen(currentGame);
 
-  // RE-ENABLED: Event listener for game changes
   gameSelect.addEventListener("change", () => {
     const selectedGame = gameSelect.value;
     localStorage.setItem("gameSystem", selectedGame);
-    updateActiveScreen(selectedGame);
-    
-    // Tell players about the game change
+    updateDmScreen(selectedGame);
     broadcastGameChange(selectedGame);
-
-    // If we switch away from D&D, clear the initiative list
     if (selectedGame !== "D&D 5e") {
-      clearInitiative(); // This will broadcast an empty list
+      clearInitiative();
     }
   });
 }
 
-// NEW: This function toggles the UI based on the selected game
-function updateActiveScreen(gameName) {
+function updateDmScreen(gameName) {
   const dndTracker = document.getElementById("dnd-initiative-tracker");
   const dreadNightsScreen = document.getElementById("dread-nights-active-screen");
+
+  if(!dndTracker || !dreadNightsScreen) return;
 
   if (gameName === "D&D 5e") {
     dndTracker.style.display = "block";
     dreadNightsScreen.style.display = "none";
-  } else { // 'Dread Nights'
+  } else {
     dndTracker.style.display = "none";
     dreadNightsScreen.style.display = "block";
   }
 }
 
-
 // --- NEW: Prep Roadmap ---
 function setupRoadmap() {
-  const nextButtons = document.querySelectorAll(".btn-next-step");
-  const prevButtons = document.querySelectorAll(".btn-prev-step"); // ADDED
-  const allHeaders = document.querySelectorAll(".roadmap-header"); // ADDED
-  const resetButton = document.getElementById("reset-roadmap");
-  
-  const allSteps = document.querySelectorAll('.roadmap-step');
+    const roadmapSteps = document.querySelectorAll(".prep-roadmap-step");
+    const contentSteps = document.querySelectorAll(".prep-content-step");
+    const nextButtons = document.querySelectorAll(".prep-nav .btn-next-step");
+    const prevButtons = document.querySelectorAll(".prep-nav .btn-prev-step");
+    const resetButton = document.getElementById("reset-roadmap-new");
 
-  // Function to activate a specific step
-  function activateStep(stepId) {
-    let targetStep = null;
-    allSteps.forEach(step => {
-      const isTarget = step.dataset.step === stepId;
-      step.classList.toggle('active', isTarget);
-      
-      // Don't mark future steps as completed if we go back
-      if (isTarget) {
-        step.classList.remove('completed');
-        targetStep = step;
-      }
-    });
+    function activateStep(stepId) {
+        const id = parseInt(stepId, 10);
 
-    // Auto-scroll to the new active step
-    if (targetStep) {
-      targetStep.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        roadmapSteps.forEach(step => {
+            const currentStepId = parseInt(step.dataset.step, 10);
+            step.classList.toggle('active', currentStepId === id);
+            step.classList.toggle('completed', currentStepId < id);
+        });
+
+        contentSteps.forEach(content => {
+            content.classList.toggle('active', content.dataset.stepContent === stepId);
+        });
     }
-  }
 
-  // Next Buttons
-  nextButtons.forEach(button => {
-    button.addEventListener("click", (e) => {
-      const currentStep = e.target.closest('.roadmap-step');
-      const nextStepId = e.target.dataset.next;
-      
-      if (currentStep) {
-        currentStep.classList.remove('active');
-        currentStep.classList.add('completed');
-      }
-      if (nextStepId) {
-        activateStep(nextStepId);
-      }
+    roadmapSteps.forEach(step => {
+        step.addEventListener("click", () => {
+            activateStep(step.dataset.step);
+        });
     });
-  });
 
-  // PREVIOUS Buttons (NEW)
-  prevButtons.forEach(button => {
-    button.addEventListener("click", (e) => {
-      const prevStepId = e.target.dataset.prev;
-      if (prevStepId) {
-        activateStep(prevStepId);
-      }
+    nextButtons.forEach(button => {
+        button.addEventListener("click", () => {
+            activateStep(button.dataset.next);
+        });
     });
-  });
 
-  // Click headers to jump to steps (NEW)
-  allHeaders.forEach(header => {
-    header.addEventListener("click", (e) => {
-      const stepId = e.target.closest('.roadmap-step').dataset.step;
-      activateStep(stepId);
+    prevButtons.forEach(button => {
+        button.addEventListener("click", () => {
+            activateStep(button.dataset.prev);
+        });
     });
-  });
+    
+    if(resetButton){
+        resetButton.addEventListener("click", () => activateStep("1"));
+    }
 
-  // Reset Button
-  if (resetButton) {
-    resetButton.addEventListener("click", () => {
-      allSteps.forEach(step => {
-        step.classList.remove('active', 'completed');
-      });
-      // Activate the first step
-      activateStep("1");
-    });
-  }
+    activateStep("1");
 }
 
+function setupCollapsibleCards() {
+  const cardHeaders = document.querySelectorAll(".card-header");
+  cardHeaders.forEach(header => {
+    header.addEventListener("click", () => {
+      const card = header.parentElement;
+      card.classList.toggle("collapsed");
+    });
+  });
+}
+
+// --- Omen Roller ---
+function setupOmenRoller() {
+  const rollBtn = document.getElementById("roll-omen");
+  const resultEl = document.querySelector("#omen-result span");
+
+  if (!rollBtn || !resultEl) return;
+
+  rollBtn.addEventListener("click", () => {
+    rollBtn.classList.add("rolling");
+    setTimeout(() => rollBtn.classList.remove("rolling"), 500);
+    const result = Math.floor(Math.random() * 2) + 1;
+    setTimeout(() => {
+        resultEl.textContent = result;
+        resultEl.parentElement.classList.add('tada');
+        setTimeout(() => resultEl.parentElement.classList.remove('tada'), 700);
+    }, 250);
+  });
+}
+
+// --- Guild Selection ---
+function setupGuildSelection() {
+  const guildCards = document.querySelectorAll(".guild-card");
+  if (guildCards.length === 0) return;
+  guildCards.forEach(card => {
+    card.addEventListener("click", () => {
+      guildCards.forEach(c => c.classList.remove("selected"));
+      card.classList.add("selected");
+    });
+  });
+}
+
+// --- Guild Name Generator ---
+const guildNamePart1 = [
+  "The Bow", "The Legged", "The Dusty", "The Cossack", "The Crypt", "The Beast", "The Wet", "The Small", "The Tidy", "The Left",
+  "The Right", "The Lockwith", "The Bay", "The Angels", "The Red", "The Blue", "The Green", "The Immature", "The Poor", "The Wise",
+  "The Dead", "The Dense", "The Wednesday", "The Diabolical", "The Heavy", "The Panda", "The Penny", "The Dog", "The Cat", "The Dodo",
+  "The Police", "The Faith", "The Hidden", "The Silly", "The Hog", "The Dice", "The Terrible", "The Awful", "The Beautiful", "The Appalling",
+  "The Fearful", "The Grim", "The Silent", "The Long", "The Shocking", "The Harrowing", "The Shocking", "The Bloodless", "The Unspeakable", "The Stern",
+  "The Cynical", "The Ghastly", "The Bright", "The Dark", "The Cruel", "The Kind", "The Dingy", "The Bleak", "The Raven", "The Poe",
+  "The Dismal", "The Vicious", "The Savage", "The Broken", "The Fatalistic", "The Comedy", "The Neutral", "The Nameless", "The Sexy", "The Macabre",
+  "The Concerning", "The Worried", "The Morbid", "The Happy", "The Swell", "The Down", "The Up", "The Savage", "The Brutal", "The Pig",
+  "The Hatter", "The Mirthless", "The Mirthful", "The Harsh", "The Slack", "The Dutch", "The Unseen", "The Fresh", "The Breaded", "The Baked",
+  "The Crusty", "The Grumpy", "The Austere", "The Barbarous", "The Surely", "The Scowling", "The Sulky", "The Sour", "The Cold", "The Grave"
+];
+
+const guildNamePart2 = [
+  "Gang", "Crew", "Team", "Company", "Rooster", "Posse", "Corps", "Squad", "Crowd", "Collective",
+  "Force", "Herd", "Pack", "Tables", "Party", "Band", "Horde", "Throng", "Mob", "Detachment",
+  "Troop", "Faction", "Division", "Society", "Club", "League", "Circle", "Union", "Squares", "Box",
+  "Association", "Inc.", "Ring", "Set", "Coterie", "Section", "Partnership", "Cooperative", "Consortium", "Pub",
+  "Clique", "Batch", "Classification", "Class", "Category", "Guild", "Caucus", "Bloc", "Cabal", "Confederacy",
+  "Junta", "Cell", "Sect", "Clan", "Fellowship", "Fraternity", "Sorority", "Community", "Syndicate", "Nucleus",
+  "Commerce", "Society", "Lodge", "Affiliation", "Alliance", "Order", "Nation", "Federation", "Body", "College",
+  "School", "Relation", "Family", "Connection", "Link", "Amalgamation", "Trust", "Charity", "Business", "Private Entity",
+  "Cooperative", "Organization", "Structure", "Warband", "Administration", "Government", "Method", "System", "Operation", "Criminals",
+  "Prison", "Firm", "Film", "Fast", "Zoo", "Click", "Balance", "Streets", "Ghosts", "Demons"
+];
+
+function setupGuildNameGenerator() {
+    const input1 = document.getElementById("d100-input-1");
+    const input2 = document.getElementById("d100-input-2");
+    const resultEl = document.getElementById("guild-name-result"); // Corrected selector
+    const modal = document.getElementById("name-tables-modal");
+    const showModalBtn = document.getElementById("toggle-name-tables-modal");
+    const closeModalBtn = document.getElementById("close-name-tables-modal");
+    const tablesContainer = document.getElementById("name-tables-content-modal");
+
+    if (!input1 || !input2 || !resultEl || !modal || !showModalBtn || !closeModalBtn || !tablesContainer) return;
+
+    populateNameTables(tablesContainer);
+    
+    function generateName() {
+        const roll1 = parseInt(input1.textContent, 10);
+        const roll2 = parseInt(input2.textContent, 10);
+
+        if (roll1 >= 1 && roll1 <= 100 && roll2 >= 1 && roll2 <= 100) {
+            const name1 = guildNamePart1[roll1 - 1];
+            const name2 = guildNamePart2[roll2 - 1];
+            resultEl.innerHTML = `<span>${name1} ${name2}</span>`; // Use innerHTML
+        } else {
+            resultEl.innerHTML = "<span>-</span>"; // Use innerHTML
+        }
+    }
+
+    input1.addEventListener("input", generateName);
+    input2.addEventListener("input", generateName);
+
+    showModalBtn.addEventListener("click", () => modal.classList.add("active"));
+    closeModalBtn.addEventListener("click", () => modal.classList.remove("active"));
+    modal.addEventListener("click", (e) => {
+        if (e.target === modal) modal.classList.remove("active");
+    });
+}
+
+function populateNameTables(container) {
+  const table1 = createTableHtml(guildNamePart1, "Table 1");
+  const table2 = createTableHtml(guildNamePart2, "Table 2 (Red)");
+  container.innerHTML = `
+    <div class="name-table-wrapper">${table1}</div>
+    <div class="name-table-wrapper">${table2}</div>
+  `;
+}
+
+function createTableHtml(data, caption) {
+  let rows = data.map((name, index) => `<tr><td>${index + 1}</td><td>${name}</td></tr>`).join("");
+  return `
+    <table>
+      <caption>${caption}</caption>
+      <thead>
+        <tr>
+          <th>d100</th>
+          <th>Name</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows}
+      </tbody>
+    </table>
+  `;
+}
