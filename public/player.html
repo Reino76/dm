@@ -11,13 +11,13 @@
 <body>
 
   <div class="header">
-    <h1 id="app-title">Player View</h1>
     <div id="game-title-container">
       <select id="mode-select">
         <option value="initiative">Initiative</option>
         <option value="background">Background</option>
       </select>
     </div>
+    <button id="fullscreen-btn" class="btn btn-secondary"><i class="fas fa-expand"></i> Fullscreen</button>
   </div>
 
   <div id="initiative-mode-content" class="container">
@@ -128,9 +128,27 @@
       });
     }
 
+    function setupFullscreen() {
+        const fullscreenBtn = document.getElementById("fullscreen-btn");
+        if (!fullscreenBtn) return;
+
+        fullscreenBtn.addEventListener("click", () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+                fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i> Exit Fullscreen';
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                    fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i> Fullscreen';
+                }
+            }
+        });
+    }
+
     // Initialize
     setupModeSelection();
     setupWebSocket();
+    setupFullscreen();
   </script>
 </body>
 </html>

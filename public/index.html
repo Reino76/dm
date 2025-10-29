@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Pelinjohtajan näyttö</title>
+<title>DM Screen</title>
 <!-- Google Fonts (Updated to sharp "Inter") -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,9 +17,8 @@
 
 <div class="container">
   <div class="header">
-    <h1 id="app-title">Pelinjohtajan näyttö</h1>
-    <button id="show-player-link-btn" class="btn btn-secondary">
-      <i class="fas fa-link"></i> Näytä pelaajan linkki
+    <button id="show-player-window-btn" class="btn btn-secondary" onclick="window.open('player.html', '_blank');">
+      <i class="fas fa-window-restore"></i> Avaa pelaajan näyttö
     </button>
     
     <!-- UPDATED: Game Select moved to header -->
@@ -29,11 +28,14 @@
         <option value="D&D 5e">D&D 5e</option>
       </select>
     </div>
+    <div id="merchant-mode-indicator" class="merchant-mode-indicator" style="display: none;">
+      <span>Merchant Mode Active</span>
+      <button id="disable-merchant-mode" class="btn btn-sm btn-danger">Disable</button>
+    </div>
   </div>
 
   <div class="tabs">
     <button class="tab-button" data-tab="tab-prep">Valmistelu</button>
-    <button class="tab-button" data-tab="tab-dm">Pelinjohtajan näyttö</button>
     <!-- REMOVED: Settings Tab -->
   </div>
 
@@ -63,11 +65,15 @@
         </div>
         <div class="prep-roadmap-step" data-step="6">
           <span class="step-number">6</span>
-          <span class="step-title">Luonteenpiirteet</span>
+          <span class="step-title">Hyveet</span>
         </div>
         <div class="prep-roadmap-step" data-step="7">
           <span class="step-number">7</span>
-          <span class="step-title">Enne</span>
+          <span class="step-title">Paheet</span>
+        </div>
+        <div class="prep-roadmap-step" data-step="8">
+          <span class="step-number">8</span>
+          <span class="step-title">Omens</span>
         </div>
       </div>
 
@@ -75,8 +81,6 @@
       <div class="prep-content">
         <!-- Step 1 Content -->
         <div class="prep-content-step active" data-step-content="1">
-          <h2>Peli Alkaa!</h2>
-          <p>Valitse pelaajien kilta. Jokaisella killalla on omat ainutlaatuiset etunsa.</p>
           <div class="guild-selection-container">
             <div class="guild-card" data-guild="Streetfolk">
               <h4>Streetfolk</h4>
@@ -106,6 +110,7 @@
               <div class="guild-reward">
                 <strong>Palkkio:</strong> 20 Shillinkiä
               </div>
+              <button id="enable-merchant-mode-btn" class="btn btn-sm">Enable Merchant Mode</button>
             </div>
             <div class="guild-card" data-guild="Fallen">
               <h4>Fallen</h4>
@@ -132,9 +137,8 @@
 
         <!-- Step 2 Content -->
         <div class="prep-content-step" data-step-content="2">
-          <h2>Vaihe 2: Killan nimi</h2>
-          <p>Syötä kaksi d100-heiton tulosta luodaksesi killan nimen, tai keksi omasi.</p>
           <div class="name-generator-container">
+            <div class="dice-indicator">d100</div>
             <div class="name-generator-inputs">
               <div class="d100-input-square" contenteditable="true" id="d100-input-1"></div>
               <div class="d100-input-square" contenteditable="true" id="d100-input-2"></div>
@@ -150,9 +154,8 @@
 
         <!-- Step 3 Content -->
         <div class="prep-content-step" data-step-content="3">
-          <h2>Vaihe 3: Nimet</h2>
-          <p>Syötä d100-heiton tulos luodaksesi hahmolle nimen, tai keksi omasi.</p>
           <div class="name-generator-container">
+            <div class="dice-indicator">d100</div>
             <div class="name-generator-inputs">
               <div class="d100-input-square" contenteditable="true" id="d100-char-name-input"></div>
             </div>
@@ -167,10 +170,8 @@
 
         <!-- Step 4 Content -->
         <div class="prep-content-step" data-step-content="4">
-          <h2>Vaihe 4: Työnkuvat</h2>
-          <p>Syötä d100-heiton tulos, joka puolitetaan ja pyöristetään ylöspäin ammatin määrittämiseksi.</p>
-          
           <div class="name-generator-container">
+            <div class="dice-indicator">d100</div>
             <div class="name-generator-inputs">
               <div class="d100-input-square" contenteditable="true" id="d100-occupation-input"></div>
             </div>
@@ -183,6 +184,7 @@
           <div id="occupation-reroll-section" style="display: none;">
             <h4>Kaksoisvuoro! Syötä kaksi uutta d100-heittoa:</h4>
             <div class="name-generator-container">
+              <div class="dice-indicator">d100</div>
               <div class="name-generator-inputs">
                 <div class="d100-input-square" contenteditable="true" id="d100-reroll-input-1"></div>
                 <div class="d100-input-square" contenteditable="true" id="d100-reroll-input-2"></div>
@@ -202,8 +204,6 @@
 
         <!-- Step 5 Content -->
         <div class="prep-content-step" data-step-content="5">
-          <h2>Vaihe 5: Stats</h2>
-          <p>This section is under construction.</p>
           <div class="prep-nav">
             <button class="btn btn-secondary btn-prev-step" data-prev="4"><i class="fas fa-arrow-left"></i> Edellinen</button>
             <button class="btn btn-next-step" data-next="6">Seuraava <i class="fas fa-arrow-right"></i></button>
@@ -212,10 +212,15 @@
 
         <!-- Step 6 Content -->
         <div class="prep-content-step" data-step-content="6">
-          <h2>Vaihe 6: Luonteenpiirteet</h2>
-          <p>Valitse hahmolle yksi hyve (vahvuus) ja yksi pahe (heikkous).</p>
-          <div class="form-group"><label for="char-virtue">Hyve:</label><input type="text" id="char-virtue" placeholder="Esim. Uskollinen"></div>
-          <div class="form-group"><label for="char-vice">Pahe:</label><input type="text" id="char-vice" placeholder="Esim. Ahne"></div>
+          <div class="name-generator-container">
+            <div class="dice-indicator">d20</div>
+            <div class="name-generator-inputs">
+              <div class="d100-input-square" contenteditable="true" id="d20-virtue-input"></div>
+            </div>
+            <div id="virtue-result-display">
+              <!-- Result will be injected here -->
+            </div>
+          </div>
           <div class="prep-nav">
             <button class="btn btn-secondary btn-prev-step" data-prev="5"><i class="fas fa-arrow-left"></i> Edellinen</button>
             <button class="btn btn-next-step" data-next="7">Seuraava <i class="fas fa-arrow-right"></i></button>
@@ -224,18 +229,31 @@
 
         <!-- Step 7 Content -->
         <div class="prep-content-step" data-step-content="7">
-          <h2>Vaihe 7: Enne</h2>
-          <p>Jokaisella hahmolla on enne. Heitä D2-noppaa (kolikkoa) tai valitse toinen.</p>
-          <div class="omen-roller">
-            <button id="roll-omen" class="btn">Heitä D2</button>
-            <p id="omen-result">Tulos: <span>-</span></p>
-          </div>
-          <div class="omen-options">
-            <p><strong>1: Toivon kipinä:</strong> Hahmo onnistuu automaattisesti yhdessä kriittisessä hetkessä.</p>
-            <p><strong>2: Synkkä varjo:</strong> Pelinjohtaja voi asettaa hahmolle yhden automaattisen epäonnistumisen.</p>
+          <div class="name-generator-container">
+            <div class="dice-indicator">d20</div>
+            <div class="name-generator-inputs">
+              <div class="d100-input-square" contenteditable="true" id="d20-vice-input"></div>
+            </div>
+            <div id="vice-result-display">
+              <!-- Result will be injected here -->
+            </div>
           </div>
           <div class="prep-nav">
             <button class="btn btn-secondary btn-prev-step" data-prev="6"><i class="fas fa-arrow-left"></i> Edellinen</button>
+            <button class="btn btn-next-step" data-next="8">Seuraava <i class="fas fa-arrow-right"></i></button>
+          </div>
+        </div>
+
+        <!-- Step 8 Content -->
+        <div class="prep-content-step" data-step-content="8">
+          <h2>Vaihe 8: Omens</h2>
+          <p>Heitä D2 jokaiselle pelaajalle määrittääksesi heidän Omen-numeronsa.</p>
+          <div class="omen-options">
+            <p><strong>1: Omen Effect 1 (Placeholder):</strong> Kuvaus Omen-efektille 1.</p>
+            <p><strong>2: Omen Effect 2 (Placeholder):</strong> Kuvaus Omen-efektille 2.</p>
+          </div>
+          <div class="prep-nav">
+            <button class="btn btn-secondary btn-prev-step" data-prev="7"><i class="fas fa-arrow-left"></i> Edellinen</button>
             <button id="reset-roadmap-new" class="btn btn-secondary">Aloita alusta</button>
           </div>
         </div>
@@ -243,98 +261,11 @@
     </div>
   </div>
 
-  <!-- DM Screen Tab -->
-  <div id="tab-dm" class="tab-content">
-    
-    <!-- Card Grid -->
-    <div class="card-grid">
 
-      <!-- Card 1: Core Rules -->
-      <div class="card">
-        <div class="card-header">
-          <h3><i class="fas fa-book"></i> Perussäännöt</h3>
-          <button class="btn-collapse"><i class="fas fa-chevron-up"></i></button>
-        </div>
-        <div class="card-content">
-          <p><strong>Taitotestit:</strong> Heitä d20 + ominaisuusmodifikaattori. Tavoite on yleensä 10 (Helppo), 15 (Keskivaikea) tai 20 (Vaikea).</p>
-          <p><strong>Taistelu:</strong> Aloite määrää vuorojärjestyksen. Vuorollasi voit liikkua ja tehdä yhden toiminnon.</p>
-        </div>
-      </div>
-
-      <!-- Card 2: Conditions -->
-      <div class="card">
-        <div class="card-header">
-          <h3><i class="fas fa-skull-crossbones"></i> Tilat</h3>
-          <button class="btn-collapse"><i class="fas fa-chevron-up"></i></button>
-        </div>
-        <div class="card-content">
-          <ul>
-            <li><strong>Sokeutunut:</strong> Haitta hyökkäyksissä. Hyökkääjillä on etu sinua vastaan.</li>
-            <li><strong>Pelästynyt:</strong> Haitta taitotarkistuksissa ja hyökkäysheitoissa, kun pelon lähde on näkyvissä.</li>
-            <li><strong>Makaa maassa:</strong> Haitta hyökkäyksissä. 5 jalan säteellä olevilla hyökkääjillä on etu.</li>
-          </ul>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- D&D Initiative Tracker (Conditional) -->
-    <div id="dnd-initiative-tracker">
-      <h2>Aloitteenseuranta</h2>
-      <div id="initiative-form">
-        <input id="init-name" type="text" placeholder="Hahmon nimi" />
-        
-        <select id="init-class">
-          <option value="fas fa-question-circle">Tuntematon</option>
-          <option value="fas fa-gavel">Taistelija</option>
-          <option value="fas fa-hand-sparkles">Velho</option>
-          <option value="fas fa-mask">Konna</option>
-          <option value="fas fa-cross">Pappi</option>
-          <option value="fas fa-leaf">Druidi</option>
-          <option value="fas fa-fist-raised">Munkki</option>
-          <option value="fas fa-shield-alt">Paladiini</option>
-          <option value="fas fa-bow-arrow">Samoilija</option>
-          <option value="fas fa-magic">Noiduri</option>
-          <option value="fas fa-book-dead">Manajaa</option>
-          <option value="fas fa-music">Bardi</option>
-          <option value="fas fa-axe">Barbaari</option>
-          <option value="fas fa-flask">Artifiseri</option>
-          <option value="fas fa-dragon">Hirviö</option>
-        </select>
-        
-        <input id="init-roll" type="number" placeholder="Heitto" />
-        <button id="add-to-init" class="btn">Lisää</button>geo
-      </div>
-      
-      <ul id="initiative-list">
-        <!-- Initiative list items -->
-      </ul>
-      <button id="sort-init" class="btn btn-secondary">Järjestä</button>
-      <button id="clear-init" class="btn btn-secondary">Tyhjennä</button>
-    </div>
-
-    <!-- Dread Nights Active Screen (Conditional) -->
-    <div id="dread-nights-active-screen">
-      <h2>Kauhun öiden kojelauta</h2>
-      <p>Tähän tulisivat Kauhun öiden aktiiviset työkalut, kuten kauhunseuranta tai satunnaistapahtumageneraattori.</p>
-    </div>
-
-  </div>
 
   <!-- REMOVED: Settings Tab -->
 
 </div> <!-- /container -->
-
-<!-- Player Link Modal -->
-<div id="player-link-modal" class="modal-overlay">
-  <div class="modal-content">
-    <button id="close-modal-btn" class="modal-close-btn">&times;</button>
-    <h2>Jaa pelaajien kanssa</h2>
-    <input id="playerLink" type="text" readonly />
-    <button id="copy-link-btn" class="btn">Kopioi linkki</button>
-    <p id="ipStatus">Verkkoa etsitään...</p>
-  </div>
-</div>
 
 <!-- Guild Name Tables Modal -->
 <div id="name-tables-modal" class="modal-overlay">

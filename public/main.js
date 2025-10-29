@@ -1,48 +1,23 @@
-// --- State ---
 let initiativeList = [];
 let ws;
 
-// --- DOM Elements ---
 document.addEventListener("DOMContentLoaded", () => {
-  // WebSocket Setup
   setupWebSocket();
-
-  // Tab Logic
   setupTabs();
-
-  // Initiative Tracker Logic
   setupInitiativeTracker();
-
-  // Player Link Logic
-  setupPlayerLink();
-  setupPlayerLinkModal(); 
-  
-  // Settings Logic
   setupSettings();
-  
-  // Prep Roadmap Logic
   setupRoadmap();
-
-  // Collapsible Cards
   setupCollapsibleCards();
-
-  // Omen Roller
   setupOmenRoller();
-
-  // Guild Selection
   setupGuildSelection();
-
-  // Guild Name Generator
   setupGuildNameGenerator();
-
-  // Character Name Generator
   setupCharacterNameGenerator();
-
-  // Occupation Generator
   setupOccupationGenerator();
+  setupVirtueGenerator();
+  setupViceGenerator();
+  setupMerchantMode();
 });
 
-// --- WebSockets ---
 function setupWebSocket() {
   const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
   ws = new WebSocket(`${wsProtocol}//${window.location.host}`);
@@ -79,7 +54,6 @@ function broadcastGameChange(gameName) {
   }
 }
 
-// --- Tabs ---
 function setupTabs() {
   const tabs = document.querySelectorAll(".tab-button");
   const contents = document.querySelectorAll(".tab-content");
@@ -97,7 +71,6 @@ function setupTabs() {
   showTab("tab-prep");
 }
 
-// --- Initiative ---
 function setupInitiativeTracker() {
   const addBtn = document.getElementById("add-to-init");
   const sortBtn = document.getElementById("sort-init");
@@ -177,62 +150,6 @@ function renderInitiativeList(animateNew) {
   });
 }
 
-// --- Player Link Modal ---  
-function setupPlayerLinkModal() {
-  const modal = document.getElementById("player-link-modal");
-  const showBtn = document.getElementById("show-player-link-btn");
-  const closeBtn = document.getElementById("close-modal-btn");
-
-  if (!modal || !showBtn || !closeBtn) return;
-
-  showBtn.addEventListener("click", () => {
-    const linkEl = document.getElementById("playerLink");
-    modal.classList.add("active");
-    if (linkEl && linkEl.value && linkEl.value.startsWith("http")) {
-      window.open(linkEl.value, "_blank");
-    }
-  });
-
-  closeBtn.addEventListener("click", () => modal.classList.remove("active"));
-  modal.addEventListener("click", (e) => {
-    if (e.target === modal) modal.classList.remove("active");
-  });
-}
-
-// --- Player Link ---
-async function setupPlayerLink() {
-  const copyBtn = document.getElementById("copy-link-btn");
-  const statusEl = document.getElementById("ipStatus");
-  const linkEl = document.getElementById("playerLink");
-
-  if(!copyBtn || !statusEl || !linkEl) return;
-
-  copyBtn.addEventListener("click", copyPlayerLink);
-
-  try {
-    const res = await fetch("/api/ip");
-    const data = await res.json();
-    const link = `http://${data.ip}:8080/player`;
-    linkEl.value = link;
-    statusEl.innerText = data.ip === "localhost" ? "⚠ Wi-Fi not detected — players must join via browser" : `✅ Network Active: ${data.ip}`;
-    statusEl.className = data.ip === "localhost" ? "status-warn" : "status-ok";
-  } catch {
-    statusEl.innerText = "❌ Cannot detect network";
-    statusEl.className = "status-error";
-  }
-}
-
-function copyPlayerLink() {
-  const input = document.getElementById("playerLink");
-  navigator.clipboard.writeText(input.value).then(() => {
-    const copyBtn = document.getElementById("copy-link-btn");
-    const originalText = copyBtn.textContent;
-    copyBtn.textContent = "Copied!";
-    setTimeout(() => { copyBtn.textContent = originalText; }, 1500);
-  }).catch(err => console.error("Failed to copy link: ", err));
-}
-
-// --- Settings ---
 function setupSettings() {
   const gameSelect = document.getElementById("game-select");
   if(!gameSelect) return;
@@ -267,7 +184,6 @@ function updateDmScreen(gameName) {
   }
 }
 
-// --- NEW: Prep Roadmap ---
 function setupRoadmap() {
     const roadmapSteps = document.querySelectorAll(".prep-roadmap-step");
     const contentSteps = document.querySelectorAll(".prep-content-step");
@@ -324,7 +240,6 @@ function setupCollapsibleCards() {
   });
 }
 
-// --- Omen Roller ---
 function setupOmenRoller() {
   const rollBtn = document.getElementById("roll-omen");
   const resultEl = document.querySelector("#omen-result span");
@@ -343,19 +258,66 @@ function setupOmenRoller() {
   });
 }
 
-// --- Guild Selection ---
 function setupGuildSelection() {
   const guildCards = document.querySelectorAll(".guild-card");
   if (guildCards.length === 0) return;
+
   guildCards.forEach(card => {
-    card.addEventListener("click", () => {
-      guildCards.forEach(c => c.classList.remove("selected"));
-      card.classList.add("selected");
-    });
+    if (card.dataset.guild !== "Merchant") {
+        card.addEventListener("click", () => {
+            guildCards.forEach(c => c.classList.remove("selected"));
+            card.classList.add("selected");
+            localStorage.setItem("merchantModeActive", "false");
+            document.getElementById("merchant-mode-indicator").style.display = "none";
+            applyDiscounts(false);
+        });
+    }
   });
+
+  const merchantButton = document.getElementById("enable-merchant-mode-btn");
+  if (merchantButton) {
+      merchantButton.addEventListener("click", () => {
+        const merchantCard = document.querySelector("[data-guild='Merchant']");
+        guildCards.forEach(c => c.classList.remove("selected"));
+        if(merchantCard) merchantCard.classList.add("selected");
+        localStorage.setItem("merchantModeActive", "true");
+        document.getElementById("merchant-mode-indicator").style.display = "block";
+        applyDiscounts(true);
+      });
+  }
 }
 
-// --- Character Name Generator ---
+function setupMerchantMode() {
+  const merchantMode = localStorage.getItem("merchantModeActive");
+  if (merchantMode === "true") {
+    document.getElementById("merchant-mode-indicator").style.display = "block";
+    const merchantCard = document.querySelector("[data-guild='Merchant']");
+    if(merchantCard) merchantCard.classList.add("selected");
+    applyDiscounts(true);
+  }
+
+  const disableButton = document.getElementById("disable-merchant-mode");
+  if(disableButton) {
+    disableButton.addEventListener("click", () => {
+      localStorage.setItem("merchantModeActive", "false");
+      document.getElementById("merchant-mode-indicator").style.display = "none";
+      const merchantCard = document.querySelector("[data-guild='Merchant']");
+      if(merchantCard) merchantCard.classList.remove("selected");
+      applyDiscounts(false);
+    });
+  }
+}
+
+function applyDiscounts(active) {
+  // This is a placeholder function. 
+  // When the shop is implemented, this function should be updated to apply/remove the 25% discount.
+  if (active) {
+    console.log("Merchant mode activated. Applying 25% discount.");
+  } else {
+    console.log("Merchant mode deactivated. Removing discount.");
+  }
+}
+
 const characterNames = [
   "Robert", "Louis", "Stevenson", "Spike", "Straker", "Carroll", "Hellsing", "Wells", "Mary", "Cushing",
   "Ned", "Shelly", "Shreck", "Jonathan", "Corinthian", "Morris", "Modroon", "Bree", "Harker", "Meater",
@@ -379,7 +341,6 @@ function setupCharacterNameGenerator() {
 
     if (!input || !resultEl || !modal || !showModalBtn || !closeModalBtn || !tablesContainer) return;
 
-    // Populate the modal with the character name table
     const tableHtml = createTableHtml(characterNames, "Hahmon Nimet");
     tablesContainer.innerHTML = `<div class="name-table-wrapper">${tableHtml}</div>`;
 
@@ -403,7 +364,6 @@ function setupCharacterNameGenerator() {
     });
 }
 
-// --- Occupation Generator ---
 const occupations = [
   { occupation: "Teurastaja", benefit: "+1 STR" }, { occupation: "Leipuri", benefit: "+1 PRC" },
   { occupation: "Kynttiläntekijä", benefit: "Kantaa aina kynttilää" }, { occupation: "Rotanpyydystäjä", benefit: "+1 TGH" },
@@ -514,8 +474,6 @@ function setupOccupationGenerator() {
     });
 }
 
-
-// --- Guild Name Generator ---
 const guildNamePart1 = [
   "The Bow", "The Legged", "The Dusty", "The Cossack", "The Crypt", "The Beast", "The Wet", "The Small", "The Tidy", "The Left",
   "The Right", "The Lockwith", "The Bay", "The Angels", "The Red", "The Blue", "The Green", "The Immature", "The Poor", "The Wise",
@@ -603,4 +561,86 @@ function createTableHtml(data, caption) {
       </tbody>
     </table>
   `;
+}
+
+const virtues = [
+    { virtue: "Aloittelija", description: "Ei hyvettä" },
+    { virtue: "Metsästäjä", description: "Kaatuneen vampyyrin lähellä voit käyttää varrasta ilmaiseksi." },
+    { virtue: "Toinen mahdollisuus", description: "Kuolonpelastuksen voi heittää uudelleen." },
+    { virtue: "Takoja", description: "Kaikki aseesi ovat aina hopeoituja." },
+    { virtue: "Epäuskoinen", description: "Pro testit joita pedot laittavat tekemään läpäistään aina." },
+    { virtue: "Verivala", description: "Immuuni infektioille." },
+    { virtue: "Kissansilmät", description: "Pimeys ei haittaa." },
+    { virtue: "Ei mitään", description: "Heitä uudelleen." },
+    { virtue: "Mighty Blow", description: "When using a Stone Hammer always deal 1 damage." },
+    { virtue: "Nopeat kädet", description: "Lataa ilmaisena tekona." },
+    { virtue: "Organisoitu", description: "Tilaa kolmelle lisätavaralle." },
+    { virtue: "Yhteyksissa", description: "Jos kaadut, saat kuolonpelastuksen automaattisesti ja uuden aseen." },
+    { virtue: "Puutyötaitoinen", description: "Vaarnat eivät vie tilaa ja omaa aina yhden." },
+    { virtue: "Tohtori", description: "Aloittaa aina ilmaisella tohtorin salkulla." },
+    { virtue: "Valkosipulifarmari", description: "Haisee niin pahalta että vampyyrit saavat -3 hyökkäyksiinsä häneen." },
+    { virtue: "Ylimistö", description: "Jos elää skenaarion lopussa, joukko saa 5 lisäshillinkiä." },
+    { virtue: "Ei mitään", description: "Heitä uudelleen" },
+    { virtue: "Kirottu", description: "Ei voi kuolla, mutta ei voi parantaa HPta." },
+    { virtue: "Likainen tappelija", description: "Nyrkit tekevät D4 vahinkoa ja saavat julma lisäosan." },
+    { virtue: "Koulutettu", description: "Valitse hyveesi itse!" },
+];
+
+function setupVirtueGenerator() {
+    const input = document.getElementById("d20-virtue-input");
+    const resultDisplay = document.getElementById("virtue-result-display");
+
+    if (!input || !resultDisplay) return;
+
+    input.addEventListener("input", () => {
+        const roll = parseInt(input.textContent, 10);
+
+        if (roll >= 1 && roll <= 20) {
+            const virtue = virtues[roll - 1];
+            resultDisplay.innerHTML = `<div class="occupation-result-card"><h3>${virtue.virtue}</h3><p>${virtue.description}</p></div>`;
+        } else {
+            resultDisplay.innerHTML = "";
+        }
+    });
+}
+
+const vices = [
+    { vice: "Sadekuuro", description: "Pyöritä kahdesti uudestaan. Molemmat." },
+    { vice: "Tupakanpolttaja", description: "Tgh -1 Agt -1" },
+    { vice: "Epäonnekas", description: "Pyöritä aina 20 uudestaan." },
+    { vice: "Kauhujen kangistama", description: "-3 etäiskuihin." },
+    { vice: "Lukutaidoton", description: "Ei voi lukea manuskripteja." },
+    { vice: "Anaphylaxis", description: "Ei voi kantaa valkosipulia." },
+    { vice: "Pelokas", description: "-3 Moraalitesteihin." },
+    { vice: "Selenophobia", description: "-3 kaikkeon täysikuun aikaan." },
+    { vice: "Heikkomieli", description: "Et läpäise infektiotestejä." },
+    { vice: "Epäkuolleiden pelko", description: "-3 kun taistelet epäkuolleita." },
+    { vice: "Kipeänä", description: "-1 Agt -1 Tgh" },
+    { vice: "Varastelija", description: "Varastaa 5 shillinkiä satunnaiselta jäseneltä." },
+    { vice: "Pimeän pelko", description: "Pitää aina olla valon lähellä." },
+    { vice: "Oppimaton", description: "Ei voi parantaa XP:llä." },
+    { vice: "Uninen", description: "-2 Pre." },
+    { vice: "Tautinen", description: "Joka skenaario alussa D4. +3 on sairas." },
+    { vice: "Vampyyripeko", description: "Jos vampyyreja on läsnä. Moraalitesti jatkuvasti." },
+    { vice: "Allergikko", description: "-1 jos vihollinen on eläimellinen." },
+    { vice: "Ylityö", description: "-1 Str" },
+    { vice: "Onnekas", description: "Ei pahetta." },
+];
+
+function setupViceGenerator() {
+    const input = document.getElementById("d20-vice-input");
+    const resultDisplay = document.getElementById("vice-result-display");
+
+    if (!input || !resultDisplay) return;
+
+    input.addEventListener("input", () => {
+        const roll = parseInt(input.textContent, 10);
+
+        if (roll >= 1 && roll <= 20) {
+            const vice = vices[roll - 1];
+            resultDisplay.innerHTML = `<div class="occupation-result-card"><h3>${vice.vice}</h3><p>${vice.description}</p></div>`;
+        } else {
+            resultDisplay.innerHTML = "";
+        }
+    });
 }
