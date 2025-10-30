@@ -5,6 +5,7 @@
  * This keeps the main logic file (main.js) clean and data-driven.
  */
 
+// Data separated from main.js
 const characterNames = [
   "Robert", "Louis", "Stevenson", "Spike", "Straker", "Carroll", "Hellsing", "Wells", "Mary", "Cushing",
   "Ned", "Shelly", "Shreck", "Jonathan", "Corinthian", "Morris", "Modroon", "Bree", "Harker", "Meater",
@@ -117,3 +118,26 @@ const vices = [
   { vice: "Ylityö", description: "-1 Str" },
   { vice: "Onnekas", description: "Ei pahetta." },
 ];
+
+// Data for Quick Generator Tool
+const quickGeneratorData = {
+  "NPC Name": characterNames,
+  "Tavern Name": [
+    "The Prancing Pony", "The Green Dragon", "The Leaky Cauldron", "The Eager Beaver", "The Drunken Huntsman", 
+    "The Queen's Head", "The King's Head", "The Ragged Flagon", "The Bannered Mare", "The Winking Skeever"
+  ],
+  "Rumor": [
+    "I heard old man Hemlock is a werewolf.",
+    "The guards are taking bribes down at the docks.",
+    "Someone saw a ghost ship in the fog last night.",
+    "The harvest is failing... people say it's a curse.",
+    "A nobleman's daughter ran off with a vampire!"
+  ],
+  "Loot (Common)": [
+    "1d6 Shillings", "Tattered Rope (10m)", "Half-empty Whiskey Flask", "Flint & Steel", "Stale Bread", "A single boot"
+  ],
+  "Loot (Rare)": [
+    "Ihmeparannusaine (Healing Potion)", "Silver Bullet (x1)", "Pistol (1 shot)", "Map to a hidden cache", "Noble's Signet Ring"
+  ]
+};
+

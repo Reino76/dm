@@ -121,7 +121,7 @@ document.addEventListener("DOMContentLoaded", () => {
           elementToFullscreen.requestFullscreen().catch(err => {
             console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
           });
-          DOM.fullscreenBtn.innerHTML = '<i class.fast-compress"></i> Exit Fullscreen';
+          DOM.fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i> Exit Fullscreen';
         }
       } else {
         // Exit fullscreen

@@ -4,11 +4,18 @@
 <title>DM Screen</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display.swap" rel="stylesheet">
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
+<!-- GridStack CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gridstack/dist/gridstack.min.css" />
+
 <link rel="stylesheet" href="style.css">
+
+<!-- GridStack JS (after CSS, before main.js) -->
+<script src="https://cdn.jsdelivr.net/npm/gridstack/dist/gridstack-all.js"></script>
+<!-- Load data first, then the main script. Use defer for performance. -->
 <script src="data.js" defer></script>
 <script src="main.js" defer></script>
 </head>
@@ -16,7 +23,7 @@
 
 <div class="container">
   <div class="header">
-    <button id="open-player-window-btn" class="btn btn-secondary">
+    <button id="open-player-window-btn" class="btn btn-secondary hidden">
       <i class="fas fa-window-restore"></i> Avaa pelaajan näyttö
     </button>
     
@@ -26,6 +33,9 @@
         <option value="D&D 5e">D&D 5e</option>
       </select>
     </div>
+    <button id="toggle-map-btn" class="btn btn-secondary">
+      <i class="fas fa-map"></i> Toggle Map
+    </button>
     <div id="merchant-mode-indicator" class="merchant-mode-indicator hidden">
       <span>Merchant Mode Active</span>
       <button id="disable-merchant-mode" class="btn btn-sm btn-danger">Disable</button>
@@ -37,8 +47,10 @@
     <button class="tab-button" data-tab="tab-dm-screen">DM Screen</button>
   </div>
 
+  <!-- ### PREPARATION TAB ### -->
   <div id="tab-prep" class="tab-content active">
     <div class="prep-layout">
+      <!-- Left Column: Roadmap -->
       <div class="prep-roadmap">
         <div class="prep-roadmap-step active" data-step="1">
           <span class="step-number">1</span>
@@ -74,55 +86,77 @@
         </div>
       </div>
 
+      <!-- Right Column: Content -->
       <div class="prep-content">
+        <!-- Step 1 Content: Guilds -->
         <div class="prep-content-step active" data-step-content="1">
           <div class="guild-selection-container">
-            <div class="guild-card" data-guild="Streetfolk">
-              <h4>Streetfolk</h4>
-              <ul>
-                <li><strong>Hyve:</strong> Kissansilmät</li>
-                <li>1x Satunnainen Tavara</li>
-              </ul>
-              <div class="guild-reward">
-                <strong>Palkkio:</strong> 10 Shillinkiä
+            <div class="guild-card card" data-guild="Streetfolk">
+              <div class="card-header">
+                <h4>Streetfolk</h4>
+                <button class="btn-collapse"><i class="fas fa-chevron-down"></i></button>
+              </div>
+              <div class="card-content">
+                <ul>
+                  <li><strong>Hyve:</strong> Kissansilmät</li>
+                  <li>1x Satunnainen Tavara</li>
+                </ul>
+                <div class="guild-reward">
+                  <strong>Palkkio:</strong> 10 Shillinkiä
+                </div>
               </div>
             </div>
-            <div class="guild-card" data-guild="Faithless">
-              <h4>Faithless</h4>
-              <ul>
-                <li><strong>Hyve:</strong> Epäusko</li>
-                <li>Voi ohittaa 1x MORAALI-tarkistuksen</li>
-              </ul>
-              <div class="guild-reward">
-                <strong>Palkkio:</strong> 15 Shillinkiä
+            <div class="guild-card card" data-guild="Faithless">
+              <div class="card-header">
+                <h4>Faithless</h4>
+                <button class="btn-collapse"><i class="fas fa-chevron-down"></i></button>
+              </div>
+              <div class="card-content">
+                <ul>
+                  <li><strong>Hyve:</strong> Epäusko</li>
+                  <li>Voi ohittaa 1x MORAALI-tarkistuksen</li>
+                </ul>
+                <div class="guild-reward">
+                  <strong>Palkkio:</strong> 15 Shillinkiä
+                </div>
               </div>
             </div>
-            <div class="guild-card" data-guild="Merchant">
-              <h4>Merchant</h4>
-              <ul>
-                <li>Aletta 25% kaikesta</li>
-              </ul>
-              <div class="guild-reward">
-                <strong>Palkkio:</strong> 20 Shillinkiä
+            <div class="guild-card card" data-guild="Merchant">
+              <div class="card-header">
+                <h4>Merchant</h4>
+                <button class="btn-collapse"><i class="fas fa-chevron-down"></i></button>
               </div>
-              <button id="enable-merchant-mode-btn" class="btn btn-sm">Enable Merchant Mode</button>
+              <div class="card-content">
+                <ul>
+                  <li>Aletta 25% kaikesta</li>
+                </ul>
+                <div class="guild-reward">
+                  <strong>Palkkio:</strong> 20 Shillinkiä
+                </div>
+                <button id="enable-merchant-mode-btn" class="btn btn-sm" style="margin-top: 10px;">Enable Merchant Mode</button>
+              </div>
             </div>
-            <div class="guild-card" data-guild="Fallen">
-              <h4>Fallen</h4>
-              <div class="guild-reward">
-                <strong>Palkkio:</strong> 10 Shillinkiä
+            <div class="guild-card card" data-guild="Fallen">
+              <div class="card-header">
+                <h4>Fallen</h4>
+                <button class="btn-collapse"><i class="fas fa-chevron-down"></i></button>
               </div>
-              <table>
-                <thead>
-                  <tr><th>D4</th><th>Bonus</th></tr>
-                </thead>
-                <tbody>
-                  <tr><td>1</td><td>Parannettu vampyyri</td></tr>
-                  <tr><td>2</td><td>Parannettu ihmissusi</td></tr>
-                  <tr><td>3</td><td><strong>Hyve:</strong> Kaikki aseet hopeisia</td></tr>
-                  <tr><td>4</td><td><strong>Hyve:</strong> Kostonhimoinen (+3)</td></tr>
-                </tbody>
-              </table>
+              <div class="card-content">
+                <div class="guild-reward">
+                  <strong>Palkkio:</strong> 10 Shillinkiä
+                </div>
+                <table>
+                  <thead>
+                    <tr><th>D4</th><th>Bonus</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr><td>1</td><td>Parannettu vampyyri</td></tr>
+                    <tr><td>2</td><td>Parannettu ihmissusi</td></tr>
+                    <tr><td>3</td><td><strong>Hyve:</strong> Kaikki aseet hopeisia</td></tr>
+                    <tr><td>4</td><td><strong>Hyve:</strong> Kostonhimoinen (+3)</td></tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
           <div class="prep-nav">
@@ -130,6 +164,7 @@
           </div>
         </div>
 
+        <!-- Step 2 Content: Guild Name -->
         <div class="prep-content-step" data-step-content="2">
           <div class="name-generator-container">
             <div class="dice-indicator">d100</div>
@@ -146,6 +181,7 @@
           </div>
         </div>
 
+        <!-- Step 3 Content: Character Name -->
         <div class="prep-content-step" data-step-content="3">
           <div class="name-generator-container">
             <div class="dice-indicator">d100</div>
@@ -161,6 +197,7 @@
           </div>
         </div>
 
+        <!-- Step 4 Content: Occupation -->
         <div class="prep-content-step" data-step-content="4">
           <div class="name-generator-container">
             <div class="dice-indicator">d100</div>
@@ -168,9 +205,11 @@
               <input type="number" class="d-input-square" id="occupation-input" min="1" max="100">
             </div>
             <div id="occupation-result-display">
-              </div>
+              <!-- Result will be injected here -->
+            </div>
           </div>
 
+          <!-- Reroll section for roll 50 -->
           <div id="occupation-reroll-section" class="hidden">
             <h4>Kaksoisvuoro! Syötä kaksi uutta d100-heittoa:</h4>
             <div class="name-generator-container">
@@ -192,15 +231,18 @@
           </div>
         </div>
 
+        <!-- Step 5 Content: Stats -->
         <div class="prep-content-step" data-step-content="5">
           <h2>Vaihe 5: Stats</h2>
           <p>Tähän tulee hahmon stat-blockien generointi tai syöttö.</p>
+          <!-- Placeholder for stats content -->
           <div class="prep-nav">
             <button class="btn btn-secondary btn-prev-step" data-prev="4"><i class="fas fa-arrow-left"></i> Edellinen</button>
             <button class="btn btn-next-step" data-next="6">Seuraava <i class="fas fa-arrow-right"></i></button>
           </div>
         </div>
 
+        <!-- Step 6 Content: Virtues -->
         <div class="prep-content-step" data-step-content="6">
           <div class="name-generator-container">
             <div class="dice-indicator">d20</div>
@@ -208,7 +250,8 @@
               <input type="number" class="d-input-square" id="virtue-input" min="1" max="20">
             </div>
             <div id="virtue-result-display">
-              </div>
+              <!-- Result will be injected here -->
+            </div>
           </div>
           <div class="prep-nav">
             <button class="btn btn-secondary btn-prev-step" data-prev="5"><i class="fas fa-arrow-left"></i> Edellinen</button>
@@ -216,6 +259,7 @@
           </div>
         </div>
 
+        <!-- Step 7 Content: Vices -->
         <div class="prep-content-step" data-step-content="7">
           <div class="name-generator-container">
             <div class="dice-indicator">d20</div>
@@ -223,7 +267,8 @@
               <input type="number" class="d-input-square" id="vice-input" min="1" max="20">
             </div>
             <div id="vice-result-display">
-              </div>
+              <!-- Result will be injected here -->
+            </div>
           </div>
           <div class="prep-nav">
             <button class="btn btn-secondary btn-prev-step" data-prev="6"><i class="fas fa-arrow-left"></i> Edellinen</button>
@@ -231,9 +276,11 @@
           </div>
         </div>
 
+        <!-- Step 8 Content: Omens -->
         <div class="prep-content-step" data-step-content="8">
           <h2>Vaihe 8: Omens</h2>
           <p>Heitä D2 jokaiselle pelaajalle määrittääksesi heidän Omen-numeronsa.</p>
+          <!-- Omen Roller (moved from non-existent DM screen part) -->
           <div class="omen-roller">
             <button id="roll-omen" class="btn">Heitä Omen (d2)</button>
             <div id="omen-result">Omen: <span>-</span></div>
@@ -247,8 +294,15 @@
             <button id="reset-roadmap-new" class="btn btn-secondary">Aloita alusta</button>
           </div>
         </div>
-      </div> </div> </div> <div id="tab-dm-screen" class="tab-content">
+      </div> <!-- /prep-content -->
+    </div> <!-- /prep-layout -->
+  </div> <!-- /tab-prep -->
+
+
+  <!-- ### DM SCREEN TAB ### -->
+  <div id="tab-dm-screen" class="tab-content">
     
+    <!-- D&D 5e Initiative Tracker -->
     <div id="dnd-initiative-tracker" class="hidden">
       <h3>Initiative Tracker (D&D 5e)</h3>
       <form id="initiative-form">
@@ -275,39 +329,166 @@
       <ul id="initiative-list" style="margin-top: 20px;"></ul>
     </div>
     
+    <!-- Dread Nights Screen (NEW WIDGET DASHBOARD) -->
     <div id="dread-nights-active-screen" class="hidden">
-      <h3>Dread Nights Screen</h3>
-      <p>Tähän voi lisätä Dread Nights -pelin hallintatyökaluja.</p>
-      <div class="card-grid">
-        <div class="card">
-          <div class="card-header">
-            <h3><i class="fas fa-book-skull"></i> Quick Rules</h3>
-            <button class="btn-collapse"><i class="fas fa-chevron-down"></i></button>
-          </div>
-          <div class="card-content">
-            <p><strong>Morale Check:</strong> Roll d20. On 1-3, flee. On 4-6, freeze.</p>
-            <p><strong>Infection:</strong> Roll d20 after being hit by undead...</p>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-header">
-            <h3><i class="fas fa-map-signs"></i> Locations</h3>
-            <button class="btn-collapse"><i class="fas fa-chevron-down"></i></button>
-          </div>
-          <div class="card-content">
-            <p>The Old Church</p>
-            <p>The Foggy Docks</p>
-          </div>
-        </div>
+      
+      <!-- Control Bar -->
+      <div class="widget-controls-bar">
+        <button id="add-widget-btn" class="btn btn-sm"><i class="fas fa-plus"></i> Add Widget</button>
+        <button id="lock-layout-btn" class="btn btn-sm btn-secondary" data-locked="false">
+          <i class="fas fa-lock-open"></i> Lock Layout
+        </button>
       </div>
+
+      <!-- Widget Dashboard -->
+      <div class="grid-stack widget-dashboard">
+        
+        <!-- Column 1: Core Mechanics -->
+        <div class="grid-stack-item static-widget" gs-w="4" gs-h="3" gs-x="0" gs-y="0">
+          <div class="grid-stack-item-content card">
+            <div class="widget-header">
+              <h4><i class="fas fa-exclamation-triangle"></i> Core Tests</h4>
+              <div class="widget-controls">
+                <button class="btn-widget-close"><i class="fas fa-times"></i></button>
+              </div>
+            </div>
+            <div class="widget-body">
+              <h5 class="widget-subtitle">!! SHOCK TEST !!</h5>
+              <p><strong>Test:</strong> <span class="highlight-key">TGH DR14</span></p>
+              <p><strong>Fail:</strong> Roll <span class="highlight-roll">D4</span> on <span class="highlight-link">Shock Table</span>.</p>
+              
+              <h5 class="widget-subtitle"><i class="fas fa-biohazard"></i> Infection Test</h5>
+              <p><strong>Test:</strong> <span class="highlight-key">TGH DR14</span></p>
+              <p><strong>Fail:</strong> Roll <span class="highlight-roll">D8</span> on <span class="highlight-link">Infection Table</span>.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-stack-item static-widget" gs-w="4" gs-h="3" gs-x="0" gs-y="3">
+          <div class="grid-stack-item-content card">
+            <div class="widget-header">
+              <h4><i class="fas fa-heart-pulse"></i> Death & Dying</h4>
+              <div class="widget-controls">
+                <button class="btn-widget-close"><i class="fas fa-times"></i></button>
+              </div>
+            </div>
+            <div class="widget-body">
+              <p><strong>At 0 HP:</strong> Collapse. Helpless.</p>
+              <p><strong>Test:</strong> Roll <span class="highlight-roll">D6</span> each turn.</p>
+              <p><strong>Result:</strong> <span class="highlight-key">-1 HP</span> per turn.</p>
+              <p><strong>At -2 HP:</strong> <span class="highlight-death">KUOLEMA (DEATH)</span>.</p>
+              <p>A <span class="highlight-key">D6</span> roll of 6 stabilizes.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Column 2: Combat -->
+        <div class="grid-stack-item static-widget" gs-w="4" gs-h="4" gs-x="4" gs-y="0">
+            <div class="grid-stack-item-content card">
+                <div class="widget-header">
+                <h4><i class="fas fa-swords"></i> Combat Actions</h4>
+                <div class="widget-controls">
+                    <button class="btn-widget-close"><i class="fas fa-times"></i></button>
+                </div>
+                </div>
+                <div class="widget-body">
+                <p><strong>Actions (2 per turn):</strong></p>
+                <ul class="widget-list">
+                    <li><strong>Move:</strong> (AGT meters)</li>
+                    <li><strong>Attack:</strong> (STR/AGT Test)</li>
+                    <li><strong>Aim:</strong> (+2 Dmg / -2 DR)</li>
+                    <li><strong>Use Item / Reload</strong></li>
+                    <li><strong>Defend:</strong> (+3 Armor)</li>
+                    <li><strong>Flee:</strong> (PRC Test)</li>
+                </ul>
+                <p><strong>2-Handed:</strong> Act "Slow" (after all 1-hand actions).</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid-stack-item" gs-w="4" gs-h="3" gs-x="4" gs-y="4">
+            <div class="grid-stack-item-content card collapsed">
+                <div class="widget-header">
+                <h4><i class="fas fa-star"></i> Crit & Fumble</h4>
+                <div class="widget-controls">
+                    <button class="btn-widget-collapse"><i class="fas fa-chevron-down"></i></button>
+                    <button class="btn-widget-close"><i class="fas fa-times"></i></button>
+                </div>
+                </div>
+                <div class="widget-body card-content">
+                    <h5 class="widget-subtitle">Crit (Nat 20)</h5>
+                    <table class="quick-table">
+                        <tr><td>Attack</td><td>2x DMG or -1 Armor Tier</td></tr>
+                        <tr><td>Defense</td><td>Free Move or Attacker Stunned</td></tr>
+                    </table>
+                    <h5 class="widget-subtitle">Fumble (Nat 1)</h5>
+                    <table class="quick-table">
+                        <tr><td>Attack</td><td>Lose Ammo / Weapon Jam / Hit Ally</td></tr>
+                        <tr><td>Defense</td><td>Take 2x DMG / -1 Armor Tier</td></tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Column 3: Tools & World -->
+        <div class="grid-stack-item tool-widget" gs-w="4" gs-h="2" gs-x="8" gs-y="0">
+            <div class="grid-stack-item-content card">
+                <div class="widget-header">
+                <h4><i class="fas fa-dice"></i> Quick Roller</h4>
+                <div class="widget-controls">
+                    <button class="btn-widget-close"><i class="fas fa-times"></i></button>
+                </div>
+                </div>
+                <div class="widget-body">
+                    <div id="quick-roller-result">[ 0 ]</div>
+                    <div id="quick-roller-buttons">
+                        <button class="btn btn-sm" data-die="4">d4</button>
+                        <button class="btn btn-sm" data-die="6">d6</button>
+                        <button class="btn btn-sm" data-die="8">d8</button>
+                        <button class="btn btn-sm" data-die="10">d10</button>
+                        <button class="btn btn-sm" data-die="12">d12</button>
+                        <button class="btn btn-sm" data-die="20">d20</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid-stack-item tool-widget" gs-w="4" gs-h="3" gs-x="8" gs-y="2">
+            <div class="grid-stack-item-content card">
+                <div class="widget-header">
+                <h4><i class="fas fa-user-plus"></i> Quick Generator</h4>
+                <div class="widget-controls">
+                    <button class="btn-widget-close"><i class="fas fa-times"></i></button>
+                </div>
+                </div>
+                <div class="widget-body">
+                    <select id="quick-gen-select" class="widget-input">
+                        <option value="NPC Name">NPC Name</option>
+                        <option value="Tavern Name">Tavern Name</option>
+                        <option value="Rumor">Rumor</option>
+                        <option value="Loot (Common)">Loot (Common)</option>
+                        <option value="Loot (Rare)">Loot (Rare)</option>
+                    </select>
+                    <button id="quick-gen-btn" class="btn btn-sm" style="width: 100%;">Generate</button>
+                    <div id="quick-gen-result">...</div>
+                </div>
+            </div>
+        </div>
+
+      </div> <!-- /grid-stack -->
     </div>
     
-  </div> </div> <div id="name-tables-modal" class="modal-overlay">
+  </div> <!-- /tab-dm-screen -->
+</div> <!-- /container -->
+
+<!-- ### MODALS ### -->
+<div id="name-tables-modal" class="modal-overlay">
   <div class="modal-content modal-wide">
     <button id="close-name-tables-modal" class="modal-close-btn">&times;</button>
     <h2>Killan Nimen Taulukot</h2>
     <div id="name-tables-content-modal" class="name-tables-container">
-      </div>
+      <!-- Tables will be populated by JavaScript -->
+    </div>
   </div>
 </div>
 
@@ -316,7 +497,8 @@
     <button id="close-char-name-table-modal" class="modal-close-btn">&times;</button>
     <h2>Hahmon Nimen Taulukko</h2>
     <div id="char-name-table-content-modal" class="name-tables-container">
-      </div>
+      <!-- Table will be populated by JavaScript -->
+    </div>
   </div>
 </div>
 
@@ -325,9 +507,29 @@
     <button id="close-occupation-table-modal" class="modal-close-btn">&times;</button>
     <h2>Työnkuvien Taulukko</h2>
     <div id="occupation-table-content-modal" class="name-tables-container">
-      </div>
+      <!-- Table will be populated by JavaScript -->
+    </div>
+  </div>
+</div>
+
+<!-- ### Floating Table Map Window ### -->
+<div id="table-map-window" class="collapsed hidden">
+  <div class="map-header">
+    <span><i class="fas fa-map-location-dot"></i> Table Map</span>
+    <button id="map-collapse-btn" class="btn-collapse"><i class="fas fa-chevron-up"></i></button>
+  </div>
+  <div class="map-content">
+    <div class="map-area">
+      <div class="map-token me">ME (DM)</div>
+      <!-- Added tokens will go here -->
+    </div>
+    <div class="map-controls">
+      <input type="text" id="map-token-name" placeholder="Token Name">
+      <button id="add-map-token-btn" class="btn btn-sm">Add</button>
+    </div>
   </div>
 </div>
 
 </body>
 </html>
+

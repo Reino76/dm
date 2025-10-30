@@ -1,5 +1,5 @@
 /* --- Import Google Fonts (Sharp "Inter") --- */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display.swap');
 
 /* --- Root Variables (Sharp Dark/Red Theme) --- */
 :root {
@@ -407,8 +407,6 @@ textarea {
 }
 
 /* --- NEW: Roadmap Styles (Original) --- */
-/* These were removed in the original file, but they are clearly needed for the Prep tab. */
-/* Keeping the original two-column layout styles. */
 #tab-prep {
   padding: 0;
 }
@@ -593,7 +591,7 @@ textarea {
   color: var(--text-color);
 }
 
-/* --- NEW: Card Styles --- */
+/* --- Card Styles (Still used in Prep) --- */
 .card-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -629,6 +627,12 @@ textarea {
   align-items: center;
   gap: 10px;
 }
+.card-header h4 { /* Added for guild cards */
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin-bottom: 10px;
+}
 
 .btn-collapse {
   background: none;
@@ -639,17 +643,29 @@ textarea {
   transition: transform 0.2s ease-in-out;
 }
 
+.btn-collapse i {
+  transition: transform 0.3s ease-in-out;
+  transform: rotate(0deg);
+}
+
 .card.collapsed .btn-collapse i {
-  transform: rotate(180deg);
+  transform: rotate(-180deg);
 }
 
 .card-content {
-  padding: 15px;
   line-height: 1.7;
+  overflow: hidden;
+  max-height: 1000px; /* Set to a value larger than any card will ever be */
+  opacity: 1;
+  padding: 15px;
+  transition: max-height 0.4s ease-in-out, opacity 0.3s ease-in-out, padding 0.4s ease-in-out;
 }
 
 .card.collapsed .card-content {
-  display: none;
+  max-height: 0;
+  opacity: 0;
+  padding-top: 0;
+  padding-bottom: 0;
 }
 
 .card-content p,
@@ -753,12 +769,7 @@ textarea {
 }
 
 .guild-card {
-  background: var(--bg-color);
-  border: 2px solid var(--border-color);
-  border-radius: var(--radius-sharp);
-  padding: 15px;
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
+  /* This rule is a duplicate/conflict, but we'll leave it as it's part of the card system */
 }
 
 .guild-card:hover {
@@ -971,3 +982,329 @@ textarea {
 #background-mode-content:fullscreen h1 {
   font-size: 3rem; /* Make title bigger in fullscreen */
 }
+
+/* --- DM Screen Quick Tables (Restored) --- */
+.table-title {
+  color: var(--primary-color);
+  font-weight: 700;
+  margin-top: 15px;
+  margin-bottom: 5px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 5px;
+}
+.table-title:first-child {
+  margin-top: 0;
+}
+
+.quick-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 10px;
+}
+
+.quick-table tr {
+  border-bottom: 1px solid var(--border-color);
+}
+.quick-table tr:last-child {
+  border-bottom: none;
+}
+
+.quick-table td {
+  padding: 8px 5px;
+}
+
+.quick-table td:first-child {
+  font-weight: 700;
+  color: var(--text-muted);
+  width: 60px; /* For d6, d8, etc. */
+}
+
+/* --- UPDATED: Movable Table Map Window --- */
+#table-map-window {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 350px;
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sharp);
+  box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+  z-index: 50; /* Below modals (100) */
+}
+
+.map-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  background: var(--bg-color);
+  border-bottom: 1px solid var(--border-color);
+  cursor: grab;
+  font-weight: 700;
+}
+.map-header:active {
+  cursor: grabbing;
+}
+.map-header .btn-collapse {
+  font-size: 1rem;
+}
+
+.map-content {
+  /* Animated collapse properties */
+  overflow: hidden;
+  max-height: 500px;
+  opacity: 1;
+  transition: max-height 0.4s ease-in-out, opacity 0.3s ease-in-out, padding 0.4s ease-in-out;
+}
+
+#table-map-window.collapsed .map-content {
+  max-height: 0;
+  opacity: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.map-area {
+  /* Changed from flex to relative */
+  position: relative;
+  height: 250px; /* Fixed height for a defined area */
+  padding: 15px;
+  background: var(--bg-color);
+  border-bottom: 1px solid var(--border-color);
+  overflow: hidden; /* Ensure tokens don't spill out */
+}
+
+.map-token {
+  /* Changed to absolute positioning */
+  position: absolute;
+  width: 70px;
+  height: 70px;
+  background: var(--primary-color);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-align: center;
+  padding: 5px;
+  border-radius: var(--radius-sharp);
+  word-break: break-word;
+  line-height: 1.2;
+  cursor: grab; /* Movable */
+  user-select: none; /* Prevent text selection while dragging */
+}
+
+.map-token.me {
+  background: var(--status-ok);
+  color: var(--bg-color);
+  /* Anchored to bottom-center */
+  bottom: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.map-token.dragging {
+  z-index: 10;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+  cursor: grabbing;
+}
+
+.map-controls {
+  display: flex;
+  gap: 10px;
+  padding: 15px;
+}
+.map-controls input {
+  margin-bottom: 0;
+}
+.map-controls .btn-sm {
+  flex-shrink: 0; /* Prevent button from shrinking */
+}
+
+/* --- NEW: Widget Dashboard Styles --- */
+
+.widget-controls-bar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.widget-dashboard {
+  background: var(--bg-color);
+  border-radius: var(--radius-sharp);
+  padding: 10px;
+}
+
+/* Style for the widget container from GridStack */
+.grid-stack-item-content {
+  /* Use the .card styles you already have! */
+  background: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sharp);
+  overflow: hidden; /* Important for collapse animation */
+}
+
+.widget-header {
+  /* Re-use .card-header styles */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px; /* Slightly smaller padding */
+  border-bottom: 1px solid var(--border-color);
+  cursor: move; /* Default is move */
+}
+
+.widget-header h4 {
+  font-size: 1.1rem; /* Smaller header */
+  font-weight: 700;
+  color: var(--primary-color);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+}
+
+.widget-controls {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.widget-controls .btn-widget-collapse,
+.widget-controls .btn-widget-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1rem; /* Smaller icon */
+  cursor: pointer;
+  padding: 5px;
+}
+.widget-controls .btn-widget-collapse:hover,
+.widget-controls .btn-widget-close:hover {
+  color: var(--primary-color-hover);
+}
+
+.widget-body {
+  /* Re-use .card-content styles */
+  line-height: 1.7;
+  overflow: hidden;
+  max-height: 1000px;
+  opacity: 1;
+  padding: 15px;
+  transition: max-height 0.4s ease-in-out, opacity 0.3s ease-in-out, padding 0.4s ease-in-out;
+}
+
+/* Collapsed state for widgets */
+.grid-stack-item-content.collapsed .widget-body {
+  max-height: 0;
+  opacity: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+.grid-stack-item-content.collapsed .btn-widget-collapse i {
+  transform: rotate(-180deg);
+}
+.btn-widget-collapse i {
+  transition: transform 0.3s ease-in-out;
+}
+
+/* Static widgets just have no collapse button */
+.static-widget .btn-widget-collapse {
+  display: none;
+}
+.static-widget .widget-body {
+  background: var(--bg-color); /* Darker than collapsible bodies */
+}
+
+
+/* Tool Widget Specifics */
+#quick-roller-result {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--primary-color);
+  text-align: center;
+  margin-bottom: 15px;
+  background: var(--bg-color);
+  padding: 10px;
+  border-radius: var(--radius-sharp);
+}
+#quick-roller-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 5px;
+}
+#quick-roller-buttons .btn {
+  width: 100%;
+  background: var(--surface-color);
+  color: var(--text-color);
+}
+#quick-roller-buttons .btn:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+.widget-input {
+  /* Reuse main input styles but with margin */
+  margin-bottom: 10px;
+}
+
+#quick-gen-result {
+  margin-top: 15px;
+  padding: 10px;
+  background: var(--bg-color);
+  border-radius: var(--radius-sharp);
+  min-height: 40px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+
+/* Widget Body Highlights (from your inspiration) */
+.widget-body .widget-subtitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--primary-color-hover);
+  margin-top: 15px;
+  margin-bottom: 5px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 5px;
+}
+.widget-body .widget-subtitle:first-child {
+  margin-top: 0;
+}
+
+.widget-list {
+  padding-left: 20px;
+  margin: 10px 0;
+}
+
+.highlight-key {
+    color: var(--primary-color);
+    font-weight: 700;
+    background-color: var(--bg-color);
+    padding: 2px 6px;
+    border-radius: var(--radius-sharp);
+}
+
+.highlight-roll {
+    color: #805AD5; /* Purple */
+    font-weight: 700;
+}
+
+.highlight-link {
+    color: #3182CE; /* Blue */
+    font-weight: 700;
+    cursor: help;
+}
+
+.highlight-death {
+    color: #fff;
+    background-color: var(--primary-color);
+    padding: 2px 6px;
+    font-weight: 800;
+    border-radius: var(--radius-sharp);
+}
+

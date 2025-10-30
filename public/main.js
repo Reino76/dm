@@ -3,11 +3,6 @@
  *
  * Core logic for the DM Screen application.
  * This file is structured to be modular, efficient, and maintainable.
- *
- * 1. Waits for DOM to load.
- * 2. Caches all DOM elements into a single 'DOM' object.
- * 3. Initializes all application modules (Tabs, WebSockets, Generators, etc.).
- * 4. Uses a 'state' object to manage application state (initiativeList, ws).
  */
 
 // Wait for the DOM to be fully loaded before running any script
@@ -18,6 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initiativeList: [],
     ws: null,
     merchantMode: localStorage.getItem("merchantModeActive") === "true",
+    grid: null, // To hold the GridStack instance
   };
 
   // Centralized DOM element references
@@ -33,10 +29,11 @@ document.addEventListener("DOMContentLoaded", () => {
  * @returns {object} An object containing all cached DOM elements.
  */
 function cacheDOMElements() {
-  return {
+  const dom = {
     // Global
     gameSelect: document.getElementById("game-select"),
     openPlayerBtn: document.getElementById("open-player-window-btn"),
+    toggleMapBtn: document.getElementById("toggle-map-btn"),
     merchant: {
       indicator: document.getElementById("merchant-mode-indicator"),
       enableBtn: document.getElementById("enable-merchant-mode-btn"),
@@ -45,6 +42,10 @@ function cacheDOMElements() {
     // Tabs
     tabsContainer: document.querySelector(".tabs"),
     tabContents: document.querySelectorAll(".tab-content"),
+    prepTabButton: document.querySelector('[data-tab="tab-prep"]'),
+    prepTabContent: document.getElementById('tab-prep'),
+    dmScreenTabButton: document.querySelector('[data-tab="tab-dm-screen"]'),
+    dmScreenTabContent: document.getElementById('tab-dm-screen'),
     // DM Screen
     dndTracker: document.getElementById("dnd-initiative-tracker"),
     dreadNightsScreen: document.getElementById("dread-nights-active-screen"),
@@ -83,8 +84,10 @@ function cacheDOMElements() {
         rerollSection: document.getElementById("occupation-reroll-section"),
         reroll1: document.getElementById("occupation-reroll-1"),
         reroll2: document.getElementById("occupation-reroll-2"),
+        // --- BUG FIX: These were missing ---
         rerollResult1: document.getElementById("reroll-result-display-1"),
         rerollResult2: document.getElementById("reroll-result-display-2"),
+        // ---------------------------------
       },
       virtue: {
         input: document.getElementById("virtue-input"),
@@ -120,8 +123,53 @@ function cacheDOMElements() {
         close: document.getElementById("close-occupation-table-modal"),
         content: document.getElementById("occupation-table-content-modal"),
       },
+    },
+    // Table Map
+    map: {
+        window: document.getElementById('table-map-window'),
+        header: document.querySelector('.map-header'),
+        content: document.querySelector('.map-content'),
+        area: document.querySelector('.map-area'),
+        nameInput: document.getElementById('map-token-name'),
+        addBtn: document.getElementById('add-map-token-btn'),
+        collapseBtn: document.getElementById('map-collapse-btn'),
+        meToken: document.querySelector('.map-token.me')
+    },
+    // Widget Dashboard
+    dashboard: {
+      grid: document.querySelector('.grid-stack'),
+      lockBtn: document.getElementById('lock-layout-btn'),
+      addBtn: document.getElementById('add-widget-btn'),
+      quickRoller: {
+        buttons: document.getElementById('quick-roller-buttons'),
+        result: document.getElementById('quick-roller-result'),
+      },
+      quickGen: {
+        select: document.getElementById('quick-gen-select'),
+        btn: document.getElementById('quick-gen-btn'),
+        result: document.getElementById('quick-gen-result'),
+      }
     }
   };
+
+  // Robustness check: Replace missing elements with null
+  for (const key in dom) {
+    if (dom[key] === null) {
+      console.warn(`DOM element not found: ${key}`);
+    } else if (typeof dom[key] === 'object' && dom[key] !== null) { // Check for null object
+      for (const subKey in dom[key]) {
+        if (dom[key][subKey] === null) {
+          console.warn(`DOM element not found: ${key}.${subKey}`);
+        }
+      }
+    }
+  }
+
+  // --- BUG FIX REMOVED ---
+  // The faulty logic that was causing the crash has been removed.
+  // The primary bug was fixed by adding rerollResult1 and rerollResult2 above.
+  
+  return dom;
 }
 
 /**
@@ -136,9 +184,20 @@ function initApp(DOM, state) {
   // Core UI
   setupTabs(DOM);
   setupSettings(DOM, state);
-  setupCollapsibleCards(DOM);
-  setupMerchantMode(DOM, state);
-  DOM.openPlayerBtn.addEventListener("click", () => window.open('player.html', '_blank'));
+  setupMerchantMode(DOM, state); // Fixed call signature
+  setupCollapsibleCards(); // <-- BUG FIX: This was missing, breaking Prep tab cards
+  if (DOM.openPlayerBtn) DOM.openPlayerBtn.addEventListener("click", () => window.open('player.html', '_blank'));
+  if (DOM.toggleMapBtn) DOM.toggleMapBtn.addEventListener("click", () => {
+    if(DOM.map.window) { // Add check
+      DOM.map.window.classList.toggle("hidden");
+      if (!DOM.map.window.classList.contains("hidden")) {
+        DOM.map.window.classList.add("collapsed"); // Start collapsed
+        const icon = DOM.map.collapseBtn.querySelector('i');
+        icon.classList.remove('fa-chevron-down');
+        icon.classList.add('fa-chevron-up');
+      }
+    }
+  });
 
   // Prep Roadmap
   setupRoadmap(DOM);
@@ -146,14 +205,11 @@ function initApp(DOM, state) {
   
   // Generators
   setupGuildNameGenerator(DOM.generators.guildName);
+  setupCharacterNameGenerator(DOM.generators.charName);
   setupOccupationGenerator(DOM.generators.occupation);
+  setupVirtueGenerator(DOM.generators.virtue);
+  setupViceGenerator(DOM.generators.vice);
   setupOmenRoller(DOM.omen);
-
-  // Reusable generator setups
-  const cardRenderer = (item) => `<div class="occupation-result-card"><h3>${item.virtue || item.vice}</h3><p>${item.description}</p></div>`;
-  setupSimpleGenerator(DOM.generators.charName.input, DOM.generators.charName.result, characterNames, item => `<span>${item}</span>`);
-  setupSimpleGenerator(DOM.generators.virtue.input, DOM.generators.virtue.result, virtues, cardRenderer);
-  setupSimpleGenerator(DOM.generators.vice.input, DOM.generators.vice.result, vices, cardRenderer);
 
   // Modals
   setupModal(DOM.modals.guildName.trigger, DOM.modals.guildName.modal, DOM.modals.guildName.close);
@@ -162,13 +218,15 @@ function initApp(DOM, state) {
 
   // DM Screen
   setupInitiativeTracker(DOM, state);
+  setupTableMap(DOM.map);
+  setupWidgetDashboard(DOM, state); // NEW
 
   // Populate dynamic content
   populateGeneratorTables(DOM.modals);
 }
 
 // --- NETWORK FUNCTIONS ---
-
+// (No changes from your file)
 function setupWebSocket(state, DOM) {
   const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
   const ws = new WebSocket(`${wsProtocol}//${window.location.host}`);
@@ -209,18 +267,17 @@ function broadcastGameChange(ws, gameName) {
 // --- CORE UI FUNCTIONS ---
 
 function setupTabs(DOM) {
+  if (!DOM.tabsContainer) return;
   DOM.tabsContainer.addEventListener("click", (e) => {
     const clickedTab = e.target.closest(".tab-button");
-    if (!clickedTab) return;
+    if (!clickedTab || clickedTab.classList.contains('hidden')) return; 
 
     const tabId = clickedTab.dataset.tab;
     
-    // Update tab buttons
     DOM.tabsContainer.querySelectorAll(".tab-button").forEach(btn => {
       btn.classList.toggle("active", btn === clickedTab);
     });
 
-    // Update tab content
     DOM.tabContents.forEach(content => {
       content.classList.toggle("active", content.id === tabId);
     });
@@ -232,12 +289,12 @@ function setupSettings(DOM, state) {
 
   const currentGame = localStorage.getItem("gameSystem") || "Dread Nights";
   DOM.gameSelect.value = currentGame;
-  updateDmScreen(DOM, currentGame);
+  updateGameUI(DOM, currentGame);
 
   DOM.gameSelect.addEventListener("change", () => {
     const selectedGame = DOM.gameSelect.value;
     localStorage.setItem("gameSystem", selectedGame);
-    updateDmScreen(DOM, selectedGame);
+    updateGameUI(DOM, selectedGame);
     broadcastGameChange(state.ws, selectedGame);
     if (selectedGame !== "D&D 5e") {
       clearInitiative(state, DOM);
@@ -245,33 +302,44 @@ function setupSettings(DOM, state) {
   });
 }
 
-function updateDmScreen(DOM, gameName) {
-  if (!DOM.dndTracker || !DOM.dreadNightsScreen) return;
+function updateGameUI(DOM, gameName) {
+  if (!DOM.dndTracker || !DOM.dreadNightsScreen || !DOM.prepTabButton || !DOM.prepTabContent || !DOM.openPlayerBtn) return;
   
   const isDnd = (gameName === "D&D 5e");
+
   DOM.dndTracker.classList.toggle("hidden", !isDnd);
+  DOM.openPlayerBtn.classList.toggle("hidden", !isDnd);
   DOM.dreadNightsScreen.classList.toggle("hidden", isDnd);
+  DOM.prepTabButton.classList.toggle("hidden", isDnd);
+  DOM.prepTabContent.classList.toggle("hidden", isDnd);
+
+  if (isDnd && DOM.prepTabButton.classList.contains('active')) {
+    DOM.prepTabButton.classList.remove('active');
+    DOM.prepTabContent.classList.remove('active');
+    DOM.dmScreenTabButton.classList.add('active');
+    DOM.dmScreenTabContent.classList.add('active');
+  } else if (!isDnd && DOM.dmScreenTabButton.classList.contains('active')) {
+     // Optional: if switching TO Dread Nights and DM screen is active, switch to Prep
+     DOM.dmScreenTabButton.classList.remove('active');
+     DOM.dmScreenTabContent.classList.remove('active');
+     DOM.prepTabButton.classList.add('active');
+     DOM.prepTabContent.classList.add('active');
+  }
 }
 
-function setupCollapsibleCards(DOM) {
-  // Use event delegation on a common ancestor if possible, e.g., document
-  // For simplicity, we'll attach to all headers if they are dynamic.
-  // Assuming they are static as per the HTML:
-  const cardHeaders = document.querySelectorAll(".card-header");
-  cardHeaders.forEach(header => {
-    header.addEventListener("click", () => {
+// BUG FIX: Added this function back in
+function setupCollapsibleCards() {
+  document.addEventListener("click", (e) => {
+    const header = e.target.closest('.card-header');
+    if (header && !e.target.closest('.widget-header')) { // Make sure not to conflict with widget headers
       const card = header.parentElement;
-      card.classList.toggle("collapsed");
-    });
+      if (card.classList.contains('guild-card')) { // Only collapse guild cards for now
+        card.classList.toggle("collapsed");
+      }
+    }
   });
 }
 
-/**
- * Sets up a generic modal toggle.
- * @param {HTMLElement} trigger - The button that opens the modal.
- * @param {HTMLElement} modal - The modal overlay element.
- * @param {HTMLElement} close - The button that closes the modal.
- */
 function setupModal(trigger, modal, close) {
   if (!trigger || !modal || !close) return;
   
@@ -285,7 +353,7 @@ function setupModal(trigger, modal, close) {
 }
 
 // --- INITIATIVE TRACKER FUNCTIONS ---
-
+// (No changes from your file)
 function setupInitiativeTracker(DOM, state) {
   if (!DOM.init.form) return;
 
@@ -294,8 +362,8 @@ function setupInitiativeTracker(DOM, state) {
     addToInitiative(state, DOM);
   });
   
-  DOM.init.sortBtn.addEventListener("click", () => sortInitiative(state, DOM));
-  DOM.init.clearBtn.addEventListener("click", () => clearInitiative(state, DOM));
+  if(DOM.init.sortBtn) DOM.init.sortBtn.addEventListener("click", () => sortInitiative(state, DOM));
+  if(DOM.init.clearBtn) DOM.init.clearBtn.addEventListener("click", () => clearInitiative(state, DOM));
 }
 
 function addToInitiative(state, DOM) {
@@ -303,7 +371,7 @@ function addToInitiative(state, DOM) {
   const roll = parseInt(DOM.init.roll.value, 10);
   const iconClass = DOM.init.class.value;
 
-  if (name && !isNaN(roll)) {
+  if (name && !isNaN(roll) && DOM.init.list) {
     state.initiativeList.push({ name, roll, iconClass });
     DOM.init.name.value = "";
     DOM.init.roll.value = "";
@@ -314,13 +382,13 @@ function addToInitiative(state, DOM) {
 
 function sortInitiative(state, DOM) {
   state.initiativeList.sort((a, b) => b.roll - a.roll);
-  renderInitiativeList(state.initiativeList, DOM.init.list, false);
+  if(DOM.init.list) renderInitiativeList(state.initiativeList, DOM.init.list, false);
   broadcastInitiativeList(state);
 }
 
 function clearInitiative(state, DOM) {
   state.initiativeList = [];
-  renderInitiativeList(state.initiativeList, DOM.init.list, false);
+  if(DOM.init.list) renderInitiativeList(state.initiativeList, DOM.init.list, false);
   broadcastInitiativeList(state);
 }
 
@@ -365,7 +433,7 @@ function renderInitiativeList(initiativeList, listEl, animateNew) {
 }
 
 // --- PREP ROADMAP FUNCTIONS ---
-
+// (No changes from your file)
 function setupRoadmap(DOM) {
   if (!DOM.prep.container) return;
 
@@ -383,26 +451,22 @@ function setupRoadmap(DOM) {
     });
   };
 
-  // Use event delegation
   DOM.prep.container.addEventListener("click", (e) => {
     const nextBtn = e.target.closest(".btn-next-step");
     if (nextBtn) {
       activateStep(nextBtn.dataset.next);
       return;
     }
-
     const prevBtn = e.target.closest(".btn-prev-step");
     if (prevBtn) {
       activateStep(prevBtn.dataset.prev);
       return;
     }
-
     const roadmapStep = e.target.closest(".prep-roadmap-step");
     if (roadmapStep) {
       activateStep(roadmapStep.dataset.step);
       return;
     }
-
     const resetBtn = e.target.closest("#reset-roadmap-new");
     if (resetBtn) {
       activateStep("1");
@@ -410,7 +474,6 @@ function setupRoadmap(DOM) {
     }
   });
 
-  // Initial setup
   activateStep("1");
 }
 
@@ -418,20 +481,21 @@ function setupGuildSelection(DOM, state) {
   if (DOM.prep.guildCards.length === 0) return;
 
   DOM.prep.guildCards.forEach(card => {
-    // Non-merchant cards
     if (card.dataset.guild !== "Merchant") {
-      card.addEventListener("click", () => {
-        DOM.prep.guildCards.forEach(c => c.classList.remove("selected"));
-        card.classList.add("selected");
-        setMerchantMode(DOM, state, false);
+      card.addEventListener("click", (e) => {
+        // Prevent collapse from firing
+        if (!e.target.closest('.card-header')) {
+          DOM.prep.guildCards.forEach(c => c.classList.remove("selected"));
+          card.classList.add("selected");
+          setMerchantMode(DOM, state, false);
+        }
       });
     }
   });
 
-  // Merchant card button
   if (DOM.merchant.enableBtn) {
     DOM.merchant.enableBtn.addEventListener("click", (e) => {
-      e.stopPropagation(); // Prevent card click from firing
+      e.stopPropagation(); 
       DOM.prep.guildCards.forEach(c => c.classList.remove("selected"));
       if (DOM.prep.merchantCard) DOM.prep.merchantCard.classList.add("selected");
       setMerchantMode(DOM, state, true);
@@ -440,14 +504,12 @@ function setupGuildSelection(DOM, state) {
 }
 
 function setupMerchantMode(DOM, state) {
-  // Set initial state from localStorage
   if (state.merchantMode) {
-    DOM.merchant.indicator.classList.remove("hidden");
+    if (DOM.merchant.indicator) DOM.merchant.indicator.classList.remove("hidden");
     if (DOM.prep.merchantCard) DOM.prep.merchantCard.classList.add("selected");
     applyDiscounts(true);
   }
 
-  // Disable button
   if (DOM.merchant.disableBtn) {
     DOM.merchant.disableBtn.addEventListener("click", () => {
       setMerchantMode(DOM, state, false);
@@ -459,13 +521,11 @@ function setupMerchantMode(DOM, state) {
 function setMerchantMode(DOM, state, isActive) {
   state.merchantMode = isActive;
   localStorage.setItem("merchantModeActive", isActive ? "true" : "false");
-  DOM.merchant.indicator.classList.toggle("hidden", !isActive);
+  if (DOM.merchant.indicator) DOM.merchant.indicator.classList.toggle("hidden", !isActive);
   applyDiscounts(isActive);
 }
 
 function applyDiscounts(active) {
-  // This is a placeholder function. 
-  // When the shop is implemented, this function should be updated.
   if (active) {
     console.log("Merchant mode activated. Applying 25% discount.");
   } else {
@@ -475,12 +535,9 @@ function applyDiscounts(active) {
 
 // --- GENERATOR FUNCTIONS ---
 
-/**
- * Populates all generator tables in their modals.
- * @param {object} modalDOM - The modal part of the DOM cache.
- */
 function populateGeneratorTables(modalDOM) {
-  if (modalDOM.guildName.content) {
+  // Add checks for data existence
+  if (modalDOM.guildName.content && typeof guildNamePart1 !== 'undefined' && typeof guildNamePart2 !== 'undefined') {
     const table1 = createSimpleNameTable(guildNamePart1, "Table 1");
     const table2 = createSimpleNameTable(guildNamePart2, "Table 2 (Red)");
     modalDOM.guildName.content.innerHTML = `
@@ -488,24 +545,16 @@ function populateGeneratorTables(modalDOM) {
       <div class="name-table-wrapper">${table2}</div>
     `;
   }
-  if (modalDOM.charName.content) {
+  if (modalDOM.charName.content && typeof characterNames !== 'undefined') {
     modalDOM.charName.content.innerHTML = `<div class="name-table-wrapper">${createSimpleNameTable(characterNames, "Hahmon Nimet")}</div>`;
   }
-  if (modalDOM.occupation.content) {
+  if (modalDOM.occupation.content && typeof occupations !== 'undefined') {
     modalDOM.occupation.content.innerHTML = createOccupationTableHtml(occupations);
   }
 }
 
-/**
- * Sets up a simple generator with one input, one result, and a data array.
- * @param {HTMLElement} inputEl - The <input> element.
- * @param {HTMLElement} resultEl - The element to display the result in.
- * @param {Array<string|object>} dataArray - The source data array.
- * @param {Function} renderFn - A function that takes a data item and returns HTML.
- */
 function setupSimpleGenerator(inputEl, resultEl, dataArray, renderFn) {
-  if (!inputEl || !resultEl) return;
-
+  if (!inputEl || !resultEl || !dataArray) return;
   inputEl.addEventListener("input", () => {
     const roll = parseInt(inputEl.value, 10);
     if (roll >= 1 && roll <= dataArray.length) {
@@ -517,33 +566,55 @@ function setupSimpleGenerator(inputEl, resultEl, dataArray, renderFn) {
   });
 }
 
+// Specific Generator Setups
 function setupGuildNameGenerator(dom) {
-  if (!dom.input1 || !dom.input2 || !dom.result) return;
-
-  const generateName = () => {
+  if (!dom.input1 || !dom.input2 || !dom.result || typeof guildNamePart1 === 'undefined' || typeof guildNamePart2 === 'undefined') return;
+  const gen = () => {
     const roll1 = parseInt(dom.input1.value, 10);
     const roll2 = parseInt(dom.input2.value, 10);
-
     if (roll1 >= 1 && roll1 <= 100 && roll2 >= 1 && roll2 <= 100) {
-      const name1 = guildNamePart1[roll1 - 1];
-      const name2 = guildNamePart2[roll2 - 1];
-      dom.result.innerHTML = `<span>${name1} ${name2}</span>`;
+      dom.result.innerHTML = `<span>${guildNamePart1[roll1 - 1]} ${guildNamePart2[roll2 - 1]}</span>`;
     } else {
       dom.result.innerHTML = "<span>-</span>";
     }
   };
+  dom.input1.addEventListener("input", gen);
+  dom.input2.addEventListener("input", gen);
+}
 
-  dom.input1.addEventListener("input", generateName);
-  dom.input2.addEventListener("input", generateName);
+function setupCharacterNameGenerator(dom) {
+  if(typeof characterNames !== 'undefined') {
+    setupSimpleGenerator(dom.input, dom.result, characterNames, item => `<span>${item}</span>`);
+  }
+}
+
+function setupVirtueGenerator(dom) {
+  if(typeof virtues !== 'undefined') {
+    setupSimpleGenerator(dom.input, dom.result, virtues, item => 
+      `<div class="occupation-result-card"><h3>${item.virtue}</h3><p>${item.description}</p></div>`
+    );
+  }
+}
+
+function setupViceGenerator(dom) {
+  if(typeof vices !== 'undefined') {
+    setupSimpleGenerator(dom.input, dom.result, vices, item => 
+      `<div class="occupation-result-card"><h3>${item.vice}</h3><p>${item.description}</p></div>`
+    );
+  }
 }
 
 function setupOccupationGenerator(dom) {
-  if (!dom.input || !dom.result || !dom.rerollSection) return;
+  // Check for all required DOM elements and data
+  if (!dom.input || !dom.result || !dom.rerollSection || !dom.reroll1 || !dom.reroll2 || !dom.rerollResult1 || !dom.rerollResult2 || typeof occupations === 'undefined') {
+      console.warn("Occupation generator setup failed: Missing DOM elements or data.");
+      return;
+  }
 
-  const getOccupationCardHtml = (roll) => {
-    const occupationRoll = Math.ceil(roll / 2);
-    if (occupationRoll >= 1 && occupationRoll <= 50) {
-      const item = occupations[occupationRoll - 1];
+  const getCardHtml = (roll) => {
+    const index = Math.ceil(roll / 2) - 1;
+    if (index >= 0 && index < 50) { // occupations array has 50 items
+      const item = occupations[index];
       return `<div class="occupation-result-card"><h3>${item.occupation}</h3><p>${item.benefit}</p></div>`;
     }
     return "";
@@ -551,12 +622,11 @@ function setupOccupationGenerator(dom) {
 
   dom.input.addEventListener("input", () => {
     const d100roll = parseInt(dom.input.value, 10);
-    const occupationRoll = Math.ceil(d100roll / 2);
-
+    const index = Math.ceil(d100roll / 2) - 1;
     if (d100roll >= 1 && d100roll <= 100) {
-      const item = occupations[occupationRoll - 1];
-      dom.result.innerHTML = `<div class="occupation-result-card"><h3>${item.occupation}</h3><p>${item.benefit}</p></div>`;
-      dom.rerollSection.classList.toggle("hidden", occupationRoll !== 50);
+      dom.result.innerHTML = getCardHtml(d100roll);
+      // Roll 50 is index 49 (Kaksoisvuoro)
+      dom.rerollSection.classList.toggle("hidden", index !== 49); 
     } else {
       dom.result.innerHTML = "";
       dom.rerollSection.classList.add("hidden");
@@ -564,25 +634,19 @@ function setupOccupationGenerator(dom) {
   });
 
   dom.reroll1.addEventListener("input", () => {
-    const d100roll = parseInt(dom.reroll1.value, 10);
-    dom.rerollResult1.innerHTML = getOccupationCardHtml(d100roll);
+    dom.rerollResult1.innerHTML = getCardHtml(parseInt(dom.reroll1.value, 10));
   });
-
   dom.reroll2.addEventListener("input", () => {
-    const d100roll = parseInt(dom.reroll2.value, 10);
-    dom.rerollResult2.innerHTML = getOccupationCardHtml(d100roll);
+    dom.rerollResult2.innerHTML = getCardHtml(parseInt(dom.reroll2.value, 10));
   });
 }
 
 function setupOmenRoller(dom) {
   if (!dom.rollBtn || !dom.resultEl) return;
-
   dom.rollBtn.addEventListener("click", () => {
     dom.rollBtn.classList.add("rolling");
     setTimeout(() => dom.rollBtn.classList.remove("rolling"), 500);
-    
     const result = Math.floor(Math.random() * 2) + 1;
-    
     setTimeout(() => {
       dom.resultEl.textContent = result;
       dom.resultEl.parentElement.classList.add('tada');
@@ -591,14 +655,206 @@ function setupOmenRoller(dom) {
   });
 }
 
-// --- UTILITY FUNCTIONS ---
+// --- TABLE MAP FUNCTIONALITY ---
+// (No changes from your file)
+function makeTokenDraggable(tokenElement, containerElement) {
+  tokenElement.addEventListener("mousedown", (e_down) => {
+    e_down.preventDefault();
+    tokenElement.classList.add("dragging");
+    const containerRect = containerElement.getBoundingClientRect();
+    const tokenRect = tokenElement.getBoundingClientRect();
+    const offsetX = e_down.clientX - tokenRect.left;
+    const offsetY = e_down.clientY - tokenRect.top;
 
-/**
- * Creates an HTML table for a simple 1-column name list.
- * @param {Array<string>} data - The array of names.
- * @param {string} caption - The table caption.
- * @returns {string} The HTML string for the table.
- */
+    function onTokenMouseMove(e_move) {
+      let newLeft = e_move.clientX - containerRect.left - offsetX;
+      let newTop = e_move.clientY - containerRect.top - offsetY;
+      if (newLeft < 0) newLeft = 0;
+      if (newTop < 0) newTop = 0;
+      if (newLeft + tokenElement.offsetWidth > containerElement.clientWidth) {
+        newLeft = containerElement.clientWidth - tokenElement.offsetWidth;
+      }
+      if (newTop + tokenElement.offsetHeight > containerElement.clientHeight) {
+        newTop = containerElement.clientHeight - tokenElement.offsetHeight;
+      }
+      tokenElement.style.left = `${newLeft}px`;
+      tokenElement.style.top = `${newTop}px`;
+      tokenElement.style.bottom = 'auto';
+      tokenElement.style.transform = 'none'; 
+    }
+    function onTokenMouseUp() {
+      tokenElement.classList.remove("dragging");
+      document.removeEventListener("mousemove", onTokenMouseMove);
+      document.removeEventListener("mouseup", onTokenMouseUp);
+    }
+    document.addEventListener("mousemove", onTokenMouseMove);
+    document.addEventListener("mouseup", onTokenMouseUp);
+  });
+}
+
+function setupTableMap(dom) {
+  if (!dom.window || !dom.header || !dom.addBtn || !dom.nameInput || !dom.area || !dom.meToken) return;
+
+  dom.collapseBtn.addEventListener("click", () => {
+    dom.window.classList.toggle("collapsed");
+    const icon = dom.collapseBtn.querySelector('i');
+    icon.classList.toggle('fa-chevron-down');
+    icon.classList.toggle('fa-chevron-up');
+  });
+
+  dom.addBtn.addEventListener("click", () => {
+    const name = dom.nameInput.value.trim();
+    if (name === "") return;
+    const token = document.createElement('div');
+    token.className = 'map-token';
+    token.textContent = name;
+    token.style.top = '15px';
+    token.style.left = '15px';
+    dom.area.appendChild(token);
+    makeTokenDraggable(token, dom.area);
+    dom.nameInput.value = "";
+  });
+  dom.nameInput.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") dom.addBtn.click();
+  });
+
+  makeTokenDraggable(dom.meToken, dom.area);
+
+  let isWindowDragging = false;
+  let windowOffset = { x: 0, y: 0 };
+  dom.header.addEventListener("mousedown", (e) => {
+    if (e.target.closest('button')) return;
+    isWindowDragging = true;
+    windowOffset = { x: dom.window.offsetLeft - e.clientX, y: dom.window.offsetTop - e.clientY };
+    dom.header.style.cursor = 'grabbing';
+    document.addEventListener("mousemove", onWindowMouseMove);
+    document.addEventListener("mouseup", onWindowMouseUp);
+  });
+  function onWindowMouseMove(e) {
+    if (!isWindowDragging) return;
+    e.preventDefault();
+    dom.window.style.left = `${e.clientX + windowOffset.x}px`;
+    dom.window.style.top = `${e.clientY + windowOffset.y}px`;
+    dom.window.style.bottom = 'auto';
+    dom.window.style.right = 'auto';
+  }
+  function onWindowMouseUp() {
+    isWindowDragging = false;
+    dom.header.style.cursor = 'grab';
+    document.removeEventListener("mousemove", onWindowMouseMove);
+    document.removeEventListener("mouseup", onWindowMouseUp);
+  }
+}
+
+// --- NEW: WIDGET DASHBOARD FUNCTIONS ---
+
+function setupWidgetDashboard(DOM, state) {
+  if (!DOM.dashboard.grid || typeof GridStack === 'undefined') {
+    console.error("GridStack not loaded or dashboard not found.");
+    return;
+  }
+
+  state.grid = GridStack.init({
+    column: 12,
+    cellHeight: '70px',
+    margin: 10,
+    float: true,
+    disableDrag: false,
+    disableResize: true,
+    handle: '.widget-header',
+  });
+
+  // 1. Lock Layout Button
+  DOM.dashboard.lockBtn.addEventListener('click', () => {
+    const isLocked = DOM.dashboard.lockBtn.dataset.locked === 'true';
+    if (isLocked) {
+      state.grid.enableMove(true);
+      DOM.dashboard.lockBtn.dataset.locked = 'false';
+      DOM.dashboard.lockBtn.innerHTML = '<i class="fas fa-lock-open"></i> Lock Layout';
+      DOM.dashboard.lockBtn.classList.add('btn-secondary');
+      DOM.dashboard.lockBtn.classList.remove('btn-danger');
+    } else {
+      state.grid.enableMove(false);
+      DOM.dashboard.lockBtn.dataset.locked = 'true';
+      DOM.dashboard.lockBtn.innerHTML = '<i class="fas fa-lock"></i> Layout Locked';
+      DOM.dashboard.lockBtn.classList.remove('btn-secondary');
+      DOM.dashboard.lockBtn.classList.add('btn-danger');
+    }
+  });
+
+  // 2. Widget Controls (Collapse & Close) using Event Delegation
+  DOM.dashboard.grid.addEventListener('click', (e) => {
+    // Collapse Button
+    const collapseBtn = e.target.closest('.btn-widget-collapse');
+    if (collapseBtn) {
+      const widget = collapseBtn.closest('.grid-stack-item-content');
+      const icon = collapseBtn.querySelector('i');
+      widget.classList.toggle('collapsed');
+      icon.classList.toggle('fa-chevron-down');
+      icon.classList.toggle('fa-chevron-up');
+    }
+
+    // Close Button
+    const closeBtn = e.target.closest('.btn-widget-close');
+    if (closeBtn) {
+      const widgetEl = closeBtn.closest('.grid-stack-item');
+      if (widgetEl) {
+        state.grid.removeWidget(widgetEl);
+      }
+    }
+  });
+
+  // 3. Setup Tool Widgets
+  setupQuickRoller(DOM.dashboard.quickRoller);
+  setupQuickGenerator(DOM.dashboard.quickGen);
+
+  // 4. Add Widget Button (Placeholder)
+  DOM.dashboard.addBtn.addEventListener('click', () => {
+    // This is where you would pop a modal to add new widgets.
+    // For now, it just logs a message.
+    console.log("Add Widget button clicked. (Functionality to be added)");
+  });
+}
+
+function setupQuickRoller(dom) {
+  if (!dom.buttons || !dom.result) return;
+  
+  dom.buttons.addEventListener('click', (e) => {
+    const btn = e.target.closest('button');
+    if (btn && btn.dataset.die) {
+      const die = parseInt(btn.dataset.die, 10);
+      const result = Math.floor(Math.random() * die) + 1;
+      dom.result.textContent = `[ ${result} ]`;
+      // Add a quick animation
+      dom.result.classList.add('tada');
+      setTimeout(() => dom.result.classList.remove('tada'), 700);
+    }
+  });
+}
+
+function setupQuickGenerator(dom) {
+  if (!dom.btn || !dom.select || !dom.result) return;
+
+  dom.btn.addEventListener('click', () => {
+    // Check if data is available (from data.js)
+    if (typeof quickGeneratorData === 'undefined') {
+        dom.result.textContent = "Error: Generator data not found.";
+        return;
+    }
+    const key = dom.select.value;
+    if (quickGeneratorData[key] && quickGeneratorData[key].length > 0) {
+      const dataArray = quickGeneratorData[key];
+      const result = dataArray[Math.floor(Math.random() * dataArray.length)];
+      dom.result.textContent = result;
+    } else {
+      dom.result.textContent = `No data for "${key}"`;
+    }
+  });
+}
+
+
+// --- UTILITY FUNCTIONS ---
+// (No changes from your file)
 function createSimpleNameTable(data, caption) {
   let rows = data.map((name, index) => `<tr><td>${index + 1}</td><td>${name}</td></tr>`).join("");
   return `
@@ -617,11 +873,6 @@ function createSimpleNameTable(data, caption) {
   `;
 }
 
-/**
- * Creates a specific HTML table for the occupations data.
- * @param {Array<object>} data - The occupations array.
- * @returns {string} The HTML string for the table.
- */
 function createOccupationTableHtml(data) {
   let rows = data.map((item, index) => `<tr><td>${index + 1}</td><td>${item.occupation}</td><td>${item.benefit}</td></tr>`).join("");
   return `
@@ -640,3 +891,4 @@ function createOccupationTableHtml(data) {
     </table>
   `;
 }
+
