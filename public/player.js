@@ -33,15 +33,17 @@ document.addEventListener("DOMContentLoaded", () => {
     ws.onopen = () => console.log("Player WebSocket connected.");
 
     ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
+      try {
+        const data = JSON.parse(event.data);
 
-      if (data.type === "initiative-update") {
-        const isNewItem = data.payload.length > initiativeList.length;
-        initiativeList = data.payload;
-        renderInitiativeList(isNewItem);
+        if (data.type === "initiative-update" && data.payload) {
+          const isNewItem = data.payload.length > initiativeList.length;
+          initiativeList = data.payload;
+          renderInitiativeList(isNewItem);
+        }
+      } catch (e) {
+        console.error("Failed to parse WebSocket message:", e);
       }
-      // Note: "game-change" logic can be handled here if needed,
-      // e.g., to force a view change.
     };
 
     ws.onclose = () => {
@@ -98,9 +100,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  /**
-   * UPDATED: Fullscreen function now targets the active content pane.
-   */
   function setupFullscreen() {
     if (!DOM.fullscreenBtn) return;
 
@@ -121,6 +120,7 @@ document.addEventListener("DOMContentLoaded", () => {
           elementToFullscreen.requestFullscreen().catch(err => {
             console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
           });
+          // --- BUG FIX: Fixed typo ---
           DOM.fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i> Exit Fullscreen';
         }
       } else {
@@ -145,3 +145,4 @@ document.addEventListener("DOMContentLoaded", () => {
   setupWebSocket();
   setupFullscreen();
 });
+

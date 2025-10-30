@@ -84,10 +84,10 @@ function cacheDOMElements() {
         rerollSection: document.getElementById("occupation-reroll-section"),
         reroll1: document.getElementById("occupation-reroll-1"),
         reroll2: document.getElementById("occupation-reroll-2"),
-        // --- BUG FIX: These were missing ---
+        // --- CRITICAL BUG FIX: These were missing ---
         rerollResult1: document.getElementById("reroll-result-display-1"),
         rerollResult2: document.getElementById("reroll-result-display-2"),
-        // ---------------------------------
+        // ------------------------------------------
       },
       virtue: {
         input: document.getElementById("virtue-input"),
@@ -164,10 +164,6 @@ function cacheDOMElements() {
       }
     }
   }
-
-  // --- BUG FIX REMOVED ---
-  // The faulty logic that was causing the crash has been removed.
-  // The primary bug was fixed by adding rerollResult1 and rerollResult2 above.
   
   return dom;
 }
@@ -184,17 +180,20 @@ function initApp(DOM, state) {
   // Core UI
   setupTabs(DOM);
   setupSettings(DOM, state);
-  setupMerchantMode(DOM, state); // Fixed call signature
-  setupCollapsibleCards(); // <-- BUG FIX: This was missing, breaking Prep tab cards
+  setupMerchantMode(DOM, state);
+  setupCollapsibleCards(); // <-- BUG FIX: Re-added this function call
   if (DOM.openPlayerBtn) DOM.openPlayerBtn.addEventListener("click", () => window.open('player.html', '_blank'));
   if (DOM.toggleMapBtn) DOM.toggleMapBtn.addEventListener("click", () => {
-    if(DOM.map.window) { // Add check
+    if(DOM.map.window) { 
       DOM.map.window.classList.toggle("hidden");
-      if (!DOM.map.window.classList.contains("hidden")) {
-        DOM.map.window.classList.add("collapsed"); // Start collapsed
+      // Open collapsed by default
+      if (!DOM.map.window.classList.contains("hidden") && !DOM.map.window.classList.contains("collapsed")) {
+        DOM.map.window.classList.add("collapsed");
         const icon = DOM.map.collapseBtn.querySelector('i');
-        icon.classList.remove('fa-chevron-down');
-        icon.classList.add('fa-chevron-up');
+        if(icon) {
+          icon.classList.remove('fa-chevron-down');
+          icon.classList.add('fa-chevron-up');
+        }
       }
     }
   });
@@ -219,14 +218,14 @@ function initApp(DOM, state) {
   // DM Screen
   setupInitiativeTracker(DOM, state);
   setupTableMap(DOM.map);
-  setupWidgetDashboard(DOM, state); // NEW
+  setupWidgetDashboard(DOM, state);
 
   // Populate dynamic content
   populateGeneratorTables(DOM.modals);
 }
 
 // --- NETWORK FUNCTIONS ---
-// (No changes from your file)
+
 function setupWebSocket(state, DOM) {
   const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
   const ws = new WebSocket(`${wsProtocol}//${window.location.host}`);
@@ -318,8 +317,8 @@ function updateGameUI(DOM, gameName) {
     DOM.prepTabContent.classList.remove('active');
     DOM.dmScreenTabButton.classList.add('active');
     DOM.dmScreenTabContent.classList.add('active');
-  } else if (!isDnd && DOM.dmScreenTabButton.classList.contains('active')) {
-     // Optional: if switching TO Dread Nights and DM screen is active, switch to Prep
+  } else if (!isDnd && (DOM.dmScreenTabButton.classList.contains('active') || !DOM.prepTabButton.classList.contains('active'))) {
+     // If switching to Dread Nights, make Prep Tab the default
      DOM.dmScreenTabButton.classList.remove('active');
      DOM.dmScreenTabContent.classList.remove('active');
      DOM.prepTabButton.classList.add('active');
@@ -327,15 +326,20 @@ function updateGameUI(DOM, gameName) {
   }
 }
 
-// BUG FIX: Added this function back in
+// BUG FIX: Added this function back
 function setupCollapsibleCards() {
   document.addEventListener("click", (e) => {
+    // Find the closest card-header
     const header = e.target.closest('.card-header');
-    if (header && !e.target.closest('.widget-header')) { // Make sure not to conflict with widget headers
-      const card = header.parentElement;
-      if (card.classList.contains('guild-card')) { // Only collapse guild cards for now
-        card.classList.toggle("collapsed");
-      }
+    if (!header) return; 
+    
+    // Make sure it's NOT a widget header
+    if (e.target.closest('.widget-header')) return; 
+
+    const card = header.parentElement;
+    // Only collapse guild-cards in the prep tab
+    if (card && card.classList.contains('guild-card')) {
+      card.classList.toggle("collapsed");
     }
   });
 }
@@ -353,7 +357,7 @@ function setupModal(trigger, modal, close) {
 }
 
 // --- INITIATIVE TRACKER FUNCTIONS ---
-// (No changes from your file)
+
 function setupInitiativeTracker(DOM, state) {
   if (!DOM.init.form) return;
 
@@ -367,11 +371,12 @@ function setupInitiativeTracker(DOM, state) {
 }
 
 function addToInitiative(state, DOM) {
+  if (!DOM.init.name || !DOM.init.roll || !DOM.init.class || !DOM.init.list) return;
   const name = DOM.init.name.value.trim();
   const roll = parseInt(DOM.init.roll.value, 10);
   const iconClass = DOM.init.class.value;
 
-  if (name && !isNaN(roll) && DOM.init.list) {
+  if (name && !isNaN(roll)) {
     state.initiativeList.push({ name, roll, iconClass });
     DOM.init.name.value = "";
     DOM.init.roll.value = "";
@@ -433,11 +438,12 @@ function renderInitiativeList(initiativeList, listEl, animateNew) {
 }
 
 // --- PREP ROADMAP FUNCTIONS ---
-// (No changes from your file)
+
 function setupRoadmap(DOM) {
   if (!DOM.prep.container) return;
 
   const activateStep = (stepId) => {
+    if(!stepId) return;
     const id = parseInt(stepId, 10);
 
     DOM.prep.roadmapSteps.forEach(step => {
@@ -483,12 +489,10 @@ function setupGuildSelection(DOM, state) {
   DOM.prep.guildCards.forEach(card => {
     if (card.dataset.guild !== "Merchant") {
       card.addEventListener("click", (e) => {
-        // Prevent collapse from firing
-        if (!e.target.closest('.card-header')) {
-          DOM.prep.guildCards.forEach(c => c.classList.remove("selected"));
-          card.classList.add("selected");
-          setMerchantMode(DOM, state, false);
-        }
+         if (e.target.closest('.card-header')) return; // Let collapse handle it
+        DOM.prep.guildCards.forEach(c => c.classList.remove("selected"));
+        card.classList.add("selected");
+        setMerchantMode(DOM, state, false);
       });
     }
   });
@@ -536,7 +540,6 @@ function applyDiscounts(active) {
 // --- GENERATOR FUNCTIONS ---
 
 function populateGeneratorTables(modalDOM) {
-  // Add checks for data existence
   if (modalDOM.guildName.content && typeof guildNamePart1 !== 'undefined' && typeof guildNamePart2 !== 'undefined') {
     const table1 = createSimpleNameTable(guildNamePart1, "Table 1");
     const table2 = createSimpleNameTable(guildNamePart2, "Table 2 (Red)");
@@ -583,13 +586,13 @@ function setupGuildNameGenerator(dom) {
 }
 
 function setupCharacterNameGenerator(dom) {
-  if(typeof characterNames !== 'undefined') {
+  if (typeof characterNames !== 'undefined') {
     setupSimpleGenerator(dom.input, dom.result, characterNames, item => `<span>${item}</span>`);
   }
 }
 
 function setupVirtueGenerator(dom) {
-  if(typeof virtues !== 'undefined') {
+  if (typeof virtues !== 'undefined') {
     setupSimpleGenerator(dom.input, dom.result, virtues, item => 
       `<div class="occupation-result-card"><h3>${item.virtue}</h3><p>${item.description}</p></div>`
     );
@@ -597,7 +600,7 @@ function setupVirtueGenerator(dom) {
 }
 
 function setupViceGenerator(dom) {
-  if(typeof vices !== 'undefined') {
+  if (typeof vices !== 'undefined') {
     setupSimpleGenerator(dom.input, dom.result, vices, item => 
       `<div class="occupation-result-card"><h3>${item.vice}</h3><p>${item.description}</p></div>`
     );
@@ -605,7 +608,6 @@ function setupViceGenerator(dom) {
 }
 
 function setupOccupationGenerator(dom) {
-  // Check for all required DOM elements and data
   if (!dom.input || !dom.result || !dom.rerollSection || !dom.reroll1 || !dom.reroll2 || !dom.rerollResult1 || !dom.rerollResult2 || typeof occupations === 'undefined') {
       console.warn("Occupation generator setup failed: Missing DOM elements or data.");
       return;
@@ -625,8 +627,7 @@ function setupOccupationGenerator(dom) {
     const index = Math.ceil(d100roll / 2) - 1;
     if (d100roll >= 1 && d100roll <= 100) {
       dom.result.innerHTML = getCardHtml(d100roll);
-      // Roll 50 is index 49 (Kaksoisvuoro)
-      dom.rerollSection.classList.toggle("hidden", index !== 49); 
+      dom.rerollSection.classList.toggle("hidden", index !== 49); // Roll 50 is index 49
     } else {
       dom.result.innerHTML = "";
       dom.rerollSection.classList.add("hidden");
@@ -656,8 +657,9 @@ function setupOmenRoller(dom) {
 }
 
 // --- TABLE MAP FUNCTIONALITY ---
-// (No changes from your file)
+
 function makeTokenDraggable(tokenElement, containerElement) {
+  if (!tokenElement || !containerElement) return;
   tokenElement.addEventListener("mousedown", (e_down) => {
     e_down.preventDefault();
     tokenElement.classList.add("dragging");
@@ -693,7 +695,7 @@ function makeTokenDraggable(tokenElement, containerElement) {
 }
 
 function setupTableMap(dom) {
-  if (!dom.window || !dom.header || !dom.addBtn || !dom.nameInput || !dom.area || !dom.meToken) return;
+  if (!dom.window || !dom.header || !dom.addBtn || !dom.nameInput || !dom.area || !dom.meToken || !dom.collapseBtn) return;
 
   dom.collapseBtn.addEventListener("click", () => {
     dom.window.classList.toggle("collapsed");
@@ -765,22 +767,24 @@ function setupWidgetDashboard(DOM, state) {
   });
 
   // 1. Lock Layout Button
-  DOM.dashboard.lockBtn.addEventListener('click', () => {
-    const isLocked = DOM.dashboard.lockBtn.dataset.locked === 'true';
-    if (isLocked) {
-      state.grid.enableMove(true);
-      DOM.dashboard.lockBtn.dataset.locked = 'false';
-      DOM.dashboard.lockBtn.innerHTML = '<i class="fas fa-lock-open"></i> Lock Layout';
-      DOM.dashboard.lockBtn.classList.add('btn-secondary');
-      DOM.dashboard.lockBtn.classList.remove('btn-danger');
-    } else {
-      state.grid.enableMove(false);
-      DOM.dashboard.lockBtn.dataset.locked = 'true';
-      DOM.dashboard.lockBtn.innerHTML = '<i class="fas fa-lock"></i> Layout Locked';
-      DOM.dashboard.lockBtn.classList.remove('btn-secondary');
-      DOM.dashboard.lockBtn.classList.add('btn-danger');
-    }
-  });
+  if (DOM.dashboard.lockBtn) {
+    DOM.dashboard.lockBtn.addEventListener('click', () => {
+      const isLocked = DOM.dashboard.lockBtn.dataset.locked === 'true';
+      if (isLocked) {
+        state.grid.enableMove(true);
+        DOM.dashboard.lockBtn.dataset.locked = 'false';
+        DOM.dashboard.lockBtn.innerHTML = '<i class="fas fa-lock-open"></i> Lock Layout';
+        DOM.dashboard.lockBtn.classList.add('btn-secondary');
+        DOM.dashboard.lockBtn.classList.remove('btn-danger');
+      } else {
+        state.grid.enableMove(false);
+        DOM.dashboard.lockBtn.dataset.locked = 'true';
+        DOM.dashboard.lockBtn.innerHTML = '<i class="fas fa-lock"></i> Layout Locked';
+        DOM.dashboard.lockBtn.classList.remove('btn-secondary');
+        DOM.dashboard.lockBtn.classList.add('btn-danger');
+      }
+    });
+  }
 
   // 2. Widget Controls (Collapse & Close) using Event Delegation
   DOM.dashboard.grid.addEventListener('click', (e) => {
@@ -789,9 +793,11 @@ function setupWidgetDashboard(DOM, state) {
     if (collapseBtn) {
       const widget = collapseBtn.closest('.grid-stack-item-content');
       const icon = collapseBtn.querySelector('i');
-      widget.classList.toggle('collapsed');
-      icon.classList.toggle('fa-chevron-down');
-      icon.classList.toggle('fa-chevron-up');
+      if(widget) {
+        widget.classList.toggle('collapsed');
+        icon.classList.toggle('fa-chevron-down');
+        icon.classList.toggle('fa-chevron-up');
+      }
     }
 
     // Close Button
@@ -809,11 +815,13 @@ function setupWidgetDashboard(DOM, state) {
   setupQuickGenerator(DOM.dashboard.quickGen);
 
   // 4. Add Widget Button (Placeholder)
-  DOM.dashboard.addBtn.addEventListener('click', () => {
-    // This is where you would pop a modal to add new widgets.
-    // For now, it just logs a message.
-    console.log("Add Widget button clicked. (Functionality to be added)");
-  });
+  if (DOM.dashboard.addBtn) {
+    DOM.dashboard.addBtn.addEventListener('click', () => {
+      // This is where you would pop a modal to add new widgets.
+      // For now, it just logs a message.
+      console.log("Add Widget button clicked. (Functionality to be added)");
+    });
+  }
 }
 
 function setupQuickRoller(dom) {
@@ -826,8 +834,9 @@ function setupQuickRoller(dom) {
       const result = Math.floor(Math.random() * die) + 1;
       dom.result.textContent = `[ ${result} ]`;
       // Add a quick animation
+      dom.result.classList.remove('tada'); // reset animation
+      void dom.result.offsetWidth; // trigger reflow
       dom.result.classList.add('tada');
-      setTimeout(() => dom.result.classList.remove('tada'), 700);
     }
   });
 }
@@ -854,7 +863,7 @@ function setupQuickGenerator(dom) {
 
 
 // --- UTILITY FUNCTIONS ---
-// (No changes from your file)
+
 function createSimpleNameTable(data, caption) {
   let rows = data.map((name, index) => `<tr><td>${index + 1}</td><td>${name}</td></tr>`).join("");
   return `
