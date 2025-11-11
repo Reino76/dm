@@ -123,6 +123,18 @@ function cacheDOMElements() {
         close: document.getElementById("close-occupation-table-modal"),
         content: document.getElementById("occupation-table-content-modal"),
       },
+      virtue: {
+        trigger: document.querySelector(".toggle-virtue-table"),
+        modal: document.getElementById("virtue-table-modal"),
+        close: document.getElementById("close-virtue-table-modal"),
+        content: document.getElementById("virtue-table-content-modal"),
+      },
+      vice: {
+        trigger: document.querySelector(".toggle-vice-table"),
+        modal: document.getElementById("vice-table-modal"),
+        close: document.getElementById("close-vice-table-modal"),
+        content: document.getElementById("vice-table-content-modal"),
+      },
     },
     // Table Map
     map: {
@@ -208,12 +220,15 @@ function initApp(DOM, state) {
   setupOccupationGenerator(DOM.generators.occupation);
   setupVirtueGenerator(DOM.generators.virtue);
   setupViceGenerator(DOM.generators.vice);
+  // stats allocation UI removed per request; keep function in file for future but do not initialize now
   setupOmenRoller(DOM.omen);
 
   // Modals
   setupModal(DOM.modals.guildName.trigger, DOM.modals.guildName.modal, DOM.modals.guildName.close);
   setupModal(DOM.modals.charName.trigger, DOM.modals.charName.modal, DOM.modals.charName.close);
   setupModal(DOM.modals.occupation.trigger, DOM.modals.occupation.modal, DOM.modals.occupation.close);
+  setupModal(DOM.modals.virtue.trigger, DOM.modals.virtue.modal, DOM.modals.virtue.close);
+  setupModal(DOM.modals.vice.trigger, DOM.modals.vice.modal, DOM.modals.vice.close);
 
   // DM Screen
   setupInitiativeTracker(DOM, state);
@@ -480,6 +495,25 @@ function setupRoadmap(DOM) {
     }
   });
 
+  // Keyboard navigation for roadmap: ArrowRight = next, ArrowLeft = previous
+  document.addEventListener('keydown', (e) => {
+    // Only handle when prep tab is active
+    const prepTab = document.getElementById('tab-prep');
+    const prepActive = prepTab && prepTab.classList.contains('active');
+    if (!prepActive) return;
+    const activeStepEl = Array.from(DOM.prep.roadmapSteps).find(s => s.classList.contains('active'));
+    if (!activeStepEl) return;
+    const current = parseInt(activeStepEl.dataset.step, 10);
+    if (e.key === 'ArrowRight') {
+      // find next step element
+      const next = Array.from(DOM.prep.roadmapSteps).find(s => parseInt(s.dataset.step,10) === current + 1);
+      if (next) activateStep(next.dataset.step);
+    } else if (e.key === 'ArrowLeft') {
+      const prev = Array.from(DOM.prep.roadmapSteps).find(s => parseInt(s.dataset.step,10) === current - 1);
+      if (prev) activateStep(prev.dataset.step);
+    }
+  });
+
   activateStep("1");
 }
 
@@ -553,6 +587,12 @@ function populateGeneratorTables(modalDOM) {
   }
   if (modalDOM.occupation.content && typeof occupations !== 'undefined') {
     modalDOM.occupation.content.innerHTML = createOccupationTableHtml(occupations);
+  }
+  if (modalDOM.virtue.content && typeof virtues !== 'undefined') {
+    modalDOM.virtue.content.innerHTML = createVirtueViceTableHtml(virtues, "Hyveet");
+  }
+  if (modalDOM.vice.content && typeof vices !== 'undefined') {
+    modalDOM.vice.content.innerHTML = createVirtueViceTableHtml(vices, "Paheet");
   }
 }
 
@@ -654,6 +694,110 @@ function setupOmenRoller(dom) {
       setTimeout(() => dom.resultEl.parentElement.classList.remove('tada'), 700);
     }, 250);
   });
+}
+
+// Stats allocation UI for Dread Nights
+function setupStatsAllocation(DOM) {
+  const tokensContainer = document.getElementById('stats-tokens');
+  const grid = document.getElementById('stats-grid');
+  const resetBtn = document.getElementById('stats-reset');
+  const applyBtn = document.getElementById('stats-apply');
+  const seriesInputs = document.getElementsByName('stat-series');
+
+  if (!tokensContainer || !grid) return;
+
+  const statSlots = Array.from(grid.querySelectorAll('.stat-slot'));
+  let activeSlot = null;
+  let tokens = [];
+  let assignments = {}; // stat -> value
+
+  function getSelectedSeries() {
+    const checked = Array.from(seriesInputs).find(i => i.checked);
+    return checked ? checked.value : 'a';
+  }
+
+  function seriesValues(series) {
+    // Series A: +1, +1, 0, -3 ; Series B: +2, +2, -1, -2
+    if (series === 'b') return [2,2,-1,-2];
+    return [1,1,0,-3];
+  }
+
+  function renderTokens() {
+    tokensContainer.innerHTML = '';
+    tokens = seriesValues(getSelectedSeries()).map((v, idx) => {
+      const el = document.createElement('button');
+      el.type = 'button';
+      el.className = 'stats-token';
+      el.dataset.value = v;
+      el.dataset.index = idx;
+      el.textContent = (v >= 0 ? '+' + v : String(v));
+      el.addEventListener('click', () => onTokenClick(el));
+      tokensContainer.appendChild(el);
+      return el;
+    });
+  }
+
+  function clearAssignments() {
+    assignments = {};
+    statSlots.forEach(s => s.querySelector('.stat-value').textContent = '—');
+    tokens.forEach(t => t.classList.remove('used'));
+  }
+
+  function onSlotClick(slot) {
+    // toggle active
+    if (activeSlot === slot) {
+      slot.classList.remove('active');
+      activeSlot = null;
+      return;
+    }
+    statSlots.forEach(s => s.classList.remove('active'));
+    slot.classList.add('active');
+    activeSlot = slot;
+  }
+
+  function onTokenClick(tokenEl) {
+    if (tokenEl.classList.contains('used')) return;
+    if (!activeSlot) {
+      // If no active slot, briefly highlight potential slots
+      return;
+    }
+    const stat = activeSlot.dataset.stat;
+    const val = parseInt(tokenEl.dataset.value, 10);
+    // If this stat already has an assigned token, free that token first
+    const prev = assignments[stat];
+    if (typeof prev === 'number') {
+      const prevToken = tokens.find(t => parseInt(t.dataset.value,10) === prev && t.classList.contains('used'));
+      if (prevToken) prevToken.classList.remove('used');
+    }
+    // assign
+    assignments[stat] = val;
+    activeSlot.querySelector('.stat-value').textContent = (val >= 0 ? '+'+val : String(val));
+    tokenEl.classList.add('used');
+    // deselect slot
+    activeSlot.classList.remove('active');
+    activeSlot = null;
+  }
+
+  // click handlers for slots
+  statSlots.forEach(slot => slot.addEventListener('click', () => onSlotClick(slot)));
+
+  // radio change
+  Array.from(seriesInputs).forEach(r => r.addEventListener('change', () => {
+    renderTokens();
+    clearAssignments();
+  }));
+
+  resetBtn && resetBtn.addEventListener('click', (e) => { e.preventDefault(); renderTokens(); clearAssignments(); });
+  applyBtn && applyBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    const saved = Object.assign({}, assignments);
+    try { localStorage.setItem('dread_stats', JSON.stringify(saved)); } catch (err) { console.warn('Could not save stats', err); }
+    applyBtn.textContent = 'Tallennettu';
+    setTimeout(() => applyBtn.textContent = 'Tallenna statit', 1200);
+  });
+
+  // initial render
+  renderTokens();
 }
 
 // --- TABLE MAP FUNCTIONALITY ---
@@ -879,6 +1023,32 @@ function createSimpleNameTable(data, caption) {
         ${rows}
       </tbody>
     </table>
+  `;
+}
+
+function createVirtueViceTableHtml(data, title) {
+  // Determine key based on title
+  const key = title === "Hyveet" ? "virtue" : "vice";
+  const descKey = title === "Hyveet" ? "description" : "description";
+  
+  let rows = data.map((item, index) => `<tr><td>${index + 1}</td><td>${item[key]}</td><td>${item[descKey]}</td></tr>`).join("");
+  
+  return `
+    <div class="name-table-wrapper">
+      <table>
+        <caption>${title} (d20)</caption>
+        <thead>
+          <tr>
+            <th>d20</th>
+            <th>${title}</th>
+            <th>Kuvaus</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows}
+        </tbody>
+      </table>
+    </div>
   `;
 }
 

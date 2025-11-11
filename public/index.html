@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>DM Screen</title>
 <!-- NEW: Thematic Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -85,97 +87,85 @@
           <span class="step-number">8</span>
           <span class="step-title">Omens</span>
         </div>
+        <!-- Always-on guilds (moved here so they remain visible while navigating steps) -->
+        <div class="prep-guilds">
+          <div class="guild-card card" data-guild="Faithless">
+            <div class="card-header">
+              <h4>Faithless</h4>
+              <button class="btn-collapse"><i class="fas fa-chevron-down"></i></button>
+            </div>
+            <div class="card-content">
+              <ul>
+                <li><strong>Hyve:</strong> Epäusko</li>
+                <li>Voi ohittaa 1x MORAALI-tarkistuksen</li>
+              </ul>
+              <div class="guild-reward">
+                <strong>Palkkio:</strong> 15 Shillinkiä
+              </div>
+            </div>
+          </div>
+          <div class="guild-card card" data-guild="Merchant">
+            <div class="card-header">
+              <h4>Merchant</h4>
+              <button class="btn-collapse"><i class="fas fa-chevron-down"></i></button>
+            </div>
+            <div class="card-content">
+              <ul>
+                <li>Aletta 25% kaikesta</li>
+              </ul>
+              <div class="guild-reward">
+                <strong>Palkkio:</strong> 20 Shillinkiä
+              </div>
+              <button id="enable-merchant-mode-btn" class="btn btn-sm" style="margin-top: 10px;">Enable Merchant Mode</button>
+            </div>
+          </div>
+          <div class="guild-card card" data-guild="Fallen">
+            <div class="card-header">
+              <h4>Fallen</h4>
+              <button class="btn-collapse"><i class="fas fa-chevron-down"></i></button>
+            </div>
+            <div class="card-content">
+              <div class="guild-reward">
+                <strong>Palkkio:</strong> 10 Shillinkiä
+              </div>
+              <table>
+                <thead>
+                  <tr><th>D4</th><th>Bonus</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>1</td><td>Parannettu vampyyri</td></tr>
+                  <tr><td>2</td><td>Parannettu ihmissusi</td></tr>
+                  <tr><td>3</td><td><strong>Hyve:</strong> Kaikki aseet hopeisia</td></tr>
+                  <tr><td>4</td><td><strong>Hyve:</strong> Kostonhimoinen (+3)</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Right Column: Content -->
       <div class="prep-content">
-        <!-- Step 1 Content: Guilds -->
-        <div class="prep-content-step active" data-step-content="1">
-          <div class="guild-selection-container">
-            <div class="guild-card card" data-guild="Streetfolk">
-              <div class="card-header">
-                <h4>Streetfolk</h4>
-                <button class="btn-collapse"><i class="fas fa-chevron-down"></i></button>
-              </div>
-              <div class="card-content">
-                <ul>
-                  <li><strong>Hyve:</strong> Kissansilmät</li>
-                  <li>1x Satunnainen Tavara</li>
-                </ul>
-                <div class="guild-reward">
-                  <strong>Palkkio:</strong> 10 Shillinkiä
-                </div>
-              </div>
-            </div>
-            <div class="guild-card card" data-guild="Faithless">
-              <div class="card-header">
-                <h4>Faithless</h4>
-                <button class="btn-collapse"><i class="fas fa-chevron-down"></i></button>
-              </div>
-              <div class="card-content">
-                <ul>
-                  <li><strong>Hyve:</strong> Epäusko</li>
-                  <li>Voi ohittaa 1x MORAALI-tarkistuksen</li>
-                </ul>
-                <div class="guild-reward">
-                  <strong>Palkkio:</strong> 15 Shillinkiä
-                </div>
-              </div>
-            </div>
-            <div class="guild-card card" data-guild="Merchant">
-              <div class="card-header">
-                <h4>Merchant</h4>
-                <button class="btn-collapse"><i class="fas fa-chevron-down"></i></button>
-              </div>
-              <div class="card-content">
-                <ul>
-                  <li>Aletta 25% kaikesta</li>
-                </ul>
-                <div class="guild-reward">
-                  <strong>Palkkio:</strong> 20 Shillinkiä
-                </div>
-                <button id="enable-merchant-mode-btn" class="btn btn-sm" style="margin-top: 10px;">Enable Merchant Mode</button>
-              </div>
-            </div>
-            <div class="guild-card card" data-guild="Fallen">
-              <div class="card-header">
-                <h4>Fallen</h4>
-                <button class="btn-collapse"><i class="fas fa-chevron-down"></i></button>
-              </div>
-              <div class="card-content">
-                <div class="guild-reward">
-                  <strong>Palkkio:</strong> 10 Shillinkiä
-                </div>
-                <table>
-                  <thead>
-                    <tr><th>D4</th><th>Bonus</th></tr>
-                  </thead>
-                  <tbody>
-                    <tr><td>1</td><td>Parannettu vampyyri</td></tr>
-                    <tr><td>2</td><td>Parannettu ihmissusi</td></tr>
-                    <tr><td>3</td><td><strong>Hyve:</strong> Kaikki aseet hopeisia</td></tr>
-                    <tr><td>4</td><td><strong>Hyve:</strong> Kostonhimoinen (+3)</td></tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-          <div class="prep-nav">
-            <button class="btn btn-next-step" data-next="2">Seuraava <i class="fas fa-arrow-right"></i></button>
-          </div>
-        </div>
+        
 
         <!-- Step 2 Content: Guild Name -->
         <div class="prep-content-step" data-step-content="2">
-          <div class="name-generator-container">
-            <div class="dice-indicator">d100</div>
-            <div class="name-generator-inputs">
-              <input type="number" class="d-input-square" id="guild-name-input-1" min="1" max="100">
-              <input type="number" class="d-input-square" id="guild-name-input-2" min="1" max="100">
+          <div class="dice-roll-section">
+            <h3>Killan Nimi</h3>
+            <div class="dice-roller">
+              <div class="dice-indicator">d100 x 2</div>
+              <div class="dice-inputs">
+                <input type="number" class="d-input-square" id="guild-name-input-1" min="1" max="100" placeholder="1-100">
+                <input type="number" class="d-input-square" id="guild-name-input-2" min="1" max="100" placeholder="1-100">
+              </div>
             </div>
-            <h3 id="guild-name-result"><span>-</span></h3>
+            <div class="result-display">
+              <h2 id="guild-name-result"><span class="result-text">-</span></h2>
+            </div>
           </div>
-          <button id="toggle-name-tables-modal" class="btn btn-secondary">Näytä Taulukot</button>
+          <div class="table-toggle-section">
+            <button id="toggle-name-tables-modal" class="btn btn-secondary"><i class="fas fa-book"></i> Näytä Taulukot</button>
+          </div>
           <div class="prep-nav">
             <button class="btn btn-secondary btn-prev-step" data-prev="1"><i class="fas fa-arrow-left"></i> Edellinen</button>
             <button class="btn btn-next-step" data-next="3">Seuraava <i class="fas fa-arrow-right"></i></button>
@@ -184,14 +174,21 @@
 
         <!-- Step 3 Content: Character Name -->
         <div class="prep-content-step" data-step-content="3">
-          <div class="name-generator-container">
-            <div class="dice-indicator">d100</div>
-            <div class="name-generator-inputs">
-              <input type="number" class="d-input-square" id="char-name-input" min="1" max="100">
+          <div class="dice-roll-section">
+            <h3>Hahmon Nimi</h3>
+            <div class="dice-roller">
+              <div class="dice-indicator">d100</div>
+              <div class="dice-inputs">
+                <input type="number" class="d-input-square" id="char-name-input" min="1" max="100" placeholder="1-100">
+              </div>
             </div>
-            <h3 id="char-name-result"><span>-</span></h3>
+            <div class="result-display">
+              <h2 id="char-name-result"><span class="result-text">-</span></h2>
+            </div>
           </div>
-          <button id="toggle-char-name-table-modal" class="btn btn-secondary">Näytä Taulukko</button>
+          <div class="table-toggle-section">
+            <button id="toggle-char-name-table-modal" class="btn btn-secondary"><i class="fas fa-book"></i> Näytä Taulukko</button>
+          </div>
           <div class="prep-nav">
             <button class="btn btn-secondary btn-prev-step" data-prev="2"><i class="fas fa-arrow-left"></i> Edellinen</button>
             <button class="btn btn-next-step" data-next="4">Seuraava <i class="fas fa-arrow-right"></i></button>
@@ -200,31 +197,38 @@
 
         <!-- Step 4 Content: Occupation -->
         <div class="prep-content-step" data-step-content="4">
-          <div class="name-generator-container">
-            <div class="dice-indicator">d100</div>
-            <div class="name-generator-inputs">
-              <input type="number" class="d-input-square" id="occupation-input" min="1" max="100">
+          <div class="dice-roll-section">
+            <h3>Työnkuvat</h3>
+            <div class="dice-roller">
+              <div class="dice-indicator">d100</div>
+              <div class="dice-inputs">
+                <input type="number" class="d-input-square" id="occupation-input" min="1" max="100" placeholder="1-100">
+              </div>
             </div>
-            <div id="occupation-result-display">
+            <div class="result-display" id="occupation-result-display">
               <!-- Result will be injected here -->
             </div>
           </div>
 
           <!-- Reroll section for roll 50 -->
-          <div id="occupation-reroll-section" class="hidden">
-            <h4>Kaksoisvuoro! Syötä kaksi uutta d100-heittoa:</h4>
-            <div class="name-generator-container">
-              <div class="dice-indicator">d100</div>
-              <div class="name-generator-inputs">
-                <input type="number" class="d-input-square" id="occupation-reroll-1" min="1" max="100">
-                <input type="number" class="d-input-square" id="occupation-reroll-2" min="1" max="100">
+          <div id="occupation-reroll-section" class="dice-roll-section hidden">
+            <h4>🎲 Kaksoisvuoro! Syötä kaksi uutta d100-heittoa:</h4>
+            <div class="dice-roller">
+              <div class="dice-indicator">d100 x 2</div>
+              <div class="dice-inputs">
+                <input type="number" class="d-input-square" id="occupation-reroll-1" min="1" max="100" placeholder="1-100">
+                <input type="number" class="d-input-square" id="occupation-reroll-2" min="1" max="100" placeholder="1-100">
               </div>
-              <div id="reroll-result-display-1" class="occupation-result-card"></div>
-              <div id="reroll-result-display-2" class="occupation-result-card"></div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+              <div id="reroll-result-display-1" class="result-display"></div>
+              <div id="reroll-result-display-2" class="result-display"></div>
             </div>
           </div>
 
-          <button id="toggle-occupation-table-modal" class="btn btn-secondary">Näytä Taulukko</button>
+          <div class="table-toggle-section">
+            <button id="toggle-occupation-table-modal" class="btn btn-secondary"><i class="fas fa-book"></i> Näytä Taulukko</button>
+          </div>
 
           <div class="prep-nav">
             <button class="btn btn-secondary btn-prev-step" data-prev="3"><i class="fas fa-arrow-left"></i> Edellinen</button>
@@ -235,24 +239,31 @@
         <!-- Step 5 Content: Stats -->
         <div class="prep-content-step" data-step-content="5">
           <h2>Vaihe 5: Stats</h2>
-          <p>Tähän tulee hahmon stat-blockien generointi tai syöttö.</p>
-          <!-- Placeholder for stats content -->
+          <div class="stats-brief">
+            <p class="stats-brief-line">Valitse SARJA A <strong>+1 +1 0 -3</strong> tai SARJA B <strong>+2 +2 -1 -2</strong>.</p>
+            <p class="stats-brief-line">HP = <strong>8 ± TGH</strong> · Inventory = <strong>5 ± STR</strong></p>
+          </div>
           <div class="prep-nav">
             <button class="btn btn-secondary btn-prev-step" data-prev="4"><i class="fas fa-arrow-left"></i> Edellinen</button>
-            <button class="btn btn-next-step" data-next="6">Seuraava <i class="fas fa-arrow-right"></i></button>
           </div>
         </div>
 
         <!-- Step 6 Content: Virtues -->
         <div class="prep-content-step" data-step-content="6">
-          <div class="name-generator-container">
-            <div class="dice-indicator">d20</div>
-            <div class="name-generator-inputs">
-              <input type="number" class="d-input-square" id="virtue-input" min="1" max="20">
+          <div class="dice-roll-section">
+            <h3>Hyveet</h3>
+            <div class="dice-roller">
+              <div class="dice-indicator">d20</div>
+              <div class="dice-inputs">
+                <input type="number" class="d-input-square" id="virtue-input" min="1" max="20" placeholder="1-20">
+              </div>
             </div>
-            <div id="virtue-result-display">
+            <div class="result-display" id="virtue-result-display">
               <!-- Result will be injected here -->
             </div>
+          </div>
+          <div class="table-toggle-section">
+            <button class="btn btn-secondary toggle-virtue-table"><i class="fas fa-book"></i> Näytä Taulukko</button>
           </div>
           <div class="prep-nav">
             <button class="btn btn-secondary btn-prev-step" data-prev="5"><i class="fas fa-arrow-left"></i> Edellinen</button>
@@ -262,14 +273,20 @@
 
         <!-- Step 7 Content: Vices -->
         <div class="prep-content-step" data-step-content="7">
-          <div class="name-generator-container">
-            <div class="dice-indicator">d20</div>
-            <div class="name-generator-inputs">
-              <input type="number" class="d-input-square" id="vice-input" min="1" max="20">
+          <div class="dice-roll-section">
+            <h3>Paheet</h3>
+            <div class="dice-roller">
+              <div class="dice-indicator">d20</div>
+              <div class="dice-inputs">
+                <input type="number" class="d-input-square" id="vice-input" min="1" max="20" placeholder="1-20">
+              </div>
             </div>
-            <div id="vice-result-display">
+            <div class="result-display" id="vice-result-display">
               <!-- Result will be injected here -->
             </div>
+          </div>
+          <div class="table-toggle-section">
+            <button class="btn btn-secondary toggle-vice-table"><i class="fas fa-book"></i> Näytä Taulukko</button>
           </div>
           <div class="prep-nav">
             <button class="btn btn-secondary btn-prev-step" data-prev="6"><i class="fas fa-arrow-left"></i> Edellinen</button>
@@ -280,15 +297,9 @@
         <!-- Step 8 Content: Omens -->
         <div class="prep-content-step" data-step-content="8">
           <h2>Vaihe 8: Omens</h2>
-          <p>Heitä D2 jokaiselle pelaajalle määrittääksesi heidän Omen-numeronsa.</p>
-          <!-- Omen Roller (moved from non-existent DM screen part) -->
-          <div class="omen-roller">
-            <button id="roll-omen" class="btn">Heitä Omen (d2)</button>
-            <div id="omen-result">Omen: <span>-</span></div>
-          </div>
-          <div class="omen-options">
-            <p><strong>1: Omen Effect 1 (Placeholder):</strong> Kuvaus Omen-efektille 1.</p>
-            <p><strong>2: Omen Effect 2 (Placeholder):</strong> Kuvaus Omen-efektille 2.</p>
+          <div class="stats-brief">
+            <p class="stats-brief-line">OMEN: Heitä <strong>d4</strong> ja jaa 2 (floor) tai käytä kolikkoa (kruuna/klaava) saadaksesi d2.</p>
+            <p class="stats-brief-line">EFKT: Reroll (yksi heitto), Max damage (seuraava), Reduce incoming (d6), Loot reroll.</p>
           </div>
           <div class="prep-nav">
             <button class="btn btn-secondary btn-prev-step" data-prev="7"><i class="fas fa-arrow-left"></i> Edellinen</button>
@@ -509,6 +520,26 @@
     <button id="close-occupation-table-modal" class="modal-close-btn">&times;</button>
     <h2>Työnkuvien Taulukko</h2>
     <div id="occupation-table-content-modal" class="name-tables-container">
+      <!-- Table will be populated by JavaScript -->
+    </div>
+  </div>
+</div>
+
+<div id="virtue-table-modal" class="modal-overlay">
+  <div class="modal-content modal-wide">
+    <button id="close-virtue-table-modal" class="modal-close-btn">&times;</button>
+    <h2>Hyveien Taulukko (d20)</h2>
+    <div id="virtue-table-content-modal" class="name-tables-container">
+      <!-- Table will be populated by JavaScript -->
+    </div>
+  </div>
+</div>
+
+<div id="vice-table-modal" class="modal-overlay">
+  <div class="modal-content modal-wide">
+    <button id="close-vice-table-modal" class="modal-close-btn">&times;</button>
+    <h2>Paheiden Taulukko (d20)</h2>
+    <div id="vice-table-content-modal" class="name-tables-container">
       <!-- Table will be populated by JavaScript -->
     </div>
   </div>
