@@ -1289,6 +1289,11 @@ textarea {
 .prep-guilds { display:flex; flex-direction:column; gap:12px; margin-top:12px; }
 .prep-guilds .guild-card { max-width: 320px; }
 
+/* Right-column guilds step styling (used by .guilds-step) */
+.guilds-step { display:flex; flex-direction:column; gap:14px; }
+.guilds-step .guild-card { width:100%; }
+.guilds-step .card-content { padding:12px; }
+
 /* Stats allocation UI */
 .stats-setup {
   background: var(--surface-color);

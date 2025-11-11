@@ -87,66 +87,73 @@
           <span class="step-number">8</span>
           <span class="step-title">Omens</span>
         </div>
-        <!-- Always-on guilds (moved here so they remain visible while navigating steps) -->
-        <div class="prep-guilds">
-          <div class="guild-card card" data-guild="Faithless">
-            <div class="card-header">
-              <h4>Faithless</h4>
-              <button class="btn-collapse"><i class="fas fa-chevron-down"></i></button>
-            </div>
-            <div class="card-content">
-              <ul>
-                <li><strong>Hyve:</strong> Epäusko</li>
-                <li>Voi ohittaa 1x MORAALI-tarkistuksen</li>
-              </ul>
-              <div class="guild-reward">
-                <strong>Palkkio:</strong> 15 Shillinkiä
-              </div>
-            </div>
-          </div>
-          <div class="guild-card card" data-guild="Merchant">
-            <div class="card-header">
-              <h4>Merchant</h4>
-              <button class="btn-collapse"><i class="fas fa-chevron-down"></i></button>
-            </div>
-            <div class="card-content">
-              <ul>
-                <li>Aletta 25% kaikesta</li>
-              </ul>
-              <div class="guild-reward">
-                <strong>Palkkio:</strong> 20 Shillinkiä
-              </div>
-              <button id="enable-merchant-mode-btn" class="btn btn-sm" style="margin-top: 10px;">Enable Merchant Mode</button>
-            </div>
-          </div>
-          <div class="guild-card card" data-guild="Fallen">
-            <div class="card-header">
-              <h4>Fallen</h4>
-              <button class="btn-collapse"><i class="fas fa-chevron-down"></i></button>
-            </div>
-            <div class="card-content">
-              <div class="guild-reward">
-                <strong>Palkkio:</strong> 10 Shillinkiä
-              </div>
-              <table>
-                <thead>
-                  <tr><th>D4</th><th>Bonus</th></tr>
-                </thead>
-                <tbody>
-                  <tr><td>1</td><td>Parannettu vampyyri</td></tr>
-                  <tr><td>2</td><td>Parannettu ihmissusi</td></tr>
-                  <tr><td>3</td><td><strong>Hyve:</strong> Kaikki aseet hopeisia</td></tr>
-                  <tr><td>4</td><td><strong>Hyve:</strong> Kostonhimoinen (+3)</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
+        <!-- Left column contains only the roadmap steps. Guilds will be shown as Step 1 content on the right. -->
       </div>
 
       <!-- Right Column: Content -->
       <div class="prep-content">
-        
+
+        <!-- Step 1 Content: Killat (Guilds) -->
+        <div class="prep-content-step" data-step-content="1">
+          <h2>Vaihe 1: Killat</h2>
+          <div class="guilds-step">
+            <div class="guild-card card" data-guild="Faithless">
+              <div class="card-header">
+                <h4>Faithless</h4>
+                <button class="btn-collapse"><i class="fas fa-chevron-down"></i></button>
+              </div>
+              <div class="card-content">
+                <ul>
+                  <li><strong>Hyve:</strong> Epäusko</li>
+                  <li>Voi ohittaa 1x MORAALI-tarkistuksen</li>
+                </ul>
+                <div class="guild-reward">
+                  <strong>Palkkio:</strong> 15 Shillinkiä
+                </div>
+              </div>
+            </div>
+            <div class="guild-card card" data-guild="Merchant">
+              <div class="card-header">
+                <h4>Merchant</h4>
+                <button class="btn-collapse"><i class="fas fa-chevron-down"></i></button>
+              </div>
+              <div class="card-content">
+                <ul>
+                  <li>Aletta 25% kaikesta</li>
+                </ul>
+                <div class="guild-reward">
+                  <strong>Palkkio:</strong> 20 Shillinkiä
+                </div>
+                <button id="enable-merchant-mode-btn" class="btn btn-sm" style="margin-top: 10px;">Enable Merchant Mode</button>
+              </div>
+            </div>
+            <div class="guild-card card" data-guild="Fallen">
+              <div class="card-header">
+                <h4>Fallen</h4>
+                <button class="btn-collapse"><i class="fas fa-chevron-down"></i></button>
+              </div>
+              <div class="card-content">
+                <div class="guild-reward">
+                  <strong>Palkkio:</strong> 10 Shillinkiä
+                </div>
+                <table>
+                  <thead>
+                    <tr><th>D4</th><th>Bonus</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr><td>1</td><td>Parannettu vampyyri</td></tr>
+                    <tr><td>2</td><td>Parannettu ihmissusi</td></tr>
+                    <tr><td>3</td><td><strong>Hyve:</strong> Kaikki aseet hopeisia</td></tr>
+                    <tr><td>4</td><td><strong>Hyve:</strong> Kostonhimoinen (+3)</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="prep-nav">
+            <button class="btn btn-secondary btn-next-step" data-next="2">Siirry seuraavaan</button>
+          </div>
+        </div>
 
         <!-- Step 2 Content: Guild Name -->
         <div class="prep-content-step" data-step-content="2">
