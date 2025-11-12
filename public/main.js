@@ -1038,26 +1038,34 @@ function setupDmScreenTabs() {
 }
 
 function setupDmScreenAccordion() {
-    const accordionHeaders = document.querySelectorAll('.accordion-header');
-    const accordionItems = document.querySelectorAll('.accordion-item');
+    const dmScreen = document.getElementById('tab-play');
+    if (!dmScreen) return;
 
-    accordionHeaders.forEach(header => {
-        header.addEventListener('click', () => {
-            const content = header.nextElementSibling;
-            const parentItem = header.parentElement;
+    dmScreen.addEventListener('click', (e) => {
+        const cardHeader = e.target.closest('.play-card-header');
+        const accordionHeader = e.target.closest('.play-card-accordion-header');
 
-            // Close all other accordions
-            accordionItems.forEach(otherItem => {
-                if (otherItem !== parentItem) {
-                    otherItem.classList.remove('is-open');
-                    otherItem.querySelector('.accordion-header').classList.remove('active');
-                }
-            });
+        if (cardHeader) {
+            const card = cardHeader.closest('.play-card');
+            if (card) {
+                card.classList.toggle('is-open');
+            }
+        }
 
-            // Toggle current accordion
-            parentItem.classList.toggle('is-open');
-            header.classList.toggle('active');
-        });
+        if (accordionHeader) {
+            const accordion = accordionHeader.closest('.play-card-accordion');
+            if (accordion) {
+                // Close siblings
+                const parentContent = accordion.parentElement;
+                parentContent.querySelectorAll('.play-card-accordion').forEach(sibling => {
+                    if (sibling !== accordion) {
+                        sibling.classList.remove('is-open');
+                    }
+                });
+                // Toggle current
+                accordion.classList.toggle('is-open');
+            }
+        }
     });
 }
 

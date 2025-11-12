@@ -1,0 +1,70 @@
+.play-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+.play-card {
+    background-color: #333;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.play-card h2 {
+    margin-top: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.accordion {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.accordion-item {
+    background-color: #444;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.accordion-header {
+    background-color: #555;
+    color: white;
+    border: none;
+    width: 100%;
+    text-align: left;
+    padding: 15px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.accordion-header:hover {
+    background-color: #666;
+}
+
+.accordion-content {
+    padding: 0 15px;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out, padding 0.3s ease-out;
+}
+
+.accordion-content.active {
+    padding: 15px;
+    max-height: 500px; /* Adjust as needed */
+}
+
+.accordion-content p,
+.accordion-content h4,
+.accordion-content ul {
+    margin: 10px 0;
+}
+
+.accordion-content a {
+    color: #1e90ff;
+}

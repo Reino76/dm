@@ -65,6 +65,7 @@
 
   <div class="tabs">
     <button class="tab-button active" data-tab="tab-prep">Session Start</button>
+    <button class="tab-button" data-tab="tab-play">Play</button>
   </div>
 
   <div id="tab-prep" class="tab-content active">
@@ -343,7 +344,91 @@
     </div>
   </div>
 
-  
+  <div id="tab-play" class="tab-content">
+    <div class="play-grid">
+      <div class="play-column">
+        <div class="play-card">
+          <button class="play-card-header">
+            <h3><i class="fas fa-shopping-cart"></i> Kun ostetaan</h3>
+            <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="play-card-content">
+            <p>Go to <a href="/shop.html" target="_blank">shop</a>.</p>
+          </div>
+        </div>
+      </div>
+      <div class="play-column">
+        <div class="play-card">
+          <button class="play-card-header">
+            <h3><i class="fas fa-dice-d20"></i> Tests</h3>
+            <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="play-card-content">
+            <div class="play-card-accordion">
+              <button class="play-card-accordion-header">Toughness Dr14 when smog</button>
+              <div class="play-card-accordion-content">
+                <p>If failed: <a href="#">smog effect table</a></p>
+              </div>
+            </div>
+            <div class="play-card-accordion">
+              <button class="play-card-accordion-header">Tgh dr12 when hit by a monster</button>
+              <div class="play-card-accordion-content">
+                <p>Placeholder for monster infection effects.</p>
+              </div>
+            </div>
+            <div class="play-card-accordion">
+              <button class="play-card-accordion-header">Tgh d20 when hp reaches &lt;0</button>
+              <div class="play-card-accordion-content">
+                <p>Details about dying instantly if under -2.</p>
+              </div>
+            </div>
+            <div class="play-card-accordion">
+              <button class="play-card-accordion-header">Prc dr12 when moral is tested</button>
+              <div class="play-card-accordion-content">
+                <p>If failed, generate a d6 of results of panic.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="play-column">
+        <div class="play-card">
+          <button class="play-card-header">
+            <h3><i class="fas fa-fist-raised"></i> Toimitaan</h3>
+            <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="play-card-content">
+            <div class="play-card-accordion">
+              <button class="play-card-accordion-header"><i class="fas fa-box-open"></i> Looting</button>
+              <div class="play-card-accordion-content">
+                <p>Placeholder for loot table.</p>
+              </div>
+            </div>
+            <div class="play-card-accordion">
+              <button class="play-card-accordion-header">Lähitaistelu</button>
+              <div class="play-card-accordion-content">
+                <p>Placeholder for melee combat.</p>
+              </div>
+            </div>
+            <div class="play-card-accordion">
+              <button class="play-card-accordion-header">Etätaistelu</button>
+              <div class="play-card-accordion-content">
+                <p>Placeholder for ranged combat.</p>
+              </div>
+            </div>
+            <div class="play-card-accordion">
+              <button class="play-card-accordion-header"><i class="fas fa-scroll"></i> Kääröt</button>
+              <div class="play-card-accordion-content">
+                <p>Prc dr12 throw.</p>
+                <p>Night and day manuscripts placeholder.</p>
+                <p>Fumbling a prc throw result table placeholder.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
   
   <div id="tab-player-preview" class="tab-content">
     <iframe src="player.html" style="width: 100%; height: 100%; border: none;"></iframe>

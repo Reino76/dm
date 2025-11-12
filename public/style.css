@@ -44,7 +44,6 @@ body {
   margin: 0;
   padding: 0;
   width: 100%;
-  overflow-x: hidden;
 }
 
 @media (max-width: 767px) {
@@ -64,11 +63,9 @@ body {
   margin: 0 auto;
   padding: 10px;
   width: 100%;
-  height: 100vh;
   display: flex;
   flex-direction: column;
-  flex: 1; /* Allow container to grow and shrink */
-  overflow: hidden; /* Hide overflow to prevent main scroll */
+  min-height: 100vh;
 }
 
 @media (max-width: 767px) {
@@ -86,15 +83,25 @@ body {
 
 /* --- Header & Settings --- */
 .header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px;
+  display: flex; /* Changed back to flex to allow header-content to take space */
+  justify-content: center; /* Center the header-content horizontally */
+  align-items: flex-start; /* Align items to the start, header-content will manage its own alignment */
+  padding: 10px 10px 25px 10px; /* Added padding-bottom for the toggle button */
   border-bottom: 1px solid var(--border-color);
   margin-bottom: 10px;
   gap: 10px;
   flex-wrap: wrap;
   min-height: 50px;
+  position: relative; /* Added for absolute positioning of toggle button */
+  z-index: 20;
+  background: var(--surface-color);
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%; /* Ensure it takes full width of the header */
 }
 
 /* Header fold/collapse layout */
@@ -156,14 +163,21 @@ body {
 /* Toggle button: positioned absolutely so it remains visible and clickable when header is collapsed */
 .header-toggle {
   position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
   padding: 6px 10px !important;
   font-size: 0.85rem;
   background: var(--primary-color) !important;
   color: #fff !important;
   z-index: 100;
+}
+
+.header-toggle:hover {
+  transform: translateX(-50%) !important; /* Keep it horizontally centered */
+  background: var(--primary-color-hover) !important; /* Apply hover background */
+  color: var(--bg-color) !important; /* Apply hover text color */
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2); /* Apply hover shadow */
 }
 
 .header-toggle i,
@@ -175,6 +189,7 @@ body {
   transform: rotate(180deg);
 }
 
+/* When collapsed, slightly less prominent but still visible */
 /* When collapsed, slightly less prominent but still visible */
 .header.collapsed .header-toggle {
   background: var(--primary-color) !important;
@@ -334,11 +349,12 @@ h1 {
   border-top: none;
   border-radius: 0 0 var(--radius-sharp) var(--radius-sharp); 
   flex: 1; /* Allow tab content to grow and shrink */
-  overflow-y: auto; /* Enable vertical scrolling for tab content */
 }
 
 .tab-content.active {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
 /* --- Styled Forms & Buttons --- */
@@ -690,11 +706,18 @@ textarea {
   padding: 0;
 }
 
+#dread-nights-active-screen {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
 .prep-layout {
   display: flex;
   flex-direction: row;
   gap: 0;
-  height: 100%; /* Ensure prep-layout takes full height */
+  height: 100%;
+  flex: 1;
 }
 
 @media (max-width: 1023px) {
@@ -720,9 +743,8 @@ textarea {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  position: sticky; /* Make it sticky */
-  top: 0; /* Stick to the top */
-  height: 100vh; /* Take full viewport height */
+  position: sticky; /* Changed from relative to sticky */
+  top: 0; /* Added to make it stick to the top */
   z-index: 10; /* Ensure it stays on top */
   overflow-y: auto; /* Allow internal scrolling if content exceeds height */
 }
@@ -834,8 +856,6 @@ textarea {
   flex: 1;
   padding: 30px;
   position: relative;
-  overflow-y: auto;
-  background: var(--bg-color);
 }
 
 @media (max-width: 1023px) {
@@ -898,8 +918,16 @@ hr {
 @media (max-width: 767px) {
   .prep-content-step h2 {
     font-size: 1.5rem;
-    margin-bottom: 12px;
-    padding-bottom: 12px;
+    margin: 0 0 10px 0; /* Reduced margin-bottom */
+    padding-bottom: 10px; /* Reduced padding-bottom */
+  }
+}
+
+@media (max-width: 480px) {
+  .prep-content-step h2 {
+    font-size: 1.3rem;
+    margin: 0 0 8px 0; /* Further reduced margin-bottom */
+    padding-bottom: 8px; /* Further reduced padding-bottom */
   }
 }
 
@@ -914,7 +942,14 @@ hr {
 @media (max-width: 767px) {
   .prep-content-step h3 {
     font-size: 1.2rem;
-    margin: 15px 0 12px 0;
+    margin: 12px 0 10px 0; /* Reduced margins */
+  }
+}
+
+@media (max-width: 480px) {
+  .prep-content-step h3 {
+    font-size: 1.1rem;
+    margin: 10px 0 8px 0; /* Further reduced margins */
   }
 }
 
@@ -929,7 +964,14 @@ hr {
 @media (max-width: 767px) {
   .prep-content-step h4 {
     font-size: 1rem;
-    margin: 12px 0 8px 0;
+    margin: 10px 0 8px 0; /* Reduced margins */
+  }
+}
+
+@media (max-width: 480px) {
+  .prep-content-step h4 {
+    font-size: 0.9rem;
+    margin: 8px 0 6px 0; /* Further reduced margins */
   }
 }
 
@@ -944,6 +986,13 @@ hr {
   .prep-content-step p {
     font-size: 0.95rem;
     margin-bottom: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .prep-content-step p {
+    font-size: 0.9rem;
+    margin-bottom: 10px;
   }
 }
 
@@ -1811,17 +1860,17 @@ hr {
 
 @media (max-width: 767px) {
   .d-input-square {
-    width: 80px;
-    height: 80px;
-    font-size: 2rem;
+    width: 70px;
+    height: 70px;
+    font-size: 1.8rem;
   }
 }
 
 @media (max-width: 480px) {
   .d-input-square {
-    width: 70px;
-    height: 70px;
-    font-size: 1.8rem;
+    width: 60px;
+    height: 60px;
+    font-size: 1.5rem;
   }
 }
 
@@ -2485,4 +2534,75 @@ hr {
     color: var(--text-color);
     margin: 0;
     line-height: 1.5;
+}
+
+/* --- Play Tab Accordion Styles --- */
+.play-card-header,
+.play-card-accordion-header {
+    width: 100%;
+    background: var(--surface-color);
+    border: none;
+    padding: 15px;
+    font-size: 1.1rem;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    color: var(--primary-color);
+    cursor: pointer;
+    text-align: left;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.play-card-header:hover,
+.play-card-accordion-header:hover {
+    background: var(--bg-color);
+}
+
+.play-card-header::after,
+.play-card-accordion-header::after {
+    content: '▼';
+    font-size: 0.9rem;
+    transition: transform 0.2s ease-in-out;
+}
+
+.play-card.is-open > .play-card-header::after,
+.play-card-accordion.is-open > .play-card-accordion-header::after {
+    transform: rotate(180deg);
+}
+
+.play-card-content,
+.play-card-accordion-content {
+    padding: 0 15px;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out, padding 0.3s ease-out;
+}
+
+.play-card.is-open > .play-card-content,
+.play-card-accordion.is-open > .play-card-accordion-content {
+    padding: 15px;
+    max-height: 1000px; /* Or other large value */
+}
+
+/* Grid layout for play tab */
+.play-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.play-card {
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sharp);
+    overflow: hidden;
+}
+
+.play-card-accordion {
+    border-top: 1px solid var(--border-color);
+}
+.play-card-content > .play-card-accordion:first-child {
+    border-top: none;
 }
