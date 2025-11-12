@@ -4,22 +4,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>DM Screen</title>
-<!-- NEW: Thematic Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Merriweather:wght@400;700;900&display=swap" rel="stylesheet">
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
-<!-- GridStack CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gridstack/dist/gridstack.min.css" />
 
 <link rel="stylesheet" href="style.css">
 
-<!-- GridStack JS (after CSS, before main.js) -->
 <script src="https://cdn.jsdelivr.net/npm/gridstack/dist/gridstack-all.js"></script>
-<!-- Load data first, then the main script. Use defer for performance. -->
 <script src="data.js" defer></script>
+<script src="shared.js" defer></script>
 <script src="main.js" defer></script>
 </head>
 <body>
@@ -32,13 +29,15 @@
     
     <div id="game-title-container">
       <select id="game-select">
-        <option value="Dread Nights">Kauhun yöt</option>
-        <option value="D&D 5e">D&D 5e</option>
+        <option value="Dread Nights">Dread Nights</option>
       </select>
     </div>
     <button id="toggle-map-btn" class="btn btn-secondary">
       <i class="fas fa-map"></i> Toggle Map
     </button>
+    <a href="shop.html" class="btn btn-secondary">
+        <i class="fas fa-shopping-cart"></i> Kauppa
+    </a>
     <div id="merchant-mode-indicator" class="merchant-mode-indicator hidden">
       <span>Merchant Mode Active</span>
       <button id="disable-merchant-mode" class="btn btn-sm btn-danger">Disable</button>
@@ -46,14 +45,14 @@
   </div>
 
   <div class="tabs">
-    <button class="tab-button active" data-tab="tab-prep">Valmistelu</button>
+    <button class="tab-button active" data-tab="tab-prep">Character Creation</button>
     <button class="tab-button" data-tab="tab-dm-screen">DM Screen</button>
+    <button class="tab-button" data-tab="tab-player-preview">Player Preview</button>
   </div>
 
-  <!-- ### PREPARATION TAB ### -->
   <div id="tab-prep" class="tab-content active">
-    <div class="prep-layout">
-      <!-- Left Column: Roadmap -->
+    <div id="dread-nights-active-screen">
+      <div class="prep-layout">
       <div class="prep-roadmap">
         <div class="prep-roadmap-step active" data-step="1">
           <span class="step-number">1</span>
@@ -87,20 +86,16 @@
           <span class="step-number">8</span>
           <span class="step-title">Omens</span>
         </div>
-        <!-- Left column contains only the roadmap steps. Guilds will be shown as Step 1 content on the right. -->
-      </div>
+        </div>
 
-      <!-- Right Column: Content -->
       <div class="prep-content">
 
-        <!-- Step 1 Content: Killat (Guilds) -->
         <div class="prep-content-step" data-step-content="1">
           <h2>Vaihe 1: Killat</h2>
           <div class="guilds-step">
             <div class="guild-card card" data-guild="Faithless">
               <div class="card-header">
                 <h4>Faithless</h4>
-                <button class="btn-collapse"><i class="fas fa-chevron-down"></i></button>
               </div>
               <div class="card-content">
                 <ul>
@@ -115,7 +110,6 @@
             <div class="guild-card card" data-guild="Merchant">
               <div class="card-header">
                 <h4>Merchant</h4>
-                <button class="btn-collapse"><i class="fas fa-chevron-down"></i></button>
               </div>
               <div class="card-content">
                 <ul>
@@ -130,7 +124,6 @@
             <div class="guild-card card" data-guild="Fallen">
               <div class="card-header">
                 <h4>Fallen</h4>
-                <button class="btn-collapse"><i class="fas fa-chevron-down"></i></button>
               </div>
               <div class="card-content">
                 <div class="guild-reward">
@@ -149,13 +142,23 @@
                 </table>
               </div>
             </div>
+            <div class="guild-card card" data-guild="Streetfolk">
+              <div class="card-header">
+                <h4>Streetfolk</h4>
+              </div>
+              <div class="card-content">
+                <ul>
+                  <li><strong>Palkkio:</strong> 10 Shillinkiä</li>
+                  <li><strong>Palkkio:</strong> 1 Satunainen Esine</li>
+                </ul>
+              </div>
+            </div>
           </div>
           <div class="prep-nav">
             <button class="btn btn-secondary btn-next-step" data-next="2">Siirry seuraavaan</button>
           </div>
         </div>
 
-        <!-- Step 2 Content: Guild Name -->
         <div class="prep-content-step" data-step-content="2">
           <div class="dice-roll-section">
             <h3>Killan Nimi</h3>
@@ -179,7 +182,6 @@
           </div>
         </div>
 
-        <!-- Step 3 Content: Character Name -->
         <div class="prep-content-step" data-step-content="3">
           <div class="dice-roll-section">
             <h3>Hahmon Nimi</h3>
@@ -202,7 +204,6 @@
           </div>
         </div>
 
-        <!-- Step 4 Content: Occupation -->
         <div class="prep-content-step" data-step-content="4">
           <div class="dice-roll-section">
             <h3>Työnkuvat</h3>
@@ -213,11 +214,9 @@
               </div>
             </div>
             <div class="result-display" id="occupation-result-display">
-              <!-- Result will be injected here -->
-            </div>
+              </div>
           </div>
 
-          <!-- Reroll section for roll 50 -->
           <div id="occupation-reroll-section" class="dice-roll-section hidden">
             <h4>🎲 Kaksoisvuoro! Syötä kaksi uutta d100-heittoa:</h4>
             <div class="dice-roller">
@@ -243,19 +242,25 @@
           </div>
         </div>
 
-        <!-- Step 5 Content: Stats -->
         <div class="prep-content-step" data-step-content="5">
           <h2>Vaihe 5: Stats</h2>
-          <div class="stats-brief">
-            <p class="stats-brief-line">Valitse SARJA A <strong>+1 +1 0 -3</strong> tai SARJA B <strong>+2 +2 -1 -2</strong>.</p>
-            <p class="stats-brief-line">HP = <strong>8 ± TGH</strong> · Inventory = <strong>5 ± STR</strong></p>
+          <div class="stats-display">
+            <div class="stat-series-box">
+              <div class="stat-series-numbers">+3, +1, 0, -3</div>
+            </div>
+            <div class="stat-series-box">
+              <div class="stat-series-numbers">+2, +2, -1, -2</div>
+            </div>
+          </div>
+          <div class="stat-formulas">
+            <div class="formula">HP = 8 ± TGH</div>
+            <div class="formula">Inventory = 5 ± STR</div>
           </div>
           <div class="prep-nav">
             <button class="btn btn-secondary btn-prev-step" data-prev="4"><i class="fas fa-arrow-left"></i> Edellinen</button>
           </div>
         </div>
 
-        <!-- Step 6 Content: Virtues -->
         <div class="prep-content-step" data-step-content="6">
           <div class="dice-roll-section">
             <h3>Hyveet</h3>
@@ -266,8 +271,7 @@
               </div>
             </div>
             <div class="result-display" id="virtue-result-display">
-              <!-- Result will be injected here -->
-            </div>
+              </div>
           </div>
           <div class="table-toggle-section">
             <button class="btn btn-secondary toggle-virtue-table"><i class="fas fa-book"></i> Näytä Taulukko</button>
@@ -278,7 +282,6 @@
           </div>
         </div>
 
-        <!-- Step 7 Content: Vices -->
         <div class="prep-content-step" data-step-content="7">
           <div class="dice-roll-section">
             <h3>Paheet</h3>
@@ -289,8 +292,7 @@
               </div>
             </div>
             <div class="result-display" id="vice-result-display">
-              <!-- Result will be injected here -->
-            </div>
+              </div>
           </div>
           <div class="table-toggle-section">
             <button class="btn btn-secondary toggle-vice-table"><i class="fas fa-book"></i> Näytä Taulukko</button>
@@ -301,214 +303,179 @@
           </div>
         </div>
 
-        <!-- Step 8 Content: Omens -->
         <div class="prep-content-step" data-step-content="8">
           <h2>Vaihe 8: Omens</h2>
-          <div class="stats-brief">
-            <p class="stats-brief-line">OMEN: Heitä <strong>d4</strong> ja jaa 2 (floor) tai käytä kolikkoa (kruuna/klaava) saadaksesi d2.</p>
-            <p class="stats-brief-line">EFKT: Reroll (yksi heitto), Max damage (seuraava), Reduce incoming (d6), Loot reroll.</p>
+          <div class="omens-display">
+            <div class="omen-dice">
+              <div class="omen-label">d4 ÷ 2</div>
+              <div class="omen-label">d2</div>
+            </div>
+            <div class="omen-effects-box">
+              <div class="effect-item">Reroll one throw</div>
+              <div class="effect-item">Max damage next</div>
+              <div class="effect-item">Reduce damage by d6</div>
+              <div class="effect-item">Loot table reroll</div>
+            </div>
           </div>
           <div class="prep-nav">
             <button class="btn btn-secondary btn-prev-step" data-prev="7"><i class="fas fa-arrow-left"></i> Edellinen</button>
             <button id="reset-roadmap-new" class="btn btn-secondary">Aloita alusta</button>
           </div>
         </div>
-      </div> <!-- /prep-content -->
-    </div> <!-- /prep-layout -->
-  </div> <!-- /tab-prep -->
-
-
-  <!-- ### DM SCREEN TAB ### -->
-  <div id="tab-dm-screen" class="tab-content">
-    
-    <!-- D&D 5e Initiative Tracker -->
-    <div id="dnd-initiative-tracker" class="hidden">
-      <h3>Initiative Tracker (D&D 5e)</h3>
-      <form id="initiative-form">
-        <input type="text" id="init-name" placeholder="Character Name" required>
-        <select id="init-class">
-            <option value="fas fa-user-shield">Fighter</option>
-            <option value="fas fa-wand-magic-sparkles">Wizard</option>
-            <option value="fas fa-praying-hands">Cleric</option>
-            <option value="fas fa-mask">Rogue</option>
-            <option value="fas fa-paw">Druid</option>
-            <option value="fas fa-music">Bard</option>
-            <option value="fas fa-hammer">Paladin</option>
-            <option value="fas fa-bow-arrow">Ranger</option>
-            <option value="fas fa-dragon">Monster</option>
-            <option value="fas fa-user">NPC</option>
-        </select>
-        <input type="number" id="init-roll" placeholder="Roll" required>
-        <button type="submit" id="add-to-init" class="btn">Add</button>
-      </form>
-      <div class="init-controls" style="margin-top: 15px; display: flex; gap: 10px;">
-        <button id="sort-init" class="btn btn-secondary">Sort</button>
-        <button id="clear-init" class="btn btn-danger">Clear All</button>
       </div>
-      <ul id="initiative-list" style="margin-top: 20px;"></ul>
     </div>
-    
-    <!-- Dread Nights Screen (NEW WIDGET DASHBOARD) -->
-    <div id="dread-nights-active-screen" class="hidden">
-      
-      <!-- Control Bar -->
-      <div class="widget-controls-bar">
-        <button id="add-widget-btn" class="btn btn-sm"><i class="fas fa-plus"></i> Add Widget</button>
-        <button id="lock-layout-btn" class="btn btn-sm btn-secondary" data-locked="false">
-          <i class="fas fa-lock-open"></i> Lock Layout
-        </button>
-      </div>
+  </div>
 
-      <!-- Widget Dashboard -->
-      <div class="grid-stack widget-dashboard">
-        
-        <!-- Column 1: Core Mechanics -->
-        <div class="grid-stack-item static-widget" gs-w="4" gs-h="3" gs-x="0" gs-y="0">
-          <div class="grid-stack-item-content card">
-            <div class="widget-header">
-              <h4><i class="fas fa-exclamation-triangle"></i> Core Tests</h4>
-              <div class="widget-controls">
-                <button class="btn-widget-close"><i class="fas fa-times"></i></button>
-              </div>
+  <div id="tab-dm-screen" class="tab-content">
+    <div class="dm-screen-layout">
+        <header class="dm-header">
+            <input type="text" placeholder="Universal Search..." class="universal-search">
+            <div class="header-info">
+                <div id="session-timer">00:00:00</div>
+                <div id="in-game-clock">Day 1, 9:00 AM</div>
             </div>
-            <div class="widget-body">
-              <h5 class="widget-subtitle">!! SHOCK TEST !!</h5>
-              <p><strong>Test:</strong> <span class="highlight-key">TGH DR14</span></p>
-              <p><strong>Fail:</strong> Roll <span class="highlight-roll">D4</span> on <span class="highlight-link">Shock Table</span>.</p>
-              
-              <h5 class="widget-subtitle"><i class="fas fa-biohazard"></i> Infection Test</h5>
-              <p><strong>Test:</strong> <span class="highlight-key">TGH DR14</span></p>
-              <p><strong>Fail:</strong> Roll <span class="highlight-roll">D8</span> on <span class="highlight-link">Infection Table</span>.</p>
-            </div>
-          </div>
-        </div>
+        </header>
 
-        <div class="grid-stack-item static-widget" gs-w="4" gs-h="3" gs-x="0" gs-y="3">
-          <div class="grid-stack-item-content card">
-            <div class="widget-header">
-              <h4><i class="fas fa-heart-pulse"></i> Death & Dying</h4>
-              <div class="widget-controls">
-                <button class="btn-widget-close"><i class="fas fa-times"></i></button>
-              </div>
+        <aside class="left-pane">
+            <div class="widget" id="combat-tracker">
+                <h3 class="widget-title collapsible">Combat Tracker</h3>
+                <div class="widget-content">
+                    <ul id="combatants">
+                        <li><span>(20)</span> <strong>Player 1</strong> | HP: 12/20 | AC: 15 | <span class="status-icons">🔥</span></li>
+                        <li><span>(15)</span> Goblin A | HP: 7/7 | AC: 13 | <span class="status-icons"></span></li>
+                        <li><span>(12)</span> Player 2 | HP: 15/18 | AC: 16 | <span class="status-icons"></span></li>
+                    </ul>
+                    <button id="next-turn-btn">Next Turn</button>
+                </div>
             </div>
-            <div class="widget-body">
-              <p><strong>At 0 HP:</strong> Collapse. Helpless.</p>
-              <p><strong>Test:</strong> Roll <span class="highlight-roll">D6</span> each turn.</p>
-              <p><strong>Result:</strong> <span class="highlight-key">-1 HP</span> per turn.</p>
-              <p><strong>At -2 HP:</strong> <span class="highlight-death">KUOLEMA (DEATH)</span>.</p>
-              <p>A <span class="highlight-key">D6</span> roll of 6 stabilizes.</p>
+            <div class="widget" id="party-quick-view">
+                <h3 class="widget-title">Party Quick View</h3>
+                <div class="widget-content">
+                    <ul>
+                        <li><strong>Player 1:</strong> PP 10, AC 15</li>
+                        <li><strong>Player 2:</strong> PP 12, AC 16</li>
+                        <li><strong>Player 3:</strong> PP 14, AC 14</li>
+                    </ul>
+                </div>
             </div>
-          </div>
-        </div>
+            <div class="widget" id="quick-notes">
+                <h3 class="widget-title">Quick Notes</h3>
+                <div class="widget-content">
+                    <textarea placeholder="Scratchpad..."></textarea>
+                </div>
+            </div>
+        </aside>
 
-        <!-- Column 2: Combat -->
-        <div class="grid-stack-item static-widget" gs-w="4" gs-h="4" gs-x="4" gs-y="0">
-            <div class="grid-stack-item-content card">
-                <div class="widget-header">
-                <h4><i class="fas fa-swords"></i> Combat Actions</h4>
-                <div class="widget-controls">
-                    <button class="btn-widget-close"><i class="fas fa-times"></i></button>
+        <main class="center-pane">
+            <div class="dm-tabs">
+                <button class="dm-tab-button active" data-tab="scene-tab">Scene</button>
+                <button class="dm-tab-button" data-tab="notes-tab">Campaign Notes</button>
+                <button class="dm-tab-button" data-tab="map-tab">Map</button>
+                <button class="dm-tab-button" data-tab="players-tab">Players</button>
+            </div>
+            <div id="scene-tab" class="dm-tab-content active">
+                <h2>Current Scene</h2>
+                <blockquote>
+                    The air grows cold as you step into the cavern. The scent of damp earth and something... metallic... hangs heavy. Before you, a chasm splits the floor, and a rickety rope bridge sways in a faint breeze that seems to emanate from the darkness below.
+                </blockquote>
+                <div class="scene-links">
+                    <h4>Scene Links:</h4>
+                    <ul>
+                        <li><a href="#">Monster: Goblin A</a></li>
+                        <li><a href="#">Trap: Pitfall</a></li>
+                        <li><a href="#">NPC: Old Man Willow</a></li>
+                    </ul>
                 </div>
+                <div class="scene-map">
+                    <h4>Scene Map</h4>
+                    <img src="https://via.placeholder.com/400x300.png?text=Scene+Map" alt="Scene Map Placeholder">
                 </div>
-                <div class="widget-body">
-                <p><strong>Actions (2 per turn):</strong></p>
-                <ul class="widget-list">
-                    <li><strong>Move:</strong> (AGT meters)</li>
-                    <li><strong>Attack:</strong> (STR/AGT Test)</li>
-                    <li><strong>Aim:</strong> (+2 Dmg / -2 DR)</li>
-                    <li><strong>Use Item / Reload</strong></li>
-                    <li><strong>Defend:</strong> (+3 Armor)</li>
-                    <li><strong>Flee:</strong> (PRC Test)</li>
-                </ul>
-                <p><strong>2-Handed:</strong> Act "Slow" (after all 1-hand actions).</p>
+                <div class="dm-secrets">
+                    <h4>DM Secrets</h4>
+                    <p>The rope bridge will break if more than two people cross at once. The "breeze" is the breathing of a slumbering cave troll at the bottom of the chasm.</p>
                 </div>
             </div>
-        </div>
-
-        <div class="grid-stack-item" gs-w="4" gs-h="3" gs-x="4" gs-y="4">
-            <div class="grid-stack-item-content card collapsed">
-                <div class="widget-header">
-                <h4><i class="fas fa-star"></i> Crit & Fumble</h4>
-                <div class="widget-controls">
-                    <button class="btn-widget-collapse"><i class="fas fa-chevron-down"></i></button>
-                    <button class="btn-widget-close"><i class="fas fa-times"></i></button>
-                </div>
-                </div>
-                <div class="widget-body card-content">
-                    <h5 class="widget-subtitle">Crit (Nat 20)</h5>
-                    <table class="quick-table">
-                        <tr><td>Attack</td><td>2x DMG or -1 Armor Tier</td></tr>
-                        <tr><td>Defense</td><td>Free Move or Attacker Stunned</td></tr>
-                    </table>
-                    <h5 class="widget-subtitle">Fumble (Nat 1)</h5>
-                    <table class="quick-table">
-                        <tr><td>Attack</td><td>Lose Ammo / Weapon Jam / Hit Ally</td></tr>
-                        <tr><td>Defense</td><td>Take 2x DMG / -1 Armor Tier</td></tr>
-                    </table>
-                </div>
+            <div id="notes-tab" class="dm-tab-content">
+                <h2>Campaign Notes</h2>
+                <p>This is where the DM's searchable campaign notes would go. It could be a large text area or a more complex note-taking interface. For now, it's just placeholder text.</p>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, nisl nec ultricies lacinia, nisl nisl aliquam nisl, eget aliquam nisl nisl sit amet nisl. Sed euismod, nisl nec ultricies lacinia, nisl nisl aliquam nisl, eget aliquam nisl nisl sit amet nisl.</p>
             </div>
-        </div>
+            <div id="map-tab" class="dm-tab-content">
+                <h2>Interactive Map</h2>
+                <img src="https://via.placeholder.com/600x400.png?text=Large+Interactive+Map" alt="Interactive Map Placeholder" style="width: 100%;">
+            </div>
+            <div id="players-tab" class="dm-tab-content">
+                <h2>Player Characters</h2>
+                <p>This area would contain detailed backstories, character sheets, and other information about the player characters.</p>
+            </div>
+        </main>
 
-        <!-- Column 3: Tools & World -->
-        <div class="grid-stack-item tool-widget" gs-w="4" gs-h="2" gs-x="8" gs-y="0">
-            <div class="grid-stack-item-content card">
-                <div class="widget-header">
-                <h4><i class="fas fa-dice"></i> Quick Roller</h4>
-                <div class="widget-controls">
-                    <button class="btn-widget-close"><i class="fas fa-times"></i></button>
+        <aside class="right-pane">
+            <div class="accordion">
+                <div class="accordion-item">
+                    <div class="accordion-header active">Core Rules</div>
+                    <div class="accordion-content">
+                        <h4>Actions</h4>
+                        <ul>
+                            <li>Dash</li>
+                            <li>Dodge</li>
+                            <li>Help</li>
+                            <li>Hide</li>
+                            <li>Ready</li>
+                            <li>Search</li>
+                        </ul>
+                        <h4>Conditions</h4>
+                        <ul>
+                            <li>Blinded</li>
+                            <li>Charmed</li>
+                            <li>Deafened</li>
+                            <li>Poisoned</li>
+                            <li>Prone</li>
+                        </ul>
+                    </div>
                 </div>
+                <div class="accordion-item">
+                    <div class="accordion-header">Skill Checks</div>
+                    <div class="accordion-content">
+                        <ul>
+                            <li>Easy: 10</li>
+                            <li>Medium: 15</li>
+                            <li>Hard: 20</li>
+                            <li>Very Hard: 25</li>
+                            <li>Nearly Impossible: 30</li>
+                        </ul>
+                    </div>
                 </div>
-                <div class="widget-body">
-                    <div id="quick-roller-result">[ 0 ]</div>
-                    <div id="quick-roller-buttons">
-                        <button class="btn btn-sm" data-die="4">d4</button>
-                        <button class="btn btn-sm" data-die="6">d6</button>
-                        <button class="btn btn-sm" data-die="8">d8</button>
-                        <button class="btn btn-sm" data-die="10">d10</button>
-                        <button class="btn btn-sm" data-die="12">d12</button>
-                        <button class="btn btn-sm" data-die="20">d20</button>
+                <div class="accordion-item">
+                    <div class="accordion-header">Random Tables</div>
+                    <div class="accordion-content">
+                        <p>Placeholder for a rollable random encounter table or loot table.</p>
                     </div>
                 </div>
             </div>
-        </div>
+        </aside>
 
-        <div class="grid-stack-item tool-widget" gs-w="4" gs-h="3" gs-x="8" gs-y="2">
-            <div class="grid-stack-item-content card">
-                <div class="widget-header">
-                <h4><i class="fas fa-user-plus"></i> Quick Generator</h4>
-                <div class="widget-controls">
-                    <button class="btn-widget-close"><i class="fas fa-times"></i></button>
-
-                </div>
-                </div>
-                <div class="widget-body">
-                    <select id="quick-gen-select" class="widget-input">
-                        <option value="NPC Name">NPC Name</option>
-                        <option value="Tavern Name">Tavern Name</option>
-                        <option value="Rumor">Rumor</option>
-                        <option value="Loot (Common)">Loot (Common)</option>
-                        <option value="Loot (Rare)">Loot (Rare)</option>
-                    </select>
-                    <button id="quick-gen-btn" class="btn btn-sm" style="width: 100%;">Generate</button>
-                    <div id="quick-gen-result">...</div>
-                </div>
+        <footer class="dm-footer">
+            <button id="dice-roller-btn">Dice Roller</button>
+            <div class="music-player">
+                <span>Now Playing: "Tavern Ambience"</span>
+                <button><i class="fas fa-play"></i></button>
+                <button><i class="fas fa-pause"></i></button>
             </div>
-        </div>
-
-      </div> <!-- /grid-stack -->
+        </footer>
     </div>
-    
-  </div> <!-- /tab-dm-screen -->
-</div> <!-- /container -->
+</div> 
+  
+  <div id="tab-player-preview" class="tab-content">
+    <iframe src="player.html" style="width: 100%; height: 100%; border: none;"></iframe>
+  </div>
 
-<!-- ### MODALS ### -->
-<div id="name-tables-modal" class="modal-overlay">
+</div> <div id="name-tables-modal" class="modal-overlay">
   <div class="modal-content modal-wide">
     <button id="close-name-tables-modal" class="modal-close-btn">&times;</button>
     <h2>Killan Nimen Taulukot</h2>
     <div id="name-tables-content-modal" class="name-tables-container">
-      <!-- Tables will be populated by JavaScript -->
-    </div>
+      </div>
   </div>
 </div>
 
@@ -517,8 +484,7 @@
     <button id="close-char-name-table-modal" class="modal-close-btn">&times;</button>
     <h2>Hahmon Nimen Taulukko</h2>
     <div id="char-name-table-content-modal" class="name-tables-container">
-      <!-- Table will be populated by JavaScript -->
-    </div>
+      </div>
   </div>
 </div>
 
@@ -527,8 +493,7 @@
     <button id="close-occupation-table-modal" class="modal-close-btn">&times;</button>
     <h2>Työnkuvien Taulukko</h2>
     <div id="occupation-table-content-modal" class="name-tables-container">
-      <!-- Table will be populated by JavaScript -->
-    </div>
+      </div>
   </div>
 </div>
 
@@ -537,8 +502,7 @@
     <button id="close-virtue-table-modal" class="modal-close-btn">&times;</button>
     <h2>Hyveien Taulukko (d20)</h2>
     <div id="virtue-table-content-modal" class="name-tables-container">
-      <!-- Table will be populated by JavaScript -->
-    </div>
+      </div>
   </div>
 </div>
 
@@ -547,12 +511,18 @@
     <button id="close-vice-table-modal" class="modal-close-btn">&times;</button>
     <h2>Paheiden Taulukko (d20)</h2>
     <div id="vice-table-content-modal" class="name-tables-container">
-      <!-- Table will be populated by JavaScript -->
-    </div>
+      </div>
   </div>
 </div>
 
-<!-- ### Floating Table Map Window ### -->
+<div id="item-details-modal" class="modal-overlay">
+    <div class="modal-content">
+        <button id="close-item-details-modal" class="modal-close-btn">&times;</button>
+        <div id="item-details-content">
+            </div>
+    </div>
+</div>
+
 <div id="table-map-window" class="collapsed hidden">
   <div class="map-header">
     <span><i class="fas fa-map-location-dot"></i> Table Map</span>
@@ -561,8 +531,7 @@
   <div class="map-content">
     <div class="map-area">
       <div class="map-token me">ME (DM)</div>
-      <!-- Added tokens will go here -->
-    </div>
+      </div>
     <div class="map-controls">
       <input type="text" id="map-token-name" placeholder="Token Name">
       <button id="add-map-token-btn" class="btn btn-sm">Add</button>
@@ -572,4 +541,3 @@
 
 </body>
 </html>
-

@@ -46,9 +46,13 @@ function cacheDOMElements() {
     prepTabContent: document.getElementById('tab-prep'),
     dmScreenTabButton: document.querySelector('[data-tab="tab-dm-screen"]'),
     dmScreenTabContent: document.getElementById('tab-dm-screen'),
-    // DM Screen
-    dndTracker: document.getElementById("dnd-initiative-tracker"),
-    dreadNightsScreen: document.getElementById("dread-nights-active-screen"),
+    playerPreviewTabButton: document.querySelector('[data-tab="tab-player-preview"]'),
+    playerPreviewTabContent: document.getElementById('tab-player-preview'),
+  // DM Screen
+  dndTracker: document.getElementById("dnd-initiative-tracker"),
+  // Some pages may not include a dedicated Dread Nights wrapper element.
+  // Fallback to the prep tab content so toggling the gamemode won't throw.
+  dreadNightsScreen: document.getElementById("dread-nights-active-screen") || document.getElementById('tab-prep'),
     // Initiative
     init: {
       form: document.getElementById("initiative-form"),
@@ -84,10 +88,8 @@ function cacheDOMElements() {
         rerollSection: document.getElementById("occupation-reroll-section"),
         reroll1: document.getElementById("occupation-reroll-1"),
         reroll2: document.getElementById("occupation-reroll-2"),
-        // --- CRITICAL BUG FIX: These were missing ---
         rerollResult1: document.getElementById("reroll-result-display-1"),
         rerollResult2: document.getElementById("reroll-result-display-2"),
-        // ------------------------------------------
       },
       virtue: {
         input: document.getElementById("virtue-input"),
@@ -135,6 +137,11 @@ function cacheDOMElements() {
         close: document.getElementById("close-vice-table-modal"),
         content: document.getElementById("vice-table-content-modal"),
       },
+      itemDetails: {
+        modal: document.getElementById("item-details-modal"),
+        close: document.getElementById("close-item-details-modal"),
+        content: document.getElementById("item-details-content"),
+      },
     },
     // Table Map
     map: {
@@ -151,24 +158,13 @@ function cacheDOMElements() {
     dashboard: {
       grid: document.querySelector('.grid-stack'),
       lockBtn: document.getElementById('lock-layout-btn'),
-      addBtn: document.getElementById('add-widget-btn'),
-      quickRoller: {
-        buttons: document.getElementById('quick-roller-buttons'),
-        result: document.getElementById('quick-roller-result'),
-      },
-      quickGen: {
-        select: document.getElementById('quick-gen-select'),
-        btn: document.getElementById('quick-gen-btn'),
-        result: document.getElementById('quick-gen-result'),
-      }
     }
   };
 
-  // Robustness check: Replace missing elements with null
   for (const key in dom) {
     if (dom[key] === null) {
       console.warn(`DOM element not found: ${key}`);
-    } else if (typeof dom[key] === 'object' && dom[key] !== null) { // Check for null object
+    } else if (typeof dom[key] === 'object' && dom[key] !== null) {
       for (const subKey in dom[key]) {
         if (dom[key][subKey] === null) {
           console.warn(`DOM element not found: ${key}.${subKey}`);
@@ -186,58 +182,41 @@ function cacheDOMElements() {
  * @param {object} state - The application state object.
  */
 function initApp(DOM, state) {
-  // Networking
   state.ws = setupWebSocket(state, DOM);
   
-  // Core UI
   setupTabs(DOM);
   setupSettings(DOM, state);
   setupMerchantMode(DOM, state);
-  setupCollapsibleCards(); // <-- BUG FIX: Re-added this function call
-  if (DOM.openPlayerBtn) DOM.openPlayerBtn.addEventListener("click", () => window.open('player.html', '_blank'));
-  if (DOM.toggleMapBtn) DOM.toggleMapBtn.addEventListener("click", () => {
-    if(DOM.map.window) { 
-      DOM.map.window.classList.toggle("hidden");
-      // Open collapsed by default
-      if (!DOM.map.window.classList.contains("hidden") && !DOM.map.window.classList.contains("collapsed")) {
-        DOM.map.window.classList.add("collapsed");
-        const icon = DOM.map.collapseBtn.querySelector('i');
-        if(icon) {
-          icon.classList.remove('fa-chevron-down');
-          icon.classList.add('fa-chevron-up');
-        }
-      }
-    }
-  });
+  setupHeaderButtons(DOM);
 
-  // Prep Roadmap
   setupRoadmap(DOM);
   setupGuildSelection(DOM, state);
   
-  // Generators
   setupGuildNameGenerator(DOM.generators.guildName);
   setupCharacterNameGenerator(DOM.generators.charName);
   setupOccupationGenerator(DOM.generators.occupation);
   setupVirtueGenerator(DOM.generators.virtue);
   setupViceGenerator(DOM.generators.vice);
-  // stats allocation UI removed per request; keep function in file for future but do not initialize now
   setupOmenRoller(DOM.omen);
 
-  // Modals
   setupModal(DOM.modals.guildName.trigger, DOM.modals.guildName.modal, DOM.modals.guildName.close);
   setupModal(DOM.modals.charName.trigger, DOM.modals.charName.modal, DOM.modals.charName.close);
   setupModal(DOM.modals.occupation.trigger, DOM.modals.occupation.modal, DOM.modals.occupation.close);
   setupModal(DOM.modals.virtue.trigger, DOM.modals.virtue.modal, DOM.modals.virtue.close);
   setupModal(DOM.modals.vice.trigger, DOM.modals.vice.modal, DOM.modals.vice.close);
+  setupModal(null, DOM.modals.itemDetails.modal, DOM.modals.itemDetails.close);
 
-  // DM Screen
   setupInitiativeTracker(DOM, state);
   setupTableMap(DOM.map);
   setupWidgetDashboard(DOM, state);
 
-  // Populate dynamic content
   populateGeneratorTables(DOM.modals);
+  setupDmScreenTabs();
+  setupDmScreenAccordion();
+  setupCollapsibleWidgets();
 }
+
+
 
 // --- NETWORK FUNCTIONS ---
 
@@ -247,7 +226,6 @@ function setupWebSocket(state, DOM) {
 
   ws.onopen = () => {
     console.log("WebSocket connected.");
-    broadcastGameChange(ws, localStorage.getItem("gameSystem") || "Dread Nights");
   };
   ws.onmessage = (event) => {
     const data = JSON.parse(event.data);
@@ -265,8 +243,6 @@ function setupWebSocket(state, DOM) {
 }
 
 function broadcastInitiativeList(state) {
-  const currentGame = localStorage.getItem("gameSystem") || "Dread Nights";
-  if (currentGame !== "D&D 5e") return;
   if (state.ws && state.ws.readyState === WebSocket.OPEN) {
     state.ws.send(JSON.stringify({ type: "initiative-update", payload: state.initiativeList }));
   }
@@ -279,6 +255,27 @@ function broadcastGameChange(ws, gameName) {
 }
 
 // --- CORE UI FUNCTIONS ---
+
+function setupHeaderButtons(DOM) {
+  if (DOM.openPlayerBtn) {
+    DOM.openPlayerBtn.addEventListener("click", () => window.open('player.html', '_blank'));
+  }
+  if (DOM.toggleMapBtn) {
+    DOM.toggleMapBtn.addEventListener("click", () => {
+      if (DOM.map.window) {
+        DOM.map.window.classList.toggle("hidden");
+        if (!DOM.map.window.classList.contains("hidden") && !DOM.map.window.classList.contains("collapsed")) {
+          DOM.map.window.classList.add("collapsed");
+          const icon = DOM.map.collapseBtn.querySelector('i');
+          if (icon) {
+            icon.classList.remove('fa-chevron-down');
+            icon.classList.add('fa-chevron-up');
+          }
+        }
+      }
+    });
+  }
+}
 
 function setupTabs(DOM) {
   if (!DOM.tabsContainer) return;
@@ -298,6 +295,7 @@ function setupTabs(DOM) {
   });
 }
 
+
 function setupSettings(DOM, state) {
   if (!DOM.gameSelect) return;
 
@@ -309,67 +307,54 @@ function setupSettings(DOM, state) {
     const selectedGame = DOM.gameSelect.value;
     localStorage.setItem("gameSystem", selectedGame);
     updateGameUI(DOM, selectedGame);
-    broadcastGameChange(state.ws, selectedGame);
-    if (selectedGame !== "D&D 5e") {
-      clearInitiative(state, DOM);
-    }
   });
 }
 
 function updateGameUI(DOM, gameName) {
-  if (!DOM.dndTracker || !DOM.dreadNightsScreen || !DOM.prepTabButton || !DOM.prepTabContent || !DOM.openPlayerBtn) return;
-  
   const isDnd = (gameName === "D&D 5e");
 
-  DOM.dndTracker.classList.toggle("hidden", !isDnd);
-  DOM.openPlayerBtn.classList.toggle("hidden", !isDnd);
-  DOM.dreadNightsScreen.classList.toggle("hidden", isDnd);
-  DOM.prepTabButton.classList.toggle("hidden", isDnd);
-  DOM.prepTabContent.classList.toggle("hidden", isDnd);
+  // Guarded toggles to avoid exceptions when elements are missing.
+  if (DOM.dndTracker && DOM.dndTracker.classList) DOM.dndTracker.classList.toggle("hidden", !isDnd);
+  if (DOM.dreadNightsScreen && DOM.dreadNightsScreen.classList) DOM.dreadNightsScreen.classList.toggle("hidden", isDnd);
+  if (DOM.prepTabButton && DOM.prepTabButton.classList) DOM.prepTabButton.classList.toggle("hidden", isDnd);
 
-  if (isDnd && DOM.prepTabButton.classList.contains('active')) {
-    DOM.prepTabButton.classList.remove('active');
-    DOM.prepTabContent.classList.remove('active');
-    DOM.dmScreenTabButton.classList.add('active');
-    DOM.dmScreenTabContent.classList.add('active');
-  } else if (!isDnd && (DOM.dmScreenTabButton.classList.contains('active') || !DOM.prepTabButton.classList.contains('active'))) {
-     // If switching to Dread Nights, make Prep Tab the default
-     DOM.dmScreenTabButton.classList.remove('active');
-     DOM.dmScreenTabContent.classList.remove('active');
-     DOM.prepTabButton.classList.add('active');
-     DOM.prepTabContent.classList.add('active');
+  // If the currently active tab is now hidden, we need to switch to a visible one.
+  if (isDnd) {
+    if (DOM.prepTabButton && DOM.prepTabButton.classList && DOM.prepTabButton.classList.contains('active')) {
+      if (DOM.prepTabButton.classList) DOM.prepTabButton.classList.remove('active');
+      if (DOM.prepTabContent && DOM.prepTabContent.classList) DOM.prepTabContent.classList.remove('active');
+
+      // Make DM screen active instead, guarding for existence
+      if (DOM.dmScreenTabButton && DOM.dmScreenTabButton.classList) DOM.dmScreenTabButton.classList.add('active');
+      if (DOM.dmScreenTabContent && DOM.dmScreenTabContent.classList) DOM.dmScreenTabContent.classList.add('active');
+    }
   }
 }
 
-// BUG FIX: Added this function back
-function setupCollapsibleCards() {
-  document.addEventListener("click", (e) => {
-    // Find the closest card-header
-    const header = e.target.closest('.card-header');
-    if (!header) return; 
-    
-    // Make sure it's NOT a widget header
-    if (e.target.closest('.widget-header')) return; 
-
-    const card = header.parentElement;
-    // Only collapse guild-cards in the prep tab
-    if (card && card.classList.contains('guild-card')) {
-      card.classList.toggle("collapsed");
-    }
-  });
-}
-
 function setupModal(trigger, modal, close) {
-  if (!trigger || !modal || !close) return;
-  
-  trigger.addEventListener("click", () => modal.classList.add("active"));
-  close.addEventListener("click", () => modal.classList.remove("active"));
-  modal.addEventListener("click", (e) => {
-    if (e.target === modal) {
-      modal.classList.remove("active");
+  // trigger may be null for programmatic-only modals
+  if (trigger && modal) {
+    try {
+      trigger.addEventListener("click", () => modal.classList.add("active"));
+    } catch (err) {
+      console.warn('Failed to attach modal trigger listener', err);
     }
-  });
+  }
+  if (!modal || !close) return;
+
+  try {
+    close.addEventListener("click", () => modal.classList.remove("active"));
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) {
+        modal.classList.remove("active");
+      }
+    });
+  } catch (err) {
+    console.warn('Modal setup failed for', modal, err);
+  }
 }
+
+
 
 // --- INITIATIVE TRACKER FUNCTIONS ---
 
@@ -495,22 +480,23 @@ function setupRoadmap(DOM) {
     }
   });
 
-  // Keyboard navigation for roadmap: ArrowRight = next, ArrowLeft = previous
+  const roadmapStepsArray = Array.from(DOM.prep.roadmapSteps);
   document.addEventListener('keydown', (e) => {
-    // Only handle when prep tab is active
     const prepTab = document.getElementById('tab-prep');
-    const prepActive = prepTab && prepTab.classList.contains('active');
-    if (!prepActive) return;
-    const activeStepEl = Array.from(DOM.prep.roadmapSteps).find(s => s.classList.contains('active'));
-    if (!activeStepEl) return;
-    const current = parseInt(activeStepEl.dataset.step, 10);
+    if (!prepTab || !prepTab.classList.contains('active')) return;
+
+    const currentIndex = roadmapStepsArray.findIndex(s => s.classList.contains('active'));
+    if (currentIndex === -1) return;
+
+    let nextIndex = -1;
     if (e.key === 'ArrowRight') {
-      // find next step element
-      const next = Array.from(DOM.prep.roadmapSteps).find(s => parseInt(s.dataset.step,10) === current + 1);
-      if (next) activateStep(next.dataset.step);
+      nextIndex = currentIndex + 1;
     } else if (e.key === 'ArrowLeft') {
-      const prev = Array.from(DOM.prep.roadmapSteps).find(s => parseInt(s.dataset.step,10) === current - 1);
-      if (prev) activateStep(prev.dataset.step);
+      nextIndex = currentIndex - 1;
+    }
+
+    if (nextIndex >= 0 && nextIndex < roadmapStepsArray.length) {
+      activateStep(roadmapStepsArray[nextIndex].dataset.step);
     }
   });
 
@@ -523,7 +509,7 @@ function setupGuildSelection(DOM, state) {
   DOM.prep.guildCards.forEach(card => {
     if (card.dataset.guild !== "Merchant") {
       card.addEventListener("click", (e) => {
-         if (e.target.closest('.card-header')) return; // Let collapse handle it
+         if (e.target.closest('.card-header')) return;
         DOM.prep.guildCards.forEach(c => c.classList.remove("selected"));
         card.classList.add("selected");
         setMerchantMode(DOM, state, false);
@@ -574,7 +560,7 @@ function applyDiscounts(active) {
 // --- GENERATOR FUNCTIONS ---
 
 function populateGeneratorTables(modalDOM) {
-  if (modalDOM.guildName.content && typeof guildNamePart1 !== 'undefined' && typeof guildNamePart2 !== 'undefined') {
+  if (modalDOM && modalDOM.guildName && modalDOM.guildName.content && typeof guildNamePart1 !== 'undefined' && typeof guildNamePart2 !== 'undefined') {
     const table1 = createSimpleNameTable(guildNamePart1, "Table 1");
     const table2 = createSimpleNameTable(guildNamePart2, "Table 2 (Red)");
     modalDOM.guildName.content.innerHTML = `
@@ -582,16 +568,16 @@ function populateGeneratorTables(modalDOM) {
       <div class="name-table-wrapper">${table2}</div>
     `;
   }
-  if (modalDOM.charName.content && typeof characterNames !== 'undefined') {
+  if (modalDOM && modalDOM.charName && modalDOM.charName.content && typeof characterNames !== 'undefined') {
     modalDOM.charName.content.innerHTML = `<div class="name-table-wrapper">${createSimpleNameTable(characterNames, "Hahmon Nimet")}</div>`;
   }
-  if (modalDOM.occupation.content && typeof occupations !== 'undefined') {
+  if (modalDOM && modalDOM.occupation && modalDOM.occupation.content && typeof occupations !== 'undefined') {
     modalDOM.occupation.content.innerHTML = createOccupationTableHtml(occupations);
   }
-  if (modalDOM.virtue.content && typeof virtues !== 'undefined') {
+  if (modalDOM && modalDOM.virtue && modalDOM.virtue.content && typeof virtues !== 'undefined') {
     modalDOM.virtue.content.innerHTML = createVirtueViceTableHtml(virtues, "Hyveet");
   }
-  if (modalDOM.vice.content && typeof vices !== 'undefined') {
+  if (modalDOM && modalDOM.vice && modalDOM.vice.content && typeof vices !== 'undefined') {
     modalDOM.vice.content.innerHTML = createVirtueViceTableHtml(vices, "Paheet");
   }
 }
@@ -609,7 +595,6 @@ function setupSimpleGenerator(inputEl, resultEl, dataArray, renderFn) {
   });
 }
 
-// Specific Generator Setups
 function setupGuildNameGenerator(dom) {
   if (!dom.input1 || !dom.input2 || !dom.result || typeof guildNamePart1 === 'undefined' || typeof guildNamePart2 === 'undefined') return;
   const gen = () => {
@@ -634,7 +619,7 @@ function setupCharacterNameGenerator(dom) {
 function setupVirtueGenerator(dom) {
   if (typeof virtues !== 'undefined') {
     setupSimpleGenerator(dom.input, dom.result, virtues, item => 
-      `<div class="occupation-result-card"><h3>${item.virtue}</h3><p>${item.description}</p></div>`
+      `<div class="occupation-result-card"><h3>${item.virtue}</h3><p>${linkifyItemNames(item.description)}</p></div>`
     );
   }
 }
@@ -642,7 +627,7 @@ function setupVirtueGenerator(dom) {
 function setupViceGenerator(dom) {
   if (typeof vices !== 'undefined') {
     setupSimpleGenerator(dom.input, dom.result, vices, item => 
-      `<div class="occupation-result-card"><h3>${item.vice}</h3><p>${item.description}</p></div>`
+      `<div class="occupation-result-card"><h3>${item.vice}</h3><p>${linkifyItemNames(item.description)}</p></div>`
     );
   }
 }
@@ -655,9 +640,13 @@ function setupOccupationGenerator(dom) {
 
   const getCardHtml = (roll) => {
     const index = Math.ceil(roll / 2) - 1;
-    if (index >= 0 && index < 50) { // occupations array has 50 items
+    if (index >= 0 && index < 50) {
       const item = occupations[index];
-      return `<div class="occupation-result-card"><h3>${item.occupation}</h3><p>${item.benefit}</p></div>`;
+      let benefitHtml = item.benefit;
+      if (typeof shopItems !== 'undefined') {
+        benefitHtml = linkifyItemNames(benefitHtml);
+      }
+      return `<div class="occupation-result-card"><h3>${item.occupation}</h3><p>${benefitHtml}</p></div>`;
     }
     return "";
   };
@@ -667,18 +656,20 @@ function setupOccupationGenerator(dom) {
     const index = Math.ceil(d100roll / 2) - 1;
     if (d100roll >= 1 && d100roll <= 100) {
       dom.result.innerHTML = getCardHtml(d100roll);
-      dom.rerollSection.classList.toggle("hidden", index !== 49); // Roll 50 is index 49
+      dom.rerollSection.classList.toggle("hidden", index !== 49);
     } else {
       dom.result.innerHTML = "";
       dom.rerollSection.classList.add("hidden");
     }
   });
 
-  dom.reroll1.addEventListener("input", () => {
-    dom.rerollResult1.innerHTML = getCardHtml(parseInt(dom.reroll1.value, 10));
-  });
-  dom.reroll2.addEventListener("input", () => {
-    dom.rerollResult2.innerHTML = getCardHtml(parseInt(dom.reroll2.value, 10));
+  [
+    { input: dom.reroll1, output: dom.rerollResult1 },
+    { input: dom.reroll2, output: dom.rerollResult2 }
+  ].forEach(pair => {
+    pair.input.addEventListener("input", () => {
+      pair.output.innerHTML = getCardHtml(parseInt(pair.input.value, 10));
+    });
   });
 }
 
@@ -694,110 +685,6 @@ function setupOmenRoller(dom) {
       setTimeout(() => dom.resultEl.parentElement.classList.remove('tada'), 700);
     }, 250);
   });
-}
-
-// Stats allocation UI for Dread Nights
-function setupStatsAllocation(DOM) {
-  const tokensContainer = document.getElementById('stats-tokens');
-  const grid = document.getElementById('stats-grid');
-  const resetBtn = document.getElementById('stats-reset');
-  const applyBtn = document.getElementById('stats-apply');
-  const seriesInputs = document.getElementsByName('stat-series');
-
-  if (!tokensContainer || !grid) return;
-
-  const statSlots = Array.from(grid.querySelectorAll('.stat-slot'));
-  let activeSlot = null;
-  let tokens = [];
-  let assignments = {}; // stat -> value
-
-  function getSelectedSeries() {
-    const checked = Array.from(seriesInputs).find(i => i.checked);
-    return checked ? checked.value : 'a';
-  }
-
-  function seriesValues(series) {
-    // Series A: +1, +1, 0, -3 ; Series B: +2, +2, -1, -2
-    if (series === 'b') return [2,2,-1,-2];
-    return [1,1,0,-3];
-  }
-
-  function renderTokens() {
-    tokensContainer.innerHTML = '';
-    tokens = seriesValues(getSelectedSeries()).map((v, idx) => {
-      const el = document.createElement('button');
-      el.type = 'button';
-      el.className = 'stats-token';
-      el.dataset.value = v;
-      el.dataset.index = idx;
-      el.textContent = (v >= 0 ? '+' + v : String(v));
-      el.addEventListener('click', () => onTokenClick(el));
-      tokensContainer.appendChild(el);
-      return el;
-    });
-  }
-
-  function clearAssignments() {
-    assignments = {};
-    statSlots.forEach(s => s.querySelector('.stat-value').textContent = '—');
-    tokens.forEach(t => t.classList.remove('used'));
-  }
-
-  function onSlotClick(slot) {
-    // toggle active
-    if (activeSlot === slot) {
-      slot.classList.remove('active');
-      activeSlot = null;
-      return;
-    }
-    statSlots.forEach(s => s.classList.remove('active'));
-    slot.classList.add('active');
-    activeSlot = slot;
-  }
-
-  function onTokenClick(tokenEl) {
-    if (tokenEl.classList.contains('used')) return;
-    if (!activeSlot) {
-      // If no active slot, briefly highlight potential slots
-      return;
-    }
-    const stat = activeSlot.dataset.stat;
-    const val = parseInt(tokenEl.dataset.value, 10);
-    // If this stat already has an assigned token, free that token first
-    const prev = assignments[stat];
-    if (typeof prev === 'number') {
-      const prevToken = tokens.find(t => parseInt(t.dataset.value,10) === prev && t.classList.contains('used'));
-      if (prevToken) prevToken.classList.remove('used');
-    }
-    // assign
-    assignments[stat] = val;
-    activeSlot.querySelector('.stat-value').textContent = (val >= 0 ? '+'+val : String(val));
-    tokenEl.classList.add('used');
-    // deselect slot
-    activeSlot.classList.remove('active');
-    activeSlot = null;
-  }
-
-  // click handlers for slots
-  statSlots.forEach(slot => slot.addEventListener('click', () => onSlotClick(slot)));
-
-  // radio change
-  Array.from(seriesInputs).forEach(r => r.addEventListener('change', () => {
-    renderTokens();
-    clearAssignments();
-  }));
-
-  resetBtn && resetBtn.addEventListener('click', (e) => { e.preventDefault(); renderTokens(); clearAssignments(); });
-  applyBtn && applyBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    const saved = Object.assign({}, assignments);
-    try { localStorage.setItem('dread_stats', JSON.stringify(saved)); } catch (err) { console.warn('Could not save stats', err); }
-    applyBtn.textContent = 'Tallennettu';
-    setTimeout(() => applyBtn.textContent = 'Tallenna statit', 1200);
-  });
-
-  // initial render
-  renderTokens();
 }
 
 // --- TABLE MAP FUNCTIONALITY ---
@@ -910,7 +797,6 @@ function setupWidgetDashboard(DOM, state) {
     handle: '.widget-header',
   });
 
-  // 1. Lock Layout Button
   if (DOM.dashboard.lockBtn) {
     DOM.dashboard.lockBtn.addEventListener('click', () => {
       const isLocked = DOM.dashboard.lockBtn.dataset.locked === 'true';
@@ -930,77 +816,22 @@ function setupWidgetDashboard(DOM, state) {
     });
   }
 
-  // 2. Widget Controls (Collapse & Close) using Event Delegation
   DOM.dashboard.grid.addEventListener('click', (e) => {
-    // Collapse Button
     const collapseBtn = e.target.closest('.btn-widget-collapse');
     if (collapseBtn) {
       const widget = collapseBtn.closest('.grid-stack-item-content');
       const icon = collapseBtn.querySelector('i');
       if(widget) {
-        widget.classList.toggle('collapsed');
-        icon.classList.toggle('fa-chevron-down');
-        icon.classList.toggle('fa-chevron-up');
+        
       }
     }
 
-    // Close Button
     const closeBtn = e.target.closest('.btn-widget-close');
     if (closeBtn) {
       const widgetEl = closeBtn.closest('.grid-stack-item');
       if (widgetEl) {
         state.grid.removeWidget(widgetEl);
       }
-    }
-  });
-
-  // 3. Setup Tool Widgets
-  setupQuickRoller(DOM.dashboard.quickRoller);
-  setupQuickGenerator(DOM.dashboard.quickGen);
-
-  // 4. Add Widget Button (Placeholder)
-  if (DOM.dashboard.addBtn) {
-    DOM.dashboard.addBtn.addEventListener('click', () => {
-      // This is where you would pop a modal to add new widgets.
-      // For now, it just logs a message.
-      console.log("Add Widget button clicked. (Functionality to be added)");
-    });
-  }
-}
-
-function setupQuickRoller(dom) {
-  if (!dom.buttons || !dom.result) return;
-  
-  dom.buttons.addEventListener('click', (e) => {
-    const btn = e.target.closest('button');
-    if (btn && btn.dataset.die) {
-      const die = parseInt(btn.dataset.die, 10);
-      const result = Math.floor(Math.random() * die) + 1;
-      dom.result.textContent = `[ ${result} ]`;
-      // Add a quick animation
-      dom.result.classList.remove('tada'); // reset animation
-      void dom.result.offsetWidth; // trigger reflow
-      dom.result.classList.add('tada');
-    }
-  });
-}
-
-function setupQuickGenerator(dom) {
-  if (!dom.btn || !dom.select || !dom.result) return;
-
-  dom.btn.addEventListener('click', () => {
-    // Check if data is available (from data.js)
-    if (typeof quickGeneratorData === 'undefined') {
-        dom.result.textContent = "Error: Generator data not found.";
-        return;
-    }
-    const key = dom.select.value;
-    if (quickGeneratorData[key] && quickGeneratorData[key].length > 0) {
-      const dataArray = quickGeneratorData[key];
-      const result = dataArray[Math.floor(Math.random() * dataArray.length)];
-      dom.result.textContent = result;
-    } else {
-      dom.result.textContent = `No data for "${key}"`;
     }
   });
 }
@@ -1027,11 +858,10 @@ function createSimpleNameTable(data, caption) {
 }
 
 function createVirtueViceTableHtml(data, title) {
-  // Determine key based on title
   const key = title === "Hyveet" ? "virtue" : "vice";
-  const descKey = title === "Hyveet" ? "description" : "description";
+  const descKey = "description";
   
-  let rows = data.map((item, index) => `<tr><td>${index + 1}</td><td>${item[key]}</td><td>${item[descKey]}</td></tr>`).join("");
+  let rows = data.map((item, index) => `<tr><td>${index + 1}</td><td>${item[key]}</td><td>${linkifyItemNames(item[descKey])}</td></tr>`).join("");
   
   return `
     <div class="name-table-wrapper">
@@ -1053,7 +883,7 @@ function createVirtueViceTableHtml(data, title) {
 }
 
 function createOccupationTableHtml(data) {
-  let rows = data.map((item, index) => `<tr><td>${index + 1}</td><td>${item.occupation}</td><td>${item.benefit}</td></tr>`).join("");
+  let rows = data.map((item, index) => `<tr><td>${index + 1}</td><td>${item.occupation}</td><td>${linkifyItemNames(item.benefit)}</td></tr>`).join("");
   return `
     <table>
       <caption>Työnkuvat</caption>
@@ -1071,3 +901,58 @@ function createOccupationTableHtml(data) {
   `;
 }
 
+function setupDmScreenTabs() {
+    const tabButtons = document.querySelectorAll('.dm-tab-button');
+    const tabContents = document.querySelectorAll('.dm-tab-content');
+
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const tabId = button.dataset.tab;
+
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+
+            tabContents.forEach(content => {
+                if (content.id === tabId) {
+                    content.classList.add('active');
+                } else {
+                    content.classList.remove('active');
+                }
+            });
+        });
+    });
+}
+
+function setupDmScreenAccordion() {
+    const accordionHeaders = document.querySelectorAll('.accordion-header');
+    const accordionItems = document.querySelectorAll('.accordion-item');
+
+    accordionHeaders.forEach(header => {
+        header.addEventListener('click', () => {
+            const content = header.nextElementSibling;
+            const parentItem = header.parentElement;
+
+            // Close all other accordions
+            accordionItems.forEach(otherItem => {
+                if (otherItem !== parentItem) {
+                    otherItem.classList.remove('is-open');
+                    otherItem.querySelector('.accordion-header').classList.remove('active');
+                }
+            });
+
+            // Toggle current accordion
+            parentItem.classList.toggle('is-open');
+            header.classList.toggle('active');
+        });
+    });
+}
+
+function setupCollapsibleWidgets() {
+    const combatTrackerHeader = document.querySelector('#combat-tracker .widget-title.collapsible');
+    if(combatTrackerHeader) {
+        combatTrackerHeader.addEventListener('click', () => {
+            const tracker = document.getElementById('combat-tracker');
+            tracker.classList.toggle('collapsed');
+        });
+    }
+}

@@ -20,31 +20,31 @@ const characterNames = [
 ];
 
 const occupations = [
-  { occupation: "Teurastaja", benefit: "+1 STR" }, { occupation: "Leipuri", benefit: "+1 PRC" },
-  { occupation: "Kynttiläntekijä", benefit: "Kantaa aina kynttilää" }, { occupation: "Rotanpyydystäjä", benefit: "+1 TGH" },
-  { occupation: "Konstaapeli", benefit: "Pamppu" }, { occupation: "Kulkuri", benefit: "1 Satunainen Esine" },
-  { occupation: "Vartija", benefit: "+1 PRC" }, { occupation: "Rahakas", benefit: "5 Shillinkiä" },
-  { occupation: "Akateemikko", benefit: "+1 PRC" }, { occupation: "Apteekkari", benefit: "+1 TGH" },
-  { occupation: "Savimaakari", benefit: "+1 AGT" }, { occupation: "Panimomies", benefit: "Viski" },
-  { occupation: "Kirurki", benefit: "1 Tohtorin laukku" }, { occupation: "Leikkaaja", benefit: "1 Veitsi" },
-  { occupation: "Haudankaivaja", benefit: "1 Lapio" }, { occupation: "Valelääkäri", benefit: "1 Ihmeparannusaine" },
-  { occupation: "Lalvamies", benefit: "1 Kalastusverkko" }, { occupation: "Patomies", benefit: "1 Kivivasara" },
-  { occupation: "Teloittaja", benefit: "1 Kirves" }, { occupation: "Tohtori", benefit: "1 Tohtorin laukku" },
-  { occupation: "Kalastaja", benefit: "1 Kala" }, { occupation: "Lasipuhaltaja", benefit: "1 Oil Lamp" },
-  { occupation: "Asoseppä", benefit: "1 Pistooli" }, { occupation: "Vaatturi", benefit: "5 Shillinkiä" },
-  { occupation: "Rottiensyöjä", benefit: "1 Satunainen esine" }, { occupation: "Käsityöläinen", benefit: "1 Varras" },
-  { occupation: "Tanssija", benefit: "+1 AGT" }, { occupation: "Asekeräiljä", benefit: "1 Satunainen Ase" },
-  { occupation: "Viemärityöläinen", benefit: "1 Lapio" }, { occupation: "Sahaaja", benefit: "1 Saha" },
-  { occupation: "Mylläri", benefit: "1 Suolapussi" }, { occupation: "Varastoija", benefit: "1 Valkosipuli" },
-  { occupation: "Trokari", benefit: "1 Ihmeparannusaine" }, { occupation: "Neuloja", benefit: "1 Hat Pin" },
-  { occupation: "Hautavaras", benefit: "1 Lapio" }, { occupation: "Varas", benefit: "1 Tiirikka" },
-  { occupation: "Historioitsija", benefit: "1 Satunainen artifakti" }, { occupation: "Pastori", benefit: "+1 PRC" },
-  { occupation: "Seilori", benefit: "1 Vahattu takki" }, { occupation: "Ihmissusien Kauhu", benefit: "1 Silver Bullet" },
-  { occupation: "Valkosipulifarmare", benefit: "1 Valkosipuli" }, { occupation: "Nuorallakävelijä", benefit: "+1 AGT" },
-  { occupation: "Ruumilnavaaja", benefit: "+1 TGH" }, { occupation: "Peruukklentekijä", benefit: "1 Peruukki" },
-  { occupation: "Nuohooja", benefit: "1 Viski" }, { occupation: "Outo akateemikko", benefit: "1 Satunainen Pimeä Manuskripti" },
-  { occupation: "Portinvartija", benefit: "1 Satunainen Esine" }, { occupation: "Metallityöläinen", benefit: "1 Satunainen Ase" },
-  { occupation: "Dilleri", benefit: "Oopium!" }, { occupation: "Kaksoisvuoro", benefit: "Pyöritä kahdesti, ota molemmat." }
+  { id: "teurastaja", occupation: "Teurastaja", benefit: "+1 STR" }, { id: "leipuri", occupation: "Leipuri", benefit: "+1 PRC" },
+  { id: "kynttilantekija", occupation: "Kynttiläntekijä", benefit: "Kynttilä" }, { id: "rotanpyydystaja", occupation: "Rotanpyydystäjä", benefit: "+1 TGH" },
+  { id: "konstaapeli", occupation: "Konstaapeli", benefit: "Tamppu" }, { id: "kulkuri", occupation: "Kulkuri", benefit: "1 Satunainen Esine" },
+  { id: "vartija", occupation: "Vartija", benefit: "+1 PRC" }, { id: "rahakas", occupation: "Rahakas", benefit: "5 Shillinkiä" },
+  { id: "akateemikko", occupation: "Akateemikko", benefit: "+1 PRC" }, { id: "apteekkari", occupation: "Apteekkari", benefit: "+1 TGH" },
+  { id: "savimaakari", occupation: "Savimaakari", benefit: "+1 AGT" }, { id: "panimomies", occupation: "Panimomies", benefit: "Viski" },
+  { id: "kirurki", occupation: "Kirurki", benefit: "Tohtorin laukku" }, { id: "leikkaaja", occupation: "Leikkaaja", benefit: "Veitsi" },
+  { id: "haudankaivaja", occupation: "Haudankaivaja", benefit: "Lapio" }, { id: "valelääkäri", occupation: "Valelääkäri", benefit: "Ihmeparannusaine" },
+  { id: "lalvamies", occupation: "Lalvamies", benefit: "1 Kalastusverkko" }, { id: "patomies", occupation: "Patomies", benefit: "Kivivasara" },
+  { id: "teloittaja", occupation: "Teloittaja", benefit: "Puukirves" }, { id: "tohtori", occupation: "Tohtori", benefit: "Tohtorin laukku" },
+  { id: "kalastaja", occupation: "Kalastaja", benefit: "Kala" }, { id: "lasipuhaltaja", occupation: "Lasipuhaltaja", benefit: "Öljylamppu" },
+  { id: "asoseppa", occupation: "Asoseppä", benefit: "Flintlock Pistooli" }, { id: "vaatturi", occupation: "Vaatturi", benefit: "5 Shillinkiä" },
+  { id: "rottiensyoja", occupation: "Rottiensyöjä", benefit: "1 Satunainen esine" }, { id: "kasityolainen", occupation: "Käsityöläinen", benefit: "Vaarna" },
+  { id: "tanssija", occupation: "Tanssija", benefit: "+1 AGT" }, { id: "asekerailija", occupation: "Asekeräiljä", benefit: "1 Satunainen Ase" },
+  { id: "viemarityolainen", occupation: "Viemärityöläinen", benefit: "Lapio" }, { id: "sahaaja", occupation: "Sahaaja", benefit: "1 Saha" },
+  { id: "myllari", occupation: "Mylläri", benefit: "Suolapussi" }, { id: "varastoija", occupation: "Varastoija", benefit: "Valkosipuli" },
+  { id: "trokari", occupation: "Trokari", benefit: "Ihmeparannusaine" }, { id: "neuloja", occupation: "Neuloja", benefit: "Hattuneula" },
+  { id: "hautavaras", occupation: "Hautavaras", benefit: "Lapio" }, { id: "varas", occupation: "Varas", benefit: "Tiirikka" },
+  { id: "historioitsija", occupation: "Historioitsija", benefit: "1 Satunainen artifakti" }, { id: "pastori", occupation: "Pastori", benefit: "+1 PRC" },
+  { id: "seilori", occupation: "Seilori", benefit: "Vahattu Takki" }, { id: "ihmissusien-kauhu", occupation: "Ihmissusien Kauhu", benefit: "Hopeoidut ammukset" },
+  { id: "valkosipulifarmare", occupation: "Valkosipulifarmare", benefit: "Valkosipuli" }, { id: "nuorallakavelija", occupation: "Nuorallakävelijä", benefit: "+1 AGT" },
+  { id: "ruumilnavaaja", occupation: "Ruumilnavaaja", benefit: "+1 TGH" }, { id: "peruukklentekija", occupation: "Peruukklentekijä", benefit: "Peruukki" },
+  { id: "nuohooja", occupation: "Nuohooja", benefit: "Viski" }, { id: "outo-akateemikko", occupation: "Outo akateemikko", benefit: "1 Satunainen Pimeä Manuskripti" },
+  { id: "portinvartija", occupation: "Portinvartija", benefit: "1 Satunainen Esine" }, { id: "metallityolainen", occupation: "Metallityöläinen", benefit: "1 Satunainen Ase" },
+  { id: "dilleri", occupation: "Dilleri", benefit: "Oopium" }, { id: "kaksoisvuoro", occupation: "Kaksoisvuoro", benefit: "Pyöritä kahdesti, ota molemmat." }
 ];
 
 const guildNamePart1 = [
@@ -88,7 +88,7 @@ const virtues = [
   { virtue: "Yhteyksissa", description: "Jos kaadut, saat kuolonpelastuksen automaattisesti ja uuden aseen." },
   { virtue: "Puutyötaitoinen", description: "Vaarnat eivät vie tilaa ja omaa aina yhden." },
   { virtue: "Tohtori", description: "Aloittaa aina ilmaisella tohtorin salkulla." },
-  { virtue: "Valkosipulifarmari", description: "Haisee niin pahalta että vampyyrit saavat -3 hyökkäyksiinsä häneen." },
+  { virtue: "Valkosipulifarmari", description: "Haisee niin pahalta että vampyrit saavat -3 hyökkäyksiinsä häneen." },
   { virtue: "Ylimistö", description: "Jos elää skenaarion lopussa, joukko saa 5 lisäshillinkiä." },
   { virtue: "Ei mitään", description: "Heitä uudelleen" },
   { virtue: "Kirottu", description: "Ei voi kuolla, mutta ei voi parantaa HPta." },
@@ -121,7 +121,6 @@ const vices = [
 
 // Data for Quick Generator Tool
 const quickGeneratorData = {
-  "NPC Name": characterNames,
   "Tavern Name": [
     "The Prancing Pony", "The Green Dragon", "The Leaky Cauldron", "The Eager Beaver", "The Drunken Huntsman", 
     "The Queen's Head", "The King's Head", "The Ragged Flagon", "The Bannered Mare", "The Winking Skeever"
@@ -134,10 +133,89 @@ const quickGeneratorData = {
     "A nobleman's daughter ran off with a vampire!"
   ],
   "Loot (Common)": [
-    "1d6 Shillings", "Tattered Rope (10m)", "Half-empty Whiskey Flask", "Flint & Steel", "Stale Bread", "A single boot"
+    "1d6 Shillings", "Tattered Rope (10m)", "Half-empty Viski Flask", "Flint & Steel", "Stale Bread", "A single boot", "Kynttilä", "Rätit"
   ],
   "Loot (Rare)": [
-    "Ihmeparannusaine (Healing Potion)", "Silver Bullet (x1)", "Pistol (1 shot)", "Map to a hidden cache", "Noble's Signet Ring"
+    "Ihmeparannusaine", "Hopeoidut ammukset", "Flintlock Pistooli", "Map to a hidden cache", "Noble's Signet Ring", "Tohtorin laukku"
   ]
 };
 
+// *** NEW SHOP ITEMS FROM PDF ***
+const shopItems = [
+    // TAVARAT (SOURCE 1)
+    { id: "ratit", name: "Rätit", type: "Tavara", price: "1 Shillinki", description: "Parantaa verenvuodon." },
+    { id: "kynttila", name: "Kynttilä", type: "Tavara", price: "1 Shillinki", description: "Lyhytaikainen valonlähde." },
+    { id: "viski", name: "Viski", type: "Tavara", price: "2 Shillinkiä", description: "Juotuasi läpäiset hetken kaikki moraalitesti." },
+    { id: "valkosipuli", name: "Valkosipuli", type: "Tavara", price: "2 Shillinkiä", description: "Pelottaa vampyyreja." },
+    { id: "vaarnavyo", name: "Vaarnavyö", type: "Tavara", price: "5 Shillinkiä", description: "Vie 1 tavaratilan, mutta voi sisältää max. 5 vaarnaa." },
+    { id: "oopium", name: "Oopium", type: "Tavara", price: "5 Shillinkiä", description: "Parantaa heti 2HP. Moraalitestejä ei tarvitse tehdä hetkeen." },
+    { id: "reppu", name: "Reppu", type: "Tavara", price: "5 Shillinkiä", description: "Vie yhden tavaratilan, mutta sisään mahtuu 3 tavaraa." },
+    { id: "oljylamppu", name: "Öljylamppu", type: "Tavara", price: "6 Shillinkiä", description: "[D6] [STR] Lamppu tuhoutuu, jos lyö! Pitkäaikainen valonlähde!" },
+    { id: "tohtorin-laukku", name: "Tohtorin laukku", type: "Tavara", price: "7 Shillinkiä", description: "Kaatuneelle tai kenelle vain voi parantaa D4 HP. Parantaa myös myrkyt." },
+    { id: "suolapussi", name: "Suolapussi", type: "Tavara", price: "7 Shillinkiä", description: "Luo pyhän suolaringin johon kuolemattomat eivät pääse... Ainakaan hetkeksi." },
+    { id: "ihmeparannusaine", name: "Ihmeparannusaine", type: "Tavara", price: "7 Shillinkiä", description: "Parantaa myrkyt ja sairaudet. Infektioita tosin ei... kirottua..." },
+    { id: "peruukki", name: "Peruukki", type: "Tavara", price: "10 Shillinkiä", description: "+1 PRC" },
+    
+    // PANSSARIT (SOURCE 4)
+    { id: "kotikutoinen-panssari", name: "Kotikutoinen panssari", type: "Panssari", price: "Ilmainen", description: "Suoja: 1. Extra: -1 AGT" },
+    { id: "nahkatakki", name: "Nahkatakki", type: "Panssari", price: "1 Shillinki", description: "Suoja: 1. Extra: Kovetettu nahkahattu! Ei kovia tainnuttavia osumia päähän!" },
+    { id: "vahattu-takki", name: "Vahattu Takki", type: "Panssari", price: "3 Shillinkiä", description: "Suoja: 1. Extra: Sade ei vaikuta. Mukavasti ropisee." },
+    { id: "kaulapanssari", name: "Kaulapanssari", type: "Panssari", price: "4 Shillinkiä", description: "Suoja: 0. Extra: Vampyyrin hyökkäys puolustetaan mutta menee heti rikki." },
+    { id: "kovetettu-nahkahattu", name: "Kovetettu nahkahattu", type: "Panssari", price: "5 Shillinkiä", description: "Suoja: 0. Extra: Suojelee päätä osumilta." },
+    { id: "rintapanssari", name: "Rintapanssari", type: "Panssari", price: "10 Shillinkiä", description: "Suoja: 2." },
+    { id: "hopeaketju", name: "Hopeaketju", type: "Panssari", price: "12 Shillinkiä", description: "Suoja: 2. Extra: Kaikkiin ihmissusien tekemiin hyökkäyksiin -2." },
+    { id: "haarniska", name: "Haarniska", type: "Panssari", price: "20 Shillinkiä", description: "Suoja: 3." },
+    
+    // YHDENKÄDEN LYÖMÄASEET (SOURCE 8)
+    { id: "nyrkkisi", name: "Nyrkkisi", type: "Lyömäase (1H)", price: "Ilmainen", description: "Stat: STR. Damage: 1. Extra: Fumble 1 vahinko SINUUN!" },
+    { id: "improvisoitu-lyontiase", name: "Improvisoitu lyöntiase", type: "Lyömäase (1H)", price: "Ilmainen", description: "Stat: STR. Damage: D4." },
+    { id: "vaarna", name: "Vaarna", type: "Lyömäase (1H)", price: "1 Shillinki", description: "Stat: AGT. Damage: D4. Extra: Aina vähintään 1 vahinko!" },
+    { id: "veitsi", name: "Veitsi", type: "Lyömäase (1H)", price: "1 Shillinki", description: "Stat: AGT. Damage: D4. Extra: Voi heittää." },
+    { id: "kala", name: "Kala", type: "Lyömäase (1H)", price: "1 Shillinki", description: "Stat: STR. Damage: D4." },
+    { id: "kalakoukku", name: "Kalakoukku", type: "Lyömäase (1H)", price: "2 Shillinkiä", description: "Stat: AGT. Damage: D4. Extra: Julma, aina vähintään 1 vahinko!" },
+    { id: "hattuneula", name: "Hattuneula", type: "Lyömäase (1H)", price: "2 Shillinkiä", description: "Stat: AGT. Damage: 2 Vahinkoa. Extra: Lävistää kaikki panssarit!" },
+    { id: "sateenvarjo", name: "Sateenvarjo", type: "Lyömäase (1H)", price: "2 Shillinkiä", description: "Stat: AGT. Damage: D4. Extra: Sateen vaikutus ei ole sinuun juuri mitään. Mukava ilmahan täällä on." },
+    { id: "nyrkkiraudat", name: "Nyrkkiraudat", type: "Lyömäase (1H)", price: "3 Shillinkiä", description: "Stat: STR. Damage: D4. Extra: Et voi tiputtaa näitä!" },
+    { id: "nuija", name: "Nuija", type: "Lyömäase (1H)", price: "3 Shillinkiä", description: "Stat: STR. Damage: D4. Extra: Kriittinen aiheuttaa pökertymisen!" },
+    { id: "partaveitsi", name: "Partaveitsi", type: "Lyömäase (1H)", price: "3 Shillinkiä", description: "Stat: AGT. Damage: 2 Vahinkoa. Extra: Menee panssareista läpi. Kriittinen aiheuttaa vuolasta verenvuotoa." },
+    { id: "tamppu", name: "Tamppu", type: "Lyömäase (1H)", price: "4 Shillinkiä", description: "Stat: STR. Damage: D6. Extra: Kriittinen aiheuttaa pyörtymän." },
+    { id: "teurastajan-veitsi", name: "Teurastajan veitsi", type: "Lyömäase (1H)", price: "4 Shillinkiä", description: "Stat: STR. Damage: D6. Extra: Julma, vähintään 1 vahinko AINA." },
+    { id: "lapio", name: "Lapio", type: "Lyömäase (1H)", price: "5 Shillinkiä", description: "Stat: STR. Damage: D6. Extra: Lapio. Voit... kaivaa? Sitä tuskin tultiin tekemään." },
+    { id: "puukirves", name: "Puukirves", type: "Lyömäase (1H)", price: "5 Shillinkiä", description: "Stat: STR. Damage: D8. Extra: Heitettynä kätevä!" },
+    { id: "miekkailumiekka", name: "Miekkailumiekka", type: "Lyömäase (1H)", price: "8 Shillinkiä", description: "Stat: AGT. Damage: D6. Extra: Julma, aina vähintään 1 vahinko. Kriittinen aiheuttaa verenvuodon." },
+    { id: "kavelykeppimiekka", name: "Kävelykeppimiekka", type: "Lyömäase (1H)", price: "10 Shillinkiä", description: "Stat: AGT. Damage: D8." },
+
+    // KAHDENKÄDEN LYÖMÄASEET (SOURCE 11)
+    { id: "improvisoitu-ase-2h", name: "Improvisoitu ase (2H)", type: "Lyömäase (2H)", price: "Ilmainen", description: "Stat: STR. Damage: D6. Extra: Vie yhden vuoron laittaa pois ja ottaa esiin. Niin pitkä, että vihollinen ei voi samalla vuorolla vielä lyödä takaisin!" },
+    { id: "kalastuskeihas", name: "Kalastuskeihäs", type: "Lyömäase (2H)", price: "3 Shillinkiä", description: "Stat: AGT. Damage: D8. Extra: Niin pitkä, että vihollinen ei voi samalla vuorolla vielä lyödä takaisin!" },
+    { id: "kivivasara", name: "Kivivasara", type: "Lyömäase (2H)", price: "10 Shillinkiä", description: "Stat: STR. Damage: D10. Extra: Painava. Vie kaksi tavarapaikkaa. Vie yhden vuoron laittaa pois ja ottaa esiin." },
+
+    // ASEIDEN HOPEOINTI (SOURCE 13-18)
+    { id: "aseen-hopeointi", name: "Aseen Hopeointi", type: "Palvelu", price: "10 Shillinkiä", description: "Lisää 10 aseen hintaan TAI maksa 10 jo omistuksessa olevan aseesi hopeoinnista. Polttaa petojen epäpyhää lihaa." },
+
+    // YHDENKÄDEN AMMUNTA (SOURCE 20)
+    { id: "flintlock-pistooli", name: "Flintlock Pistooli", type: "Ammunta-ase (1H)", price: "10 Shillinkiä", description: "Stat: PRC. Damage: D6. Extra: Yhden kuulan muskettipistooli. Samoin epävakaa." },
+    { id: "lancaster-pistooli", name: "Lancaster Pistooli", type: "Ammunta-ase (1H)", price: "12 Shillinkiä", description: "Stat: PRC. Damage: D4. Extra: Neljä piippua. Neljä panosta. Voi tosin räjähtää päin näköäsi!" },
+    { id: "ultimate-tool", name: "Ultimate Tool", type: "Ammunta-ase (1H)", price: "15 Shillinkiä", description: "Stat: AGT. Damage: Etä D4, Lähi D4. Extra: Itsekehitelty aseen ja veitsen yhdistelmä." },
+    { id: "revolveri", name: "Revolveri", type: "Ammunta-ase (1H)", price: "20 Shillinkiä", description: "Stat: PRC. Damage: D8. Extra: 6 panosta. Tehokas kuin synti." },
+
+    // "YHDENKÄDEN" (KAHDENKÄDEN) AMMUNTA (SOURCE 22)
+    { id: "dreyssilainen-kivaari", name: "Dreyssiläinen Kivääri", type: "Ammunta-ase (2H)", price: "15 Shillinkiä", description: "Stat: PRC. Damage: D8. Extra: Vanha kivääri etelänaapurista. Yksi luoti mahtuu piippuun. Epävakaa." },
+    { id: "haulikko", name: "Haulikko", type: "Ammunta-ase (2H)", price: "12 Shillinkiä", description: "Stat: PRC. Damage: D10. Extra: Kaksi luotia mahtuu piippuun. Valitettavan epävakaa." },
+    { id: "vipulukkokuvaari", name: "Vipulukkokivääri", type: "Ammunta-ase (2H)", price: "15 Shillinkiä", description: "Stat: PRC. Damage: D8. Extra: Huomattava teknologinen uutuus. Vipulukkotekniikka. 5 luotia mahtuu piippuun. Saattaa jumittua. Harvoin." },
+    
+    // LUODIT (SOURCE 24)
+    { id: "pistoolin-ammukset", name: "Pistoolin ammukset", type: "Ammus", price: "1 Shillinki", description: "5 ammusta per laatikko." },
+    { id: "haulikon-haulit", name: "Haulikon haulit", type: "Ammus", price: "1 Shillinki", description: "4 ammusta per laatikko." },
+    { id: "revolverin-ammukset", name: "Revolverin ammukset", type: "Ammus", price: "2 Shillinkiä", description: "6 ammusta per laatikko." },
+    { id: "kivaarin-ammukset", name: "Kiväärin ammukset", type: "Ammus", price: "4 Shillinkiä", description: "5 ammusta per laatikko." },
+    { id: "hopeoidut-ammukset", name: "Hopeoidut ammukset", type: "Ammus", price: "10 Shillinkiä!", description: "5 ammusta per laatikko. Mihin vain aseeseen!" },
+
+    // HEITETTÄVÄÄ (SOURCE 26)
+    { id: "molotov", name: "Molotov", type: "Heitettävä", price: "3 shillinkiä!", description: "Stat: AGT. Damage: D8. Extra: Helppo heittää. Lasketaan myös viskiksi." },
+    { id: "improvisoitu-rahahde", name: "Improvisoitu rähähde", type: "Heitettävä", price: "3 shillinkiä", description: "Stat: STR. Damage: D8. Extra: Vaivalloinen heittää. Vaarallinen. Halpa." },
+    { id: "tnt", name: "TNT", type: "Heitettävä", price: "8 shillinkiä", description: "Stat: AGT. Damage: D10. Extra: VARO." },
+
+    // LISÄTTY (KOSKA AMMATTI VIITTAA SIIHEN)
+    { id: "tiirikka", name: "Tiirikka", type: "Tavara", price: "10 Shillinkiä", description: "Työkaluja lukkojen tiirikointiin." }
+];

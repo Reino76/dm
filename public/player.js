@@ -107,20 +107,15 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!document.fullscreenElement) {
         // Check which mode is active
         const selectedMode = DOM.modeSelect.value;
-        let elementToFullscreen;
-
-        if (selectedMode === "initiative") {
-          elementToFullscreen = DOM.initiativeContent;
-        } else { // 'background'
-          elementToFullscreen = DOM.backgroundContent;
-        }
+        const elementToFullscreen = selectedMode === 'initiative' 
+          ? DOM.initiativeContent 
+          : DOM.backgroundContent;
         
         // Request fullscreen on the *specific element*
         if (elementToFullscreen && elementToFullscreen.requestFullscreen) {
           elementToFullscreen.requestFullscreen().catch(err => {
             console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
           });
-          // --- BUG FIX: Fixed typo ---
           DOM.fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i> Exit Fullscreen';
         }
       } else {
