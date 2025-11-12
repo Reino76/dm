@@ -39,7 +39,7 @@ function cacheDOMElements() {
       enableBtn: document.getElementById("enable-merchant-mode-btn"),
       disableBtn: document.getElementById("disable-merchant-mode"),
     },
-    // Tabs
+  // Tabs
     tabsContainer: document.querySelector(".tabs"),
     tabContents: document.querySelectorAll(".tab-content"),
     prepTabButton: document.querySelector('[data-tab="tab-prep"]'),
@@ -48,6 +48,12 @@ function cacheDOMElements() {
     dmScreenTabContent: document.getElementById('tab-dm-screen'),
     playerPreviewTabButton: document.querySelector('[data-tab="tab-player-preview"]'),
     playerPreviewTabContent: document.getElementById('tab-player-preview'),
+  // Core player preview link/button (non-game-specific)
+  openPlayerLinkBtn: document.getElementById('open-player-link-btn'),
+  // Header / game actions
+  header: document.getElementById('app-header'),
+  headerToggleBtn: document.getElementById('toggle-header-btn'),
+  gameActions: document.getElementById('game-actions'),
   // DM Screen
   dndTracker: document.getElementById("dnd-initiative-tracker"),
   // Some pages may not include a dedicated Dread Nights wrapper element.
@@ -183,9 +189,37 @@ function cacheDOMElements() {
  */
 function initApp(DOM, state) {
   state.ws = setupWebSocket(state, DOM);
+  // Preserve original session-start / dread-nights content so we can swap it for other games
+  try {
+    if (DOM.dreadNightsScreen) {
+      // Wrap existing children into a stable container so we can hide/show without destroying nodes
+      const originalWrapper = document.createElement('div');
+      originalWrapper.className = 'dread-original-wrapper';
+      while (DOM.dreadNightsScreen.firstChild) {
+        originalWrapper.appendChild(DOM.dreadNightsScreen.firstChild);
+      }
+      DOM.dreadNightsScreen.appendChild(originalWrapper);
+      DOM._originalDreadNightsNode = originalWrapper;
+
+      // Create placeholder wrapper (hidden by default)
+      const placeholderWrapper = document.createElement('div');
+      placeholderWrapper.className = 'dread-placeholder-wrapper hidden';
+      placeholderWrapper.innerHTML = `
+        <div class="placeholder">
+          <h2>Session Start</h2>
+          <p>No session start information is configured for this game yet.</p>
+        </div>`;
+      DOM.dreadNightsScreen.appendChild(placeholderWrapper);
+      DOM._placeholderDreadNightsNode = placeholderWrapper;
+    }
+  } catch (err) {
+    DOM._originalDreadNightsNode = null;
+    DOM._placeholderDreadNightsNode = null;
+  }
   
   setupTabs(DOM);
   setupSettings(DOM, state);
+  setupHeaderToggle(DOM);
   setupMerchantMode(DOM, state);
   setupHeaderButtons(DOM);
 
@@ -260,6 +294,11 @@ function setupHeaderButtons(DOM) {
   if (DOM.openPlayerBtn) {
     DOM.openPlayerBtn.addEventListener("click", () => window.open('player.html', '_blank'));
   }
+
+  // Core player preview button (opens in new tab/window)
+  if (DOM.openPlayerLinkBtn) {
+    DOM.openPlayerLinkBtn.addEventListener("click", () => window.open('player.html', '_blank'));
+  }
   if (DOM.toggleMapBtn) {
     DOM.toggleMapBtn.addEventListener("click", () => {
       if (DOM.map.window) {
@@ -278,20 +317,35 @@ function setupHeaderButtons(DOM) {
 }
 
 function setupTabs(DOM) {
-  if (!DOM.tabsContainer) return;
+  if (!DOM.tabsContainer) {
+    console.warn("Tabs container not found, skipping tab setup.");
+    return;
+  }
+
   DOM.tabsContainer.addEventListener("click", (e) => {
-    const clickedTab = e.target.closest(".tab-button");
-    if (!clickedTab || clickedTab.classList.contains('hidden')) return; 
+    const button = e.target.closest(".tab-button");
+    if (!button) return;
 
-    const tabId = clickedTab.dataset.tab;
-    
+    const tabId = button.dataset.tab;
+    if (!tabId) return;
+
+    const targetContent = document.getElementById(tabId);
+    if (!targetContent) {
+      console.warn(`Tab content with ID '${tabId}' not found.`);
+      return;
+    }
+
+    // Deactivate all tab buttons and contents
     DOM.tabsContainer.querySelectorAll(".tab-button").forEach(btn => {
-      btn.classList.toggle("active", btn === clickedTab);
+      btn.classList.remove("active");
+    });
+    DOM.tabContents.forEach(content => {
+      content.classList.remove("active");
     });
 
-    DOM.tabContents.forEach(content => {
-      content.classList.toggle("active", content.id === tabId);
-    });
+    // Activate the clicked tab and its content
+    button.classList.add("active");
+    targetContent.classList.add("active");
   });
 }
 
@@ -329,6 +383,63 @@ function updateGameUI(DOM, gameName) {
       if (DOM.dmScreenTabContent && DOM.dmScreenTabContent.classList) DOM.dmScreenTabContent.classList.add('active');
     }
   }
+
+  // Populate game-specific actions on the right of the header.
+  try {
+    if (DOM.gameActions) {
+      if (gameName === 'Dread Nights') {
+        DOM.gameActions.innerHTML = `
+          <a href="shop.html" class="btn btn-secondary game-action" data-action="shop"><i class="fas fa-shopping-cart"></i> Kauppa</a>
+        `;
+      } else if (gameName === 'D&D 5e') {
+        DOM.gameActions.innerHTML = `<button class="btn btn-secondary">Encounter Builder</button>`;
+      } else {
+        DOM.gameActions.innerHTML = '';
+      }
+    }
+  } catch (err) {
+    console.warn('Failed to render game actions', err);
+  }
+
+  // Session start content: if the selected game is the placeholder, replace the session-start area
+  try {
+    if (gameName === 'Placeholder') {
+      // show placeholder wrapper (if created) and hide original
+      if (DOM._placeholderDreadNightsNode && DOM._originalDreadNightsNode) {
+        DOM._placeholderDreadNightsNode.classList.remove('hidden');
+        DOM._originalDreadNightsNode.classList.add('hidden');
+      }
+    } else {
+      // restore original content when switching back to Dread Nights (or other games)
+      if (DOM._placeholderDreadNightsNode && DOM._originalDreadNightsNode) {
+        DOM._placeholderDreadNightsNode.classList.add('hidden');
+        DOM._originalDreadNightsNode.classList.remove('hidden');
+      }
+    }
+  } catch (err) {
+    console.warn('Failed to update session-start content for game:', gameName, err);
+  }
+}
+
+function setupHeaderToggle(DOM) {
+  if (!DOM.header || !DOM.headerToggleBtn) return;
+
+  // Restore persisted state (collapsed/open)
+  const collapsed = localStorage.getItem('headerCollapsed') === 'true';
+  if (collapsed) {
+    DOM.header.classList.add('collapsed');
+    const inner = document.getElementById('app-header-inner');
+    if (inner) inner.setAttribute('aria-hidden', 'true');
+    DOM.headerToggleBtn.setAttribute('aria-expanded', 'false');
+  }
+
+  DOM.headerToggleBtn.addEventListener('click', () => {
+    const isCollapsed = DOM.header.classList.toggle('collapsed');
+    const inner = document.getElementById('app-header-inner');
+    if (inner) inner.setAttribute('aria-hidden', isCollapsed ? 'true' : 'false');
+    DOM.headerToggleBtn.setAttribute('aria-expanded', String(!isCollapsed));
+    localStorage.setItem('headerCollapsed', isCollapsed ? 'true' : 'false');
+  });
 }
 
 function setupModal(trigger, modal, close) {
@@ -902,8 +1013,11 @@ function createOccupationTableHtml(data) {
 }
 
 function setupDmScreenTabs() {
-    const tabButtons = document.querySelectorAll('.dm-tab-button');
-    const tabContents = document.querySelectorAll('.dm-tab-content');
+    const dmScreen = document.getElementById('tab-dm-screen');
+    if (!dmScreen) return;
+
+    const tabButtons = dmScreen.querySelectorAll('.dm-tab-button');
+    const tabContents = dmScreen.querySelectorAll('.dm-tab-content');
 
     tabButtons.forEach(button => {
         button.addEventListener('click', () => {
