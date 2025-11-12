@@ -3,6 +3,7 @@
  *
  * Core logic for the DM Screen application.
  * This file is structured to be modular, efficient, and maintainable.
+ * * Contains merged logic from play.js and shop.js.
  */
 
 // Wait for the DOM to be fully loaded before running any script
@@ -164,6 +165,11 @@ function cacheDOMElements() {
     dashboard: {
       grid: document.querySelector('.grid-stack'),
       lockBtn: document.getElementById('lock-layout-btn'),
+    },
+    // Shop Tab (New)
+    shop: {
+        itemContainer: document.getElementById("item-shop-container"),
+        occupationContainer: document.getElementById("occupation-shop-container")
     }
   };
 
@@ -246,8 +252,13 @@ function initApp(DOM, state) {
 
   populateGeneratorTables(DOM.modals);
   setupDmScreenTabs();
-  setupDmScreenAccordion();
+  // setupDmScreenAccordion(); // This is the old, conflicting one.
   setupCollapsibleWidgets();
+
+  // --- NEW MERGED FUNCTIONS ---
+  setupPlayTabAccordion(DOM);
+  setupShopTab(DOM);
+  // --- END NEW ---
 }
 
 
@@ -321,12 +332,10 @@ function setupTabs(DOM) {
     console.warn("Tabs container not found, skipping tab setup.");
     return;
   }
+  
+  const allTabButtons = document.querySelectorAll(".tab-button");
 
-  DOM.tabsContainer.addEventListener("click", (e) => {
-    const button = e.target.closest(".tab-button");
-    if (!button) return;
-
-    const tabId = button.dataset.tab;
+  const activateTab = (tabId) => {
     if (!tabId) return;
 
     const targetContent = document.getElementById(tabId);
@@ -336,7 +345,7 @@ function setupTabs(DOM) {
     }
 
     // Deactivate all tab buttons and contents
-    DOM.tabsContainer.querySelectorAll(".tab-button").forEach(btn => {
+    allTabButtons.forEach(btn => {
       btn.classList.remove("active");
     });
     DOM.tabContents.forEach(content => {
@@ -344,8 +353,19 @@ function setupTabs(DOM) {
     });
 
     // Activate the clicked tab and its content
-    button.classList.add("active");
+    document.querySelectorAll(`.tab-button[data-tab="${tabId}"]`).forEach(button => {
+        button.classList.add("active");
+    });
     targetContent.classList.add("active");
+  };
+
+  // Listen on the whole document for tab button clicks
+  document.body.addEventListener("click", (e) => {
+    const button = e.target.closest(".tab-button");
+    if (!button) return;
+
+    const tabId = button.dataset.tab;
+    activateTab(tabId);
   });
 }
 
@@ -387,13 +407,10 @@ function updateGameUI(DOM, gameName) {
   // Populate game-specific actions on the right of the header.
   try {
     if (DOM.gameActions) {
-      if (gameName === 'Dread Nights') {
-        DOM.gameActions.innerHTML = `
-          <a href="shop.html" class="btn btn-secondary game-action" data-action="shop"><i class="fas fa-shopping-cart"></i> Kauppa</a>
-        `;
-      } else if (gameName === 'D&D 5e') {
+      if (gameName === 'D&D 5e') {
         DOM.gameActions.innerHTML = `<button class="btn btn-secondary">Encounter Builder</button>`;
       } else {
+        // For Dread Nights, we now use a permanent tab, so we just clear actions.
         DOM.gameActions.innerHTML = '';
       }
     }
@@ -1037,30 +1054,6 @@ function setupDmScreenTabs() {
     });
 }
 
-function setupDmScreenAccordion() {
-    const accordionHeaders = document.querySelectorAll('.accordion-header');
-    const accordionItems = document.querySelectorAll('.accordion-item');
-
-    accordionHeaders.forEach(header => {
-        header.addEventListener('click', () => {
-            const content = header.nextElementSibling;
-            const parentItem = header.parentElement;
-
-            // Close all other accordions
-            accordionItems.forEach(otherItem => {
-                if (otherItem !== parentItem) {
-                    otherItem.classList.remove('is-open');
-                    otherItem.querySelector('.accordion-header').classList.remove('active');
-                }
-            });
-
-            // Toggle current accordion
-            parentItem.classList.toggle('is-open');
-            header.classList.toggle('active');
-        });
-    });
-}
-
 function setupCollapsibleWidgets() {
     const combatTrackerHeader = document.querySelector('#combat-tracker .widget-title.collapsible');
     if(combatTrackerHeader) {
@@ -1069,4 +1062,74 @@ function setupCollapsibleWidgets() {
             tracker.classList.toggle('collapsed');
         });
     }
+}
+
+// --- NEW: MERGED FROM play.js ---
+function setupPlayTabAccordion(DOM) {
+    const playTab = document.getElementById('tab-play');
+    if (!playTab) return;
+
+    const accordionHeaders = playTab.querySelectorAll('.accordion-header');
+
+    accordionHeaders.forEach(header => {
+        header.addEventListener('click', () => {
+            const content = header.nextElementSibling;
+            const item = header.parentElement;
+
+            // Toggle active class for content
+            const isActive = content.classList.contains('active');
+
+            // Close all accordions in the same card first
+            const parentAccordion = item.parentElement;
+            parentAccordion.querySelectorAll('.accordion-item').forEach(otherItem => {
+                otherItem.querySelector('.accordion-content').classList.remove('active');
+            });
+
+            // If it wasn't active, open it
+            if (!isActive) {
+                content.classList.add('active');
+            }
+        });
+    });
+}
+
+// --- NEW: MERGED FROM shop.js ---
+function setupShopTab(DOM) {
+    const shopContainer = DOM.shop.itemContainer;
+    const occupationsContainer = DOM.shop.occupationContainer;
+
+    if (!shopContainer || !occupationsContainer) {
+        console.warn("Shop containers not found. Shop will not be populated.");
+        return;
+    }
+
+    // Check if data is loaded
+    if (typeof shopItems === 'undefined' || typeof occupations === 'undefined') {
+        console.error("Shop data (shopItems or occupations) is missing.");
+        return;
+    }
+
+    shopContainer.innerHTML = "";
+    occupationsContainer.innerHTML = '<h2>Työnkuvat</h2>';
+
+    shopItems.forEach(item => {
+        const itemElement = document.createElement("div");
+        itemElement.className = "shop-item";
+        itemElement.innerHTML = `
+            <h3>${item.name}</h3>
+            <p>${item.type}</p>
+            <div class="item-price">${item.price}</div>
+        `;
+        itemElement.addEventListener("click", () => openItemDetails(item.name));
+        shopContainer.appendChild(itemElement);
+    });
+
+    occupations.forEach(occ => {
+        const occElement = document.createElement("div");
+        occElement.className = "shop-item occupation-item";
+        let benefitContent = `<p>${linkifyItemNames(occ.benefit)}</p>`;
+
+        occElement.innerHTML = `<h3>${occ.occupation}</h3>${benefitContent}`;
+        occupationsContainer.appendChild(occElement);
+    });
 }

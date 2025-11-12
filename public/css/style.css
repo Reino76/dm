@@ -1,4 +1,3 @@
-
 /* --- NEW: Thematic Fonts --- */
 @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Merriweather:wght@400;700;900&display=swap');
 
@@ -44,7 +43,6 @@ body {
   margin: 0;
   padding: 0;
   width: 100%;
-  overflow-x: hidden;
 }
 
 @media (max-width: 767px) {
@@ -64,11 +62,9 @@ body {
   margin: 0 auto;
   padding: 10px;
   width: 100%;
-  height: 100vh;
   display: flex;
   flex-direction: column;
-  flex: 1; /* Allow container to grow and shrink */
-  overflow: hidden; /* Hide overflow to prevent main scroll */
+  min-height: 100vh;
 }
 
 @media (max-width: 767px) {
@@ -86,15 +82,25 @@ body {
 
 /* --- Header & Settings --- */
 .header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px;
+  display: flex; /* Changed back to flex to allow header-content to take space */
+  justify-content: center; /* Center the header-content horizontally */
+  align-items: flex-start; /* Align items to the start, header-content will manage its own alignment */
+  padding: 10px 10px 25px 10px; /* Added padding-bottom for the toggle button */
   border-bottom: 1px solid var(--border-color);
   margin-bottom: 10px;
   gap: 10px;
   flex-wrap: wrap;
   min-height: 50px;
+  position: relative; /* Added for absolute positioning of toggle button */
+  z-index: 20;
+  background: var(--surface-color);
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%; /* Ensure it takes full width of the header */
 }
 
 /* Header fold/collapse layout */
@@ -156,14 +162,21 @@ body {
 /* Toggle button: positioned absolutely so it remains visible and clickable when header is collapsed */
 .header-toggle {
   position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
   padding: 6px 10px !important;
   font-size: 0.85rem;
   background: var(--primary-color) !important;
   color: #fff !important;
   z-index: 100;
+}
+
+.header-toggle:hover {
+  transform: translateX(-50%) !important; /* Keep it horizontally centered */
+  background: var(--primary-color-hover) !important; /* Apply hover background */
+  color: var(--bg-color) !important; /* Apply hover text color */
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2); /* Apply hover shadow */
 }
 
 .header-toggle i,
@@ -175,6 +188,7 @@ body {
   transform: rotate(180deg);
 }
 
+/* When collapsed, slightly less prominent but still visible */
 /* When collapsed, slightly less prominent but still visible */
 .header.collapsed .header-toggle {
   background: var(--primary-color) !important;
@@ -334,11 +348,12 @@ h1 {
   border-top: none;
   border-radius: 0 0 var(--radius-sharp) var(--radius-sharp); 
   flex: 1; /* Allow tab content to grow and shrink */
-  overflow-y: auto; /* Enable vertical scrolling for tab content */
 }
 
 .tab-content.active {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
 /* --- Styled Forms & Buttons --- */
@@ -690,11 +705,18 @@ textarea {
   padding: 0;
 }
 
+#dread-nights-active-screen {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
 .prep-layout {
   display: flex;
   flex-direction: row;
   gap: 0;
-  height: 100%; /* Ensure prep-layout takes full height */
+  height: 100%;
+  flex: 1;
 }
 
 @media (max-width: 1023px) {
@@ -720,9 +742,8 @@ textarea {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  position: sticky; /* Make it sticky */
-  top: 0; /* Stick to the top */
-  height: 100vh; /* Take full viewport height */
+  position: sticky; /* Changed from relative to sticky */
+  top: 0; /* Added to make it stick to the top */
   z-index: 10; /* Ensure it stays on top */
   overflow-y: auto; /* Allow internal scrolling if content exceeds height */
 }
@@ -834,8 +855,6 @@ textarea {
   flex: 1;
   padding: 30px;
   position: relative;
-  overflow-y: auto;
-  background: var(--bg-color);
 }
 
 @media (max-width: 1023px) {
@@ -898,8 +917,16 @@ hr {
 @media (max-width: 767px) {
   .prep-content-step h2 {
     font-size: 1.5rem;
-    margin-bottom: 12px;
-    padding-bottom: 12px;
+    margin: 0 0 10px 0; /* Reduced margin-bottom */
+    padding-bottom: 10px; /* Reduced padding-bottom */
+  }
+}
+
+@media (max-width: 480px) {
+  .prep-content-step h2 {
+    font-size: 1.3rem;
+    margin: 0 0 8px 0; /* Further reduced margin-bottom */
+    padding-bottom: 8px; /* Further reduced padding-bottom */
   }
 }
 
@@ -914,7 +941,14 @@ hr {
 @media (max-width: 767px) {
   .prep-content-step h3 {
     font-size: 1.2rem;
-    margin: 15px 0 12px 0;
+    margin: 12px 0 10px 0; /* Reduced margins */
+  }
+}
+
+@media (max-width: 480px) {
+  .prep-content-step h3 {
+    font-size: 1.1rem;
+    margin: 10px 0 8px 0; /* Further reduced margins */
   }
 }
 
@@ -929,7 +963,14 @@ hr {
 @media (max-width: 767px) {
   .prep-content-step h4 {
     font-size: 1rem;
-    margin: 12px 0 8px 0;
+    margin: 10px 0 8px 0; /* Reduced margins */
+  }
+}
+
+@media (max-width: 480px) {
+  .prep-content-step h4 {
+    font-size: 0.9rem;
+    margin: 8px 0 6px 0; /* Further reduced margins */
   }
 }
 
@@ -944,6 +985,13 @@ hr {
   .prep-content-step p {
     font-size: 0.95rem;
     margin-bottom: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .prep-content-step p {
+    font-size: 0.9rem;
+    margin-bottom: 10px;
   }
 }
 
@@ -1222,11 +1270,14 @@ hr {
   padding-left: 20px;
 }
 
+/* This .accordion-content is for the OLD structure. Replaced by play.css styles */
+/*
 .accordion-content {
   display: none;
   padding: 15px;
   background: var(--bg-color);
 }
+*/
 
 .accordion-item.is-open .accordion-content {
   display: block;
@@ -1811,17 +1862,17 @@ hr {
 
 @media (max-width: 767px) {
   .d-input-square {
-    width: 80px;
-    height: 80px;
-    font-size: 2rem;
+    width: 70px;
+    height: 70px;
+    font-size: 1.8rem;
   }
 }
 
 @media (max-width: 480px) {
   .d-input-square {
-    width: 70px;
-    height: 70px;
-    font-size: 1.8rem;
+    width: 60px;
+    height: 60px;
+    font-size: 1.5rem;
   }
 }
 
@@ -2389,7 +2440,31 @@ hr {
 }
 
 /* DM screen styles removed (DM tab was deleted). */
-/* Right Pane Accordion */
+
+/* --- STYLES MERGED FROM play.css --- */
+
+.play-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    /* padding: 20px; -- This is handled by .tab-content */
+}
+
+.play-card {
+    background-color: #333; /* Overwrites .card */
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.play-card h2 {
+    margin-top: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* This is the NON-conflicting accordion style */
 .accordion {
     display: flex;
     flex-direction: column;
@@ -2397,92 +2472,107 @@ hr {
 }
 
 .accordion-item {
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-sharp);
+    background-color: #444;
+    border-radius: 10px;
     overflow: hidden;
-    background: var(--bg-color);
-    transition: all 0.2s ease-in-out;
-}
-
-.accordion-item:hover {
-    border-color: var(--primary-color-hover);
 }
 
 .accordion-header {
-    background-color: var(--surface-color);
-    padding: 12px 15px;
+    background-color: #555;
+    color: white;
+    border: none;
+    width: 100%;
+    text-align: left;
+    padding: 15px;
+    font-size: 1em;
     cursor: pointer;
-    font-weight: 700;
-    color: var(--text-muted);
-    font-family: var(--font-heading);
-    font-size: 0.95rem;
-    transition: all 0.2s ease-in-out;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    transition: background-color 0.3s;
 }
 
 .accordion-header:hover {
-    background-color: var(--bg-color);
-    color: var(--primary-color);
-}
-
-.accordion-header.active {
-    background-color: var(--primary-color);
-    color: #fff;
-}
-
-.accordion-header::after {
-    content: '▼';
-    display: inline-block;
-    transition: transform 0.2s ease-in-out;
-    font-size: 0.8rem;
-}
-
-.accordion-header.active::after {
-    transform: rotate(180deg);
+    background-color: #666;
 }
 
 .accordion-content {
-    padding: 0;
+    padding: 0 15px;
     max-height: 0;
     overflow: hidden;
-    transition: max-height 0.3s ease-in-out, padding 0.3s ease-in-out;
+    transition: max-height 0.3s ease-out, padding 0.3s ease-out;
 }
 
-.accordion-item.is-open .accordion-content {
-    display: block;
-    max-height: 1000px;
+/* This .active class is used by play.js */
+.accordion-content.active {
     padding: 15px;
+    max-height: 500px; /* Adjust as needed */
 }
 
-.accordion-content h4 {
-    font-size: 0.95rem;
-    color: var(--primary-color);
-    margin: 0 0 8px 0;
-    font-weight: 700;
-    font-family: var(--font-heading);
-}
-
-.accordion-content h4:first-child {
-    margin-top: 0;
-}
-
+.accordion-content p,
+.accordion-content h4,
 .accordion-content ul {
-    padding-left: 20px;
-    margin: 0 0 10px 0;
+    margin: 10px 0;
 }
 
-.accordion-content ul li {
-    list-style: disc;
-    padding: 3px 0;
-    font-size: 0.9rem;
-    color: var(--text-color);
+.accordion-content a {
+    color: #1e90ff;
 }
 
-.accordion-content p {
+/* --- STYLES MERGED FROM shop.css --- */
+
+.shop-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    /* padding: 20px; -- This is handled by .tab-content */
+}
+
+.shop-item {
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sharp);
+    padding: 15px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.shop-item:hover {
+    transform: translateY(-5px);
+    border-color: var(--primary-color-hover);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.shop-item h3 {
+    color: var(--primary-color);
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 1.2rem;
+}
+
+.shop-item p {
+    color: var(--text-muted);
     font-size: 0.9rem;
-    color: var(--text-color);
-    margin: 0;
-    line-height: 1.5;
+    margin-bottom: 15px;
+}
+
+.shop-item .item-price {
+    font-weight: 700;
+    color: var(--status-ok);
+    font-size: 1.1rem;
+}
+
+/* These styles are for the item-details-modal */
+#item-details-content h2 {
+    color: var(--primary-color);
+    margin-bottom: 15px;
+}
+
+#item-details-content p {
+    margin-bottom: 10px;
+}
+
+#item-details-content .item-price {
+    font-weight: 700;
+    color: var(--status-ok);
+    font-size: 1.2rem;
+    margin-top: 20px;
 }
