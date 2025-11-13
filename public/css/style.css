@@ -1,3 +1,4 @@
+
 /* --- NEW: Thematic Fonts --- */
 @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Merriweather:wght@400;700;900&display=swap');
 
@@ -1270,14 +1271,11 @@ hr {
   padding-left: 20px;
 }
 
-/* This .accordion-content is for the OLD structure. Replaced by play.css styles */
-/*
 .accordion-content {
   display: none;
   padding: 15px;
   background: var(--bg-color);
 }
-*/
 
 .accordion-item.is-open .accordion-content {
   display: block;
@@ -2440,31 +2438,7 @@ hr {
 }
 
 /* DM screen styles removed (DM tab was deleted). */
-
-/* --- STYLES MERGED FROM play.css --- */
-
-.play-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
-    /* padding: 20px; -- This is handled by .tab-content */
-}
-
-.play-card {
-    background-color: #333; /* Overwrites .card */
-    border-radius: 15px;
-    padding: 20px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-.play-card h2 {
-    margin-top: 0;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-/* This is the NON-conflicting accordion style */
+/* Right Pane Accordion */
 .accordion {
     display: flex;
     flex-direction: column;
@@ -2472,107 +2446,163 @@ hr {
 }
 
 .accordion-item {
-    background-color: #444;
-    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sharp);
     overflow: hidden;
+    background: var(--bg-color);
+    transition: all 0.2s ease-in-out;
+}
+
+.accordion-item:hover {
+    border-color: var(--primary-color-hover);
 }
 
 .accordion-header {
-    background-color: #555;
-    color: white;
-    border: none;
-    width: 100%;
-    text-align: left;
-    padding: 15px;
-    font-size: 1em;
+    background-color: var(--surface-color);
+    padding: 12px 15px;
     cursor: pointer;
-    transition: background-color 0.3s;
+    font-weight: 700;
+    color: var(--text-muted);
+    font-family: var(--font-heading);
+    font-size: 0.95rem;
+    transition: all 0.2s ease-in-out;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .accordion-header:hover {
-    background-color: #666;
+    background-color: var(--bg-color);
+    color: var(--primary-color);
+}
+
+.accordion-header.active {
+    background-color: var(--primary-color);
+    color: #fff;
+}
+
+.accordion-header::after {
+    content: '▼';
+    display: inline-block;
+    transition: transform 0.2s ease-in-out;
+    font-size: 0.8rem;
+}
+
+.accordion-header.active::after {
+    transform: rotate(180deg);
 }
 
 .accordion-content {
+    padding: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-in-out, padding 0.3s ease-in-out;
+}
+
+.accordion-item.is-open .accordion-content {
+    display: block;
+    max-height: 1000px;
+    padding: 15px;
+}
+
+.accordion-content h4 {
+    font-size: 0.95rem;
+    color: var(--primary-color);
+    margin: 0 0 8px 0;
+    font-weight: 700;
+    font-family: var(--font-heading);
+}
+
+.accordion-content h4:first-child {
+    margin-top: 0;
+}
+
+.accordion-content ul {
+    padding-left: 20px;
+    margin: 0 0 10px 0;
+}
+
+.accordion-content ul li {
+    list-style: disc;
+    padding: 3px 0;
+    font-size: 0.9rem;
+    color: var(--text-color);
+}
+
+.accordion-content p {
+    font-size: 0.9rem;
+    color: var(--text-color);
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* --- Play Tab Accordion Styles --- */
+.play-card-header,
+.play-card-accordion-header {
+    width: 100%;
+    background: var(--surface-color);
+    border: none;
+    padding: 15px;
+    font-size: 1.1rem;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    color: var(--primary-color);
+    cursor: pointer;
+    text-align: left;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.play-card-header:hover,
+.play-card-accordion-header:hover {
+    background: var(--bg-color);
+}
+
+.play-card-header::after,
+.play-card-accordion-header::after {
+    content: '▼';
+    font-size: 0.9rem;
+    transition: transform 0.2s ease-in-out;
+}
+
+.play-card.is-open > .play-card-header::after,
+.play-card-accordion.is-open > .play-card-accordion-header::after {
+    transform: rotate(180deg);
+}
+
+.play-card-content,
+.play-card-accordion-content {
     padding: 0 15px;
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.3s ease-out, padding 0.3s ease-out;
 }
 
-/* This .active class is used by play.js */
-.accordion-content.active {
+.play-card.is-open > .play-card-content,
+.play-card-accordion.is-open > .play-card-accordion-content {
     padding: 15px;
-    max-height: 500px; /* Adjust as needed */
+    max-height: 1000px; /* Or other large value */
 }
 
-.accordion-content p,
-.accordion-content h4,
-.accordion-content ul {
-    margin: 10px 0;
-}
-
-.accordion-content a {
-    color: #1e90ff;
-}
-
-/* --- STYLES MERGED FROM shop.css --- */
-
-.shop-grid {
+/* Grid layout for play tab */
+.play-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 20px;
-    /* padding: 20px; -- This is handled by .tab-content */
 }
 
-.shop-item {
+.play-card {
     background: var(--surface-color);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-sharp);
-    padding: 15px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
+    overflow: hidden;
 }
 
-.shop-item:hover {
-    transform: translateY(-5px);
-    border-color: var(--primary-color-hover);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+.play-card-accordion {
+    border-top: 1px solid var(--border-color);
 }
-
-.shop-item h3 {
-    color: var(--primary-color);
-    margin-top: 0;
-    margin-bottom: 10px;
-    font-size: 1.2rem;
-}
-
-.shop-item p {
-    color: var(--text-muted);
-    font-size: 0.9rem;
-    margin-bottom: 15px;
-}
-
-.shop-item .item-price {
-    font-weight: 700;
-    color: var(--status-ok);
-    font-size: 1.1rem;
-}
-
-/* These styles are for the item-details-modal */
-#item-details-content h2 {
-    color: var(--primary-color);
-    margin-bottom: 15px;
-}
-
-#item-details-content p {
-    margin-bottom: 10px;
-}
-
-#item-details-content .item-price {
-    font-weight: 700;
-    color: var(--status-ok);
-    font-size: 1.2rem;
-    margin-top: 20px;
+.play-card-content > .play-card-accordion:first-child {
+    border-top: none;
 }

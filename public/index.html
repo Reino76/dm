@@ -1,23 +1,23 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>DM Screen</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Merriweather:wght@400;700;900&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>DM Screen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Merriweather:wght@400;700;900&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gridstack/dist/gridstack.min.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
-    <link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gridstack/dist/gridstack.min.css" />
 
-    <script src="https://cdn.jsdelivr.net/npm/gridstack/dist/gridstack-all.js"></script>
-    
-    <script src="/js/data.js" defer></script>
-    <script src="/js/shared.js" defer></script>
-    <script src="/js/main.js" defer></script>
+<link rel="stylesheet" href="style.css">
+
+<script src="https://cdn.jsdelivr.net/npm/gridstack/dist/gridstack-all.js"></script>
+<script src="data.js" defer></script>
+<script src="shared.js" defer></script>
+<script src="main.js" defer></script>
 </head>
 <body>
 
@@ -34,6 +34,7 @@
       </div>
 
       <div class="header-right top-controls">
+        <!-- Core player preview button (not game-specific) -->
         <button id="open-player-link-btn" class="btn btn-secondary">
           <i class="fas fa-link"></i>
         </button>
@@ -47,9 +48,7 @@
     <div class="header-inner" id="app-header-inner">
       <div class="game-actions-row">
         <div class="header-right" id="game-actions">
-          <button class="btn btn-secondary game-action tab-button" data-tab="tab-shop">
-            <i class="fas fa-shopping-cart"></i> Kauppa
-          </button>
+          <!-- Game-specific actions injected here by JS (e.g., Kauppa for Dread Nights) -->
         </div>
       </div>
 
@@ -67,7 +66,6 @@
   <div class="tabs">
     <button class="tab-button active" data-tab="tab-prep">Session Start</button>
     <button class="tab-button" data-tab="tab-play">Play</button>
-    <button class="tab-button" data-tab="tab-shop">Shop</button>
   </div>
 
   <div id="tab-prep" class="tab-content active">
@@ -348,73 +346,83 @@
 
   <div id="tab-play" class="tab-content">
     <div class="play-grid">
-      <div class="play-card">
-        <h2><i class="fas fa-shopping-cart"></i> Kun ostetaan</h2>
-        <div class="accordion">
-          <div class="accordion-item">
-            <button class="accordion-header">Shop Feature</button>
-            <div class="accordion-content">
-              <p>Go to <button class="btn btn-sm tab-button" data-tab="tab-shop">Shop Tab</button></p>
+      <div class="play-column">
+        <div class="play-card">
+          <button class="play-card-header">
+            <h3><i class="fas fa-shopping-cart"></i> Kun ostetaan</h3>
+            <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="play-card-content">
+            <p>Go to <a href="/shop.html" target="_blank">shop</a>.</p>
+          </div>
+        </div>
+      </div>
+      <div class="play-column">
+        <div class="play-card">
+          <button class="play-card-header">
+            <h3><i class="fas fa-dice-d20"></i> Tests</h3>
+            <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="play-card-content">
+            <div class="play-card-accordion">
+              <button class="play-card-accordion-header">Toughness Dr14 when smog</button>
+              <div class="play-card-accordion-content">
+                <p>If failed: <a href="#">smog effect table</a></p>
+              </div>
+            </div>
+            <div class="play-card-accordion">
+              <button class="play-card-accordion-header">Tgh dr12 when hit by a monster</button>
+              <div class="play-card-accordion-content">
+                <p>Placeholder for monster infection effects.</p>
+              </div>
+            </div>
+            <div class="play-card-accordion">
+              <button class="play-card-accordion-header">Tgh d20 when hp reaches &lt;0</button>
+              <div class="play-card-accordion-content">
+                <p>Details about dying instantly if under -2.</p>
+              </div>
+            </div>
+            <div class="play-card-accordion">
+              <button class="play-card-accordion-header">Prc dr12 when moral is tested</button>
+              <div class="play-card-accordion-content">
+                <p>If failed, generate a d6 of results of panic.</p>
+              </div>
             </div>
           </div>
         </div>
       </div>
-      <div class="play-card">
-        <h2><i class="fas fa-dice-d20"></i> Testit</h2>
-        <div class="accordion">
-          <div class="accordion-item">
-            <button class="accordion-header">Toughness Dr14 when smog</button>
-            <div class="accordion-content">
-              <p>If failed: <a href="#">smog effect table</a></p>
+      <div class="play-column">
+        <div class="play-card">
+          <button class="play-card-header">
+            <h3><i class="fas fa-fist-raised"></i> Toimitaan</h3>
+            <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="play-card-content">
+            <div class="play-card-accordion">
+              <button class="play-card-accordion-header"><i class="fas fa-box-open"></i> Looting</button>
+              <div class="play-card-accordion-content">
+                <p>Placeholder for loot table.</p>
+              </div>
             </div>
-          </div>
-          <div class="accordion-item">
-            <button class="accordion-header">Tgh dr12 when hit by a monster</button>
-            <div class="accordion-content">
-              <p>Placeholder for monster infection effects.</p>
+            <div class="play-card-accordion">
+              <button class="play-card-accordion-header">Lähitaistelu</button>
+              <div class="play-card-accordion-content">
+                <p>Placeholder for melee combat.</p>
+              </div>
             </div>
-          </div>
-          <div class="accordion-item">
-            <button class="accordion-header">Tgh d20 when hp reaches &lt;0</button>
-            <div class="accordion-content">
-              <p>Details about dying instantly if under -2.</p>
+            <div class="play-card-accordion">
+              <button class="play-card-accordion-header">Etätaistelu</button>
+              <div class="play-card-accordion-content">
+                <p>Placeholder for ranged combat.</p>
+              </div>
             </div>
-          </div>
-          <div class="accordion-item">
-            <button class="accordion-header">Prc dr12 when moral is tested</button>
-            <div class="accordion-content">
-              <p>If failed, generate a d6 of results of panic.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="play-card">
-        <h2><i class="fas fa-fist-raised"></i> Toimitaan</h2>
-        <div class="accordion">
-          <div class="accordion-item">
-            <button class="accordion-header"><i class="fas fa-box-open"></i> Looting</button>
-            <div class="accordion-content">
-              <p>Placeholder for loot table.</p>
-            </div>
-          </div>
-          <div class="accordion-item">
-            <button class="accordion-header">Lähitaistelu</button>
-            <div class="accordion-content">
-              <p>Placeholder for melee combat.</p>
-            </div>
-          </div>
-          <div class="accordion-item">
-            <button class="accordion-header">Etätaistelu</button>
-            <div class="accordion-content">
-              <p>Placeholder for ranged combat.</p>
-            </div>
-          </div>
-          <div class="accordion-item">
-            <button class="accordion-header"><i class="fas fa-scroll"></i> Kääröt</button>
-            <div class="accordion-content">
-              <p>Prc dr12 throw.</p>
-              <p>Night and day manuscripts placeholder.</p>
-              <p>Fumbling a prc throw result table placeholder.</p>
+            <div class="play-card-accordion">
+              <button class="play-card-accordion-header"><i class="fas fa-scroll"></i> Kääröt</button>
+              <div class="play-card-accordion-content">
+                <p>Prc dr12 throw.</p>
+                <p>Night and day manuscripts placeholder.</p>
+                <p>Fumbling a prc throw result table placeholder.</p>
+              </div>
             </div>
           </div>
         </div>
@@ -422,19 +430,11 @@
     </div>
   </div>
   
-  <div id="tab-shop" class="tab-content">
-    <div id="item-shop-container" class="shop-grid">
-      </div>
-    <div id="occupation-shop-container" class="shop-grid">
-      </div>
-  </div>
-
   <div id="tab-player-preview" class="tab-content">
     <iframe src="player.html" style="width: 100%; height: 100%; border: none;"></iframe>
   </div>
 
-</div> 
-<div id="name-tables-modal" class="modal-overlay">
+</div> <div id="name-tables-modal" class="modal-overlay">
   <div class="modal-content modal-wide">
     <button id="close-name-tables-modal" class="modal-close-btn">&times;</button>
     <h2>Killan Nimen Taulukot</h2>

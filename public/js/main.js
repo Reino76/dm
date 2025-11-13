@@ -3,7 +3,6 @@
  *
  * Core logic for the DM Screen application.
  * This file is structured to be modular, efficient, and maintainable.
- * * Contains merged logic from play.js and shop.js.
  */
 
 // Wait for the DOM to be fully loaded before running any script
@@ -165,11 +164,6 @@ function cacheDOMElements() {
     dashboard: {
       grid: document.querySelector('.grid-stack'),
       lockBtn: document.getElementById('lock-layout-btn'),
-    },
-    // Shop Tab (New)
-    shop: {
-        itemContainer: document.getElementById("item-shop-container"),
-        occupationContainer: document.getElementById("occupation-shop-container")
     }
   };
 
@@ -252,13 +246,8 @@ function initApp(DOM, state) {
 
   populateGeneratorTables(DOM.modals);
   setupDmScreenTabs();
-  // setupDmScreenAccordion(); // This is the old, conflicting one.
+  setupDmScreenAccordion();
   setupCollapsibleWidgets();
-
-  // --- NEW MERGED FUNCTIONS ---
-  setupPlayTabAccordion(DOM);
-  setupShopTab(DOM);
-  // --- END NEW ---
 }
 
 
@@ -332,10 +321,12 @@ function setupTabs(DOM) {
     console.warn("Tabs container not found, skipping tab setup.");
     return;
   }
-  
-  const allTabButtons = document.querySelectorAll(".tab-button");
 
-  const activateTab = (tabId) => {
+  DOM.tabsContainer.addEventListener("click", (e) => {
+    const button = e.target.closest(".tab-button");
+    if (!button) return;
+
+    const tabId = button.dataset.tab;
     if (!tabId) return;
 
     const targetContent = document.getElementById(tabId);
@@ -345,7 +336,7 @@ function setupTabs(DOM) {
     }
 
     // Deactivate all tab buttons and contents
-    allTabButtons.forEach(btn => {
+    DOM.tabsContainer.querySelectorAll(".tab-button").forEach(btn => {
       btn.classList.remove("active");
     });
     DOM.tabContents.forEach(content => {
@@ -353,19 +344,8 @@ function setupTabs(DOM) {
     });
 
     // Activate the clicked tab and its content
-    document.querySelectorAll(`.tab-button[data-tab="${tabId}"]`).forEach(button => {
-        button.classList.add("active");
-    });
+    button.classList.add("active");
     targetContent.classList.add("active");
-  };
-
-  // Listen on the whole document for tab button clicks
-  document.body.addEventListener("click", (e) => {
-    const button = e.target.closest(".tab-button");
-    if (!button) return;
-
-    const tabId = button.dataset.tab;
-    activateTab(tabId);
   });
 }
 
@@ -407,10 +387,13 @@ function updateGameUI(DOM, gameName) {
   // Populate game-specific actions on the right of the header.
   try {
     if (DOM.gameActions) {
-      if (gameName === 'D&D 5e') {
+      if (gameName === 'Dread Nights') {
+        DOM.gameActions.innerHTML = `
+          <a href="shop.html" class="btn btn-secondary game-action" data-action="shop"><i class="fas fa-shopping-cart"></i> Kauppa</a>
+        `;
+      } else if (gameName === 'D&D 5e') {
         DOM.gameActions.innerHTML = `<button class="btn btn-secondary">Encounter Builder</button>`;
       } else {
-        // For Dread Nights, we now use a permanent tab, so we just clear actions.
         DOM.gameActions.innerHTML = '';
       }
     }
@@ -1054,6 +1037,38 @@ function setupDmScreenTabs() {
     });
 }
 
+function setupDmScreenAccordion() {
+    const dmScreen = document.getElementById('tab-play');
+    if (!dmScreen) return;
+
+    dmScreen.addEventListener('click', (e) => {
+        const cardHeader = e.target.closest('.play-card-header');
+        const accordionHeader = e.target.closest('.play-card-accordion-header');
+
+        if (cardHeader) {
+            const card = cardHeader.closest('.play-card');
+            if (card) {
+                card.classList.toggle('is-open');
+            }
+        }
+
+        if (accordionHeader) {
+            const accordion = accordionHeader.closest('.play-card-accordion');
+            if (accordion) {
+                // Close siblings
+                const parentContent = accordion.parentElement;
+                parentContent.querySelectorAll('.play-card-accordion').forEach(sibling => {
+                    if (sibling !== accordion) {
+                        sibling.classList.remove('is-open');
+                    }
+                });
+                // Toggle current
+                accordion.classList.toggle('is-open');
+            }
+        }
+    });
+}
+
 function setupCollapsibleWidgets() {
     const combatTrackerHeader = document.querySelector('#combat-tracker .widget-title.collapsible');
     if(combatTrackerHeader) {
@@ -1062,74 +1077,4 @@ function setupCollapsibleWidgets() {
             tracker.classList.toggle('collapsed');
         });
     }
-}
-
-// --- NEW: MERGED FROM play.js ---
-function setupPlayTabAccordion(DOM) {
-    const playTab = document.getElementById('tab-play');
-    if (!playTab) return;
-
-    const accordionHeaders = playTab.querySelectorAll('.accordion-header');
-
-    accordionHeaders.forEach(header => {
-        header.addEventListener('click', () => {
-            const content = header.nextElementSibling;
-            const item = header.parentElement;
-
-            // Toggle active class for content
-            const isActive = content.classList.contains('active');
-
-            // Close all accordions in the same card first
-            const parentAccordion = item.parentElement;
-            parentAccordion.querySelectorAll('.accordion-item').forEach(otherItem => {
-                otherItem.querySelector('.accordion-content').classList.remove('active');
-            });
-
-            // If it wasn't active, open it
-            if (!isActive) {
-                content.classList.add('active');
-            }
-        });
-    });
-}
-
-// --- NEW: MERGED FROM shop.js ---
-function setupShopTab(DOM) {
-    const shopContainer = DOM.shop.itemContainer;
-    const occupationsContainer = DOM.shop.occupationContainer;
-
-    if (!shopContainer || !occupationsContainer) {
-        console.warn("Shop containers not found. Shop will not be populated.");
-        return;
-    }
-
-    // Check if data is loaded
-    if (typeof shopItems === 'undefined' || typeof occupations === 'undefined') {
-        console.error("Shop data (shopItems or occupations) is missing.");
-        return;
-    }
-
-    shopContainer.innerHTML = "";
-    occupationsContainer.innerHTML = '<h2>Työnkuvat</h2>';
-
-    shopItems.forEach(item => {
-        const itemElement = document.createElement("div");
-        itemElement.className = "shop-item";
-        itemElement.innerHTML = `
-            <h3>${item.name}</h3>
-            <p>${item.type}</p>
-            <div class="item-price">${item.price}</div>
-        `;
-        itemElement.addEventListener("click", () => openItemDetails(item.name));
-        shopContainer.appendChild(itemElement);
-    });
-
-    occupations.forEach(occ => {
-        const occElement = document.createElement("div");
-        occElement.className = "shop-item occupation-item";
-        let benefitContent = `<p>${linkifyItemNames(occ.benefit)}</p>`;
-
-        occElement.innerHTML = `<h3>${occ.occupation}</h3>${benefitContent}`;
-        occupationsContainer.appendChild(occElement);
-    });
 }
